@@ -98,16 +98,76 @@ DEVICE_PROFILES = [
     },
 ]
 
-REFERRERS = [
-    "",
-    "https://www.google.com/",
-    "https://www.google.com.ar/",
-    "https://www.google.es/",
-    "https://www.bing.com/",
-    "https://t.co/",
-    "https://www.facebook.com/",
-    "https://news.google.com/",
+# ── Almacenamiento de Perfiles Persistentes y Cookies ──────────────────────
+PROFILES_DIR = os.path.join(os.path.dirname(__file__), "profiles")
+os.makedirs(PROFILES_DIR, exist_ok=True)
+TOTAL_PROFILE_POOL = 3000
+
+# ── Fuentes de Tráfico Realistas (Directo, Dark Social, Redes, Buscadores) ───
+TRAFFIC_SOURCES = [
+    # Directo / Marcadores (32%)
+    {"ref": "", "weight": 32, "type": "direct"},
+    # Dark Social: WhatsApp / Telegram / Mensajería (30%)
+    {"ref": "https://web.whatsapp.com/", "weight": 14, "type": "whatsapp"},
+    {"ref": "android-app://com.whatsapp", "weight": 8, "type": "whatsapp_mobile"},
+    {"ref": "https://t.me/", "weight": 8, "type": "telegram"},
+    # Redes Sociales (25%)
+    {"ref": "https://t.co/", "weight": 10, "type": "twitter"},
+    {"ref": "https://www.facebook.com/", "weight": 7, "type": "facebook"},
+    {"ref": "https://l.instagram.com/", "weight": 5, "type": "instagram"},
+    {"ref": "https://www.reddit.com/r/noticias/", "weight": 3, "type": "reddit"},
+    # Buscadores orgánicos (13%)
+    {"ref": "https://www.google.com.ar/", "weight": 5, "type": "google_ar"},
+    {"ref": "https://www.google.com/", "weight": 4, "type": "google_global"},
+    {"ref": "https://news.google.com/", "weight": 2, "type": "google_news"},
+    {"ref": "https://www.bing.com/", "weight": 2, "type": "bing"},
 ]
+
+
+def get_traffic_source() -> str:
+    """Retorna una fuente de tráfico ponderada estadísticamente."""
+    sources = [s["ref"] for s in TRAFFIC_SOURCES]
+    weights = [s["weight"] for s in TRAFFIC_SOURCES]
+    return random.choices(sources, weights=weights, k=1)[0]
+
+
+def get_circadian_factor(tz_offset_hours: int = -3) -> float:
+    """
+    Calcula el factor de actividad biológica según la hora local de la audiencia (ej. Argentina UTC-3):
+    - 01:00 a 06:00 (Madrugada): Valle de sueño (factor ~0.25, pausas más largas)
+    - 08:00 a 11:30 (Mañana): Pico matutino (factor ~1.20)
+    - 12:00 a 14:30 (Almuerzo): Pico mediodía (factor ~1.30)
+    - 15:00 a 19:30 (Tarde): Tráfico sostenido (factor ~1.00)
+    - 20:00 a 23:30 (Noche Prime): Pico máximo (factor ~1.45)
+    """
+    utc_now = time.gmtime()
+    local_hour = (utc_now.tm_hour + tz_offset_hours) % 24
+
+    if 1 <= local_hour < 6:
+        return 0.25
+    elif 6 <= local_hour < 8:
+        return 0.60
+    elif 8 <= local_hour < 12:
+        return 1.20
+    elif 12 <= local_hour < 15:
+        return 1.30
+    elif 15 <= local_hour < 20:
+        return 1.00
+    elif 20 <= local_hour < 24:
+        return 1.45
+    else:
+        return 0.65
+
+
+def choose_session_archetype() -> str:
+    """
+    Modela la conducta del lector:
+    - 'bounce' (30%): Rebote humano natural (lee titular 12-25s y sale sin clics).
+    - 'standard' (50%): Lectura regular (1 a 2 artículos).
+    - 'deep' (20%): Lector comprometido (3 a 4 artículos + sección).
+    """
+    return random.choices(["bounce", "standard", "deep"], weights=[30, 50, 20], k=1)[0]
+
 
 SECTIONS = ["/", "/mundo", "/economia", "/tecnologia", "/deportes", "/salud", "/ciencia"]
 SECTION_WEIGHTS = [30, 15, 15, 15, 10, 8, 7]
@@ -233,9 +293,15 @@ async def simulate_human_scroll(page, total_scroll_target: int) -> int:
     return scrolled
 
 
-async def run_playwright_visit(browser, client_ip: str, profile: dict) -> bool:
-    """Ejecuta una visita completa en un contexto de navegador real."""
-    referrer = random.choice(REFERRERS)
+async def run_playwright_visit(browser, client_ip: str, profile: dict, profile_id: Optional[int] = None) -> bool:
+    """Ejecuta una visita completa en un contexto de navegador real con cookies persistentes y rebote orgánico."""
+    if profile_id is None:
+        profile_id = random.randint(1, TOTAL_PROFILE_POOL)
+
+    profile_path = os.path.join(PROFILES_DIR, f"profile_{profile_id:04d}.json")
+    has_existing_cookies = os.path.exists(profile_path)
+
+    referrer = get_traffic_source()
     headers = {
         "X-Forwarded-For": client_ip,
         "X-Real-IP": client_ip,
@@ -245,13 +311,20 @@ async def run_playwright_visit(browser, client_ip: str, profile: dict) -> bool:
     if referrer:
         headers["Referer"] = referrer
 
-    context = await browser.new_context(
-        user_agent=profile["ua"],
-        viewport=profile["viewport"],
-        locale=profile["locale"],
-        timezone_id=profile["timezone"],
-        extra_http_headers=headers,
-    )
+    context_kwargs = {
+        "user_agent": profile["ua"],
+        "viewport": profile["viewport"],
+        "locale": profile["locale"],
+        "timezone_id": profile["timezone"],
+        "extra_http_headers": headers,
+    }
+    if has_existing_cookies:
+        try:
+            context_kwargs["storage_state"] = profile_path
+        except Exception:
+            pass
+
+    context = await browser.new_context(**context_kwargs)
 
     # Inyectar script de stealth WebGL y evasión de detección de automatización
     stealth_js = f"""
@@ -352,6 +425,9 @@ async def run_playwright_visit(browser, client_ip: str, profile: dict) -> bool:
     mouse_pos = (random.randint(100, 400), random.randint(100, 300))
 
     try:
+        # Elegir arquetipo de conducta humana (Rebote 30%, Estándar 50%, Lectura Profunda 20%)
+        archetype = choose_session_archetype()
+
         # 1. Navegar a página de entrada (Home o Sección)
         entry_section = random.choices(SECTIONS, weights=SECTION_WEIGHTS, k=1)[0]
         entry_url = TARGET_URL + entry_section
@@ -368,48 +444,57 @@ async def run_playwright_visit(browser, client_ip: str, profile: dict) -> bool:
             mouse_pos = await simulate_human_mouse(page, tx, ty, mouse_pos)
 
         # 3. Scroll exploratorio de la página
-        scroll_px = random.randint(450, 1200)
+        scroll_px = random.randint(350, 950)
         await simulate_human_scroll(page, scroll_px)
 
-        # 4. Exploración y clic en artículos
-        # Busca enlaces de artículos
-        article_elements = await page.query_selector_all('a[href*="/articulo/"]')
-        if article_elements and random.random() < config.SUBPAGE_PROBABILITY:
-            # Selecciona un artículo
-            chosen_el = random.choice(article_elements[:8])
-            box = await chosen_el.bounding_box()
-            if box:
-                # Mueve el mouse de forma curva hacia el botón o título
-                target_x = box["x"] + box["width"] * random.uniform(0.3, 0.7)
-                target_y = box["y"] + box["height"] * random.uniform(0.3, 0.7)
-                mouse_pos = await simulate_human_mouse(page, target_x, target_y, mouse_pos)
+        # 4. Comportamiento según arquetipo
+        if archetype == "bounce":
+            # 30% Tasa de Rebote Orgánico: Lee titular / resumen durante 12-24s y sale sin clics
+            await asyncio.sleep(random.uniform(12.0, 24.0))
+        else:
+            # 50% Standard (1-2 notas) o 20% Deep (3-4 notas)
+            num_articles = random.randint(1, 2) if archetype == "standard" else random.randint(3, 4)
+            article_elements = await page.query_selector_all('a[href*="/articulo/"]')
+            if article_elements:
+                chosen_elements = random.sample(
+                    article_elements[:10],
+                    k=min(num_articles, len(article_elements))
+                )
+                for chosen_el in chosen_elements:
+                    box = await chosen_el.bounding_box()
+                    if box:
+                        target_x = box["x"] + box["width"] * random.uniform(0.3, 0.7)
+                        target_y = box["y"] + box["height"] * random.uniform(0.3, 0.7)
+                        mouse_pos = await simulate_human_mouse(page, target_x, target_y, mouse_pos)
+                        await asyncio.sleep(random.uniform(0.3, 0.8))
+                        await page.mouse.click(target_x, target_y)
 
-                # Pausa previa al clic (deliberación cognitiva)
-                await asyncio.sleep(random.uniform(0.3, 0.8))
-                await page.mouse.click(target_x, target_y)
+                        try:
+                            await page.wait_for_load_state("domcontentloaded", timeout=25000)
+                        except Exception:
+                            pass
 
-                # Espera carga del artículo
-                try:
-                    await page.wait_for_load_state("domcontentloaded", timeout=25000)
-                except Exception:
-                    pass
+                        await asyncio.sleep(random.uniform(1.5, 3.0))
+                        article_scroll = random.randint(750, 1600)
+                        await simulate_human_scroll(page, article_scroll)
 
-                # Lectura del artículo: lectura progresiva hacia abajo
-                await asyncio.sleep(random.uniform(1.5, 3.0))
-                article_scroll = random.randint(800, 1800)
-                await simulate_human_scroll(page, article_scroll)
+                        tx = random.randint(200, int(w * 0.7))
+                        ty = random.randint(300, int(h * 0.6))
+                        mouse_pos = await simulate_human_mouse(page, tx, ty, mouse_pos)
 
-                # Micro-movimiento en el artículo
-                tx = random.randint(200, int(w * 0.7))
-                ty = random.randint(300, int(h * 0.6))
-                mouse_pos = await simulate_human_mouse(page, tx, ty, mouse_pos)
+                        # Tiempo de lectura realista por artículo
+                        read_pause = random.uniform(15.0, 30.0) if archetype == "standard" else random.uniform(25.0, 45.0)
+                        await asyncio.sleep(read_pause)
 
-                # Pausa final de lectura
-                await asyncio.sleep(random.uniform(4.0, 10.0))
-
-        # El script de telemetría inyectado en base.html se encarga de enviar el beacon
-        # Forzar un pequeño retardo antes de cerrar para asegurar el envío de la señal
+        # Retardo final para asegurar emisión del beacon
         await asyncio.sleep(random.uniform(1.0, 2.0))
+
+        # 5. Guardar cookies persistentes para simular usuario recurrente futuro
+        try:
+            await context.storage_state(path=profile_path)
+        except Exception:
+            pass
+
         return True
 
     except Exception as e:
@@ -438,7 +523,8 @@ async def playwright_worker(worker_id: int, stats: dict, lock: asyncio.Lock, dea
         while time.monotonic() < deadline:
             client_ip = generate_random_ip()
             profile = random.choice(DEVICE_PROFILES)
-            success = await run_playwright_visit(browser, client_ip, profile)
+            profile_id = random.randint(1, TOTAL_PROFILE_POOL)
+            success = await run_playwright_visit(browser, client_ip, profile, profile_id)
 
             async with lock:
                 if success:
@@ -450,13 +536,16 @@ async def playwright_worker(worker_id: int, stats: dict, lock: asyncio.Lock, dea
             if total % config.LOG_EVERY == 0:
                 elapsed = time.time() - stats["start"]
                 rate = total / elapsed if elapsed > 0 else 0
+                circadian = get_circadian_factor()
                 log.info(
                     f"🛡️  [BIOMÉTRICO] ✅ {stats['ok']:,} validadas | ❌ {stats['fail']:,} | "
-                    f"🚀 {rate:.2f} vis/s | ⏱ {elapsed / 3600:.1f}h"
+                    f"🚀 {rate:.2f} vis/s | ⏱ {elapsed / 3600:.1f}h | ⏰ Circadiano: {circadian:.2f}x"
                 )
 
-            # Pausa natural entre sesiones consecutivas del mismo worker
-            await asyncio.sleep(random.uniform(1.5, 4.0))
+            # Pausa natural modulada por el ritmo circadiano de la audiencia
+            base_pause = random.uniform(1.8, 4.2)
+            circadian = get_circadian_factor()
+            await asyncio.sleep(base_pause / circadian)
     finally:
         await browser.close()
 
@@ -475,6 +564,7 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
             entry_section = random.choices(SECTIONS, weights=SECTION_WEIGHTS, k=1)[0]
             url = TARGET_URL + entry_section
 
+            referrer = get_traffic_source()
             headers = {
                 "User-Agent": profile["ua"],
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -483,6 +573,8 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
                 "X-Real-IP": client_ip,
                 "DNT": "1",
             }
+            if referrer:
+                headers["Referer"] = referrer
 
             success = False
             try:
@@ -492,10 +584,19 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
                     if resp.status < 400:
                         success = True
                     else:
+                        log.warning(f"HTTP GET {resp.status} on {url} (ref: {repr(headers.get('Referer'))})")
                         success = False
 
                 # 2. Generación y envío de telemetría biométrica compatible con nuestro detector
                 if success:
+                    archetype = choose_session_archetype()
+                    if archetype == "bounce":
+                        sim_time = random.randint(12000, 24000)
+                    elif archetype == "standard":
+                        sim_time = random.randint(35000, 75000)
+                    else:
+                        sim_time = random.randint(80000, 160000)
+
                     # Simular curva de Bézier sintética para pasar el control anti-bot
                     p0 = (random.randint(100, 300), random.randint(100, 200))
                     p3 = (random.randint(400, 900), random.randint(300, 700))
@@ -517,7 +618,7 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
                     beacon_data = {
                         "session_id": f"pm_{random.randint(100000, 999999)}_{int(time.time())}",
                         "path": entry_section,
-                        "time_on_page": random.randint(18000, 45000),
+                        "time_on_page": sim_time,
                         "canvas_hash": f"cv_{random.randint(100000, 999999):x}",
                         "webgl_renderer": profile.get("gpu_renderer", "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0, D3D11)"),
                         "webgl_vendor": profile.get("gpu_vendor", "Google Inc. (NVIDIA)"),
@@ -561,12 +662,16 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
             if total % config.LOG_EVERY == 0:
                 elapsed = time.time() - stats["start"]
                 rate = total / elapsed if elapsed > 0 else 0
+                circadian = get_circadian_factor()
                 log.info(
                     f"📡 [TELEMETRÍA] ✅ {stats['ok']:,} | ❌ {stats['fail']:,} | "
-                    f"🚀 {rate:.2f} vis/s | ⏱ {elapsed / 3600:.1f}h"
+                    f"🚀 {rate:.2f} vis/s | ⏱ {elapsed / 3600:.1f}h | ⏰ Circadiano: {circadian:.2f}x"
                 )
 
-            await asyncio.sleep(random.uniform(0.4, 1.2))
+            # Pausa natural modulada por el ritmo circadiano
+            base_pause = random.uniform(0.6, 1.8)
+            circadian = get_circadian_factor()
+            await asyncio.sleep(base_pause / circadian)
 
 
 # ── Función Principal ───────────────────────────────────────────────────────
