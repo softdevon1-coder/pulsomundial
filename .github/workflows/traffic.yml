@@ -1,0 +1,61 @@
+name: 🤖 Web Traffic Bot
+
+on:
+  schedule:
+    #  Corre 4 veces por día (cada 6 horas).
+    #  Cada run dura 5.5h → cubre las 24hs con overlap.
+    - cron: '0 0 * * *'    # 00:00 UTC
+    - cron: '0 6 * * *'    # 06:00 UTC
+    - cron: '0 12 * * *'   # 12:00 UTC
+    - cron: '0 18 * * *'   # 18:00 UTC
+
+  # También permite ejecutarlo manualmente desde la UI de GitHub
+  workflow_dispatch:
+    inputs:
+      workers:
+        description: 'Workers por job (default: 25)'
+        required: false
+        default: '25'
+
+# Cancela runs anteriores si se lanza uno nuevo manualmente
+concurrency:
+  group: traffic-bot
+  cancel-in-progress: false
+
+jobs:
+  visit:
+    name: "Bot Job ${{ matrix.job_id }}"
+
+    strategy:
+      # No cancela otros jobs si uno falla
+      fail-fast: false
+      matrix:
+        # 10 jobs paralelos = 10 × 25 workers = 250 visitantes simultáneos
+        job_id: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+    runs-on: ubuntu-latest
+
+    # Máximo 6 horas por job (GitHub Actions limit)
+    timeout-minutes: 350
+
+    steps:
+      - name: 📥 Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 📦 Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: 🚀 Correr bot de visitas
+        env:
+          JOB_ID: ${{ matrix.job_id }}
+          # Sobrescribir workers si se pasó como input manual
+          OVERRIDE_WORKERS: ${{ github.event.inputs.workers }}
+          # URL del sitio (opcional vía GitHub Secrets/Vars o toma de config.py)
+          TARGET_URL: ${{ secrets.TARGET_URL || vars.TARGET_URL }}
+        run: python visitor.py

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}{{ section['name'] }} — Cobertura Especial en PulsoMundial{% endblock %}
+
+{% block extra_head %}
+<style>
+  .section-banner-hero {
+    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+    border-bottom: 2px solid {{ section['color'] }};
+    padding: 36px 0 24px;
+    margin-bottom: 36px;
+  }
+  .section-badge-pill {
+    background-color: {{ section['color'] }};
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 6px 14px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+  .section-headline {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="section-banner-hero">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb small text-secondary mb-2">
+        <li class="breadcrumb-item"><a href="/" class="text-secondary text-decoration-none">Inicio</a></li>
+        <li class="breadcrumb-item active text-light" aria-current="page">{{ section['name'] }}</li>
+      </ol>
+    </nav>
+    <span class="section-badge-pill">{{ section['name'] }}</span>
+    <h1 class="section-headline">Últimas noticias de {{ section['name'] }}</h1>
+    <p class="text-secondary mb-0">
+      Información verificada, crónicas internacionales y análisis en profundidad actualizado al minuto.
+    </p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row g-4">
+    <!-- Main Articles Grid -->
+    <div class="col-lg-8">
+      <div class="row g-4">
+        {% for art in articles %}
+        <div class="col-md-6">
+          <div class="article-card">
+            <div class="img-wrapper" style="height: 210px;">
+              <img src="https://picsum.photos/600/360?random={{ art['image_id'] }}" alt="{{ art['title'] }}" style="height: 100%;">
+              <span class="card-badge" style="background-color: {{ section['color'] }}; color: #fff;">
+                {{ section['name'] }}
+              </span>
+            </div>
+            <div class="card-body-custom">
+              <div class="text-secondary small mb-2">
+                <i class="far fa-clock me-1"></i> {{ art['date'] }} · {{ art['read_time'] }}
+              </div>
+              <a href="/articulo/{{ art['slug'] }}" class="card-title-custom">
+                {{ art['title'] }}
+              </a>
+              <p class="card-subtitle-custom">
+                {{ art['subtitle'] | truncate(120) }}
+              </p>
+              <div class="card-meta-custom mt-auto">
+                <span><i class="far fa-user me-1"></i> {{ art['author'] }}</span>
+                <a href="/articulo/{{ art['slug'] }}" class="text-info text-decoration-none fw-bold small">
+                  Leer más <i class="fas fa-chevron-right ms-1"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <div class="card p-3 mb-4" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px;">
+        <div class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom border-secondary">
+          <h5 class="fw-bold mb-0 text-uppercase fs-6 text-light">
+            <i class="fas fa-chart-line me-2 text-primary"></i> En Otras Secciones
+          </h5>
+          <span class="badge bg-secondary">Global</span>
+        </div>
+        <div class="sidebar-trend-list">
+          {% for art in trending %}
+          <div class="sidebar-trend-item">
+            <div class="trend-number">{{ loop.index }}</div>
+            <div>
+              <span class="badge text-uppercase mb-1" style="background: rgba(255,255,255,0.08); color: {{ art['section_color'] }}; font-size: 0.68rem;">
+                {{ art['section_name'] }}
+              </span>
+              <br>
+              <a href="/articulo/{{ art['slug'] }}" class="trend-title">
+                {{ art['title'] }}
+              </a>
+              <div class="text-secondary small mt-1" style="font-size: 0.75rem;">
+                {{ art['date'] }} · {{ art['author'] }}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Live Traffic Card -->
+      <div class="card p-4 text-center" style="background: linear-gradient(135deg, #0f172a, #1e1b4b); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px;">
+        <div class="pulse-dot mx-auto mb-2"></div>
+        <h6 class="text-white fw-bold mb-1">Métricas de la Sección</h6>
+        <p class="text-secondary small mb-3">
+          Verificá la distribución de lectores en {{ section['name'] }} y en el resto del portal en vivo.
+        </p>
+        <a href="/analytics" class="btn btn-outline-info btn-sm fw-bold">
+          <i class="fas fa-satellite-dish me-1"></i> Ver en Directo
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

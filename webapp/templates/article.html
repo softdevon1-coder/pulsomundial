@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article['title'] }} — PulsoMundial{% endblock %}
+
+{% block extra_head %}
+<style>
+  .article-header {
+    padding: 30px 0 20px;
+  }
+  .article-badge-section {
+    background-color: {{ article['section_color'] }};
+    color: white;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 5px 12px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 14px;
+  }
+  .article-headline {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    line-height: 1.2;
+    color: #ffffff;
+    margin-bottom: 16px;
+  }
+  .article-lead-subtitle {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: #94a3b8;
+    margin-bottom: 24px;
+    font-weight: 400;
+  }
+  .byline-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 28px;
+    font-size: 0.88rem;
+    color: #94a3b8;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .author-avatar-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, {{ article['section_color'] }}, #e63946);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: white;
+    font-size: 1.1rem;
+  }
+  .hero-article-image {
+    width: 100%;
+    max-height: 540px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 10px;
+  }
+  .img-caption {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 30px;
+    font-style: italic;
+  }
+
+  /* Editorial Content */
+  .article-body-text {
+    font-family: 'Merriweather', serif;
+    font-size: 1.12rem;
+    line-height: 1.85;
+    color: #e2e8f0;
+  }
+  .article-body-text p {
+    margin-bottom: 24px;
+  }
+  .article-body-text p:first-of-type::first-letter {
+    font-size: 3.6rem;
+    float: left;
+    line-height: 0.85;
+    margin-right: 12px;
+    font-weight: 900;
+    color: {{ article['section_color'] }};
+    font-family: 'Cinzel', serif;
+  }
+
+  .pull-quote {
+    border-left: 4px solid {{ article['section_color'] }};
+    padding: 18px 24px;
+    margin: 32px 0;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 0 8px 8px 0;
+    font-style: italic;
+    font-size: 1.25rem;
+    color: #f1f5f9;
+  }
+
+  .tag-pill {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .tag-pill:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .share-btn {
+    border-radius: 50px;
+    padding: 6px 14px;
+    font-size: 0.82rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<article class="article-header">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb small text-secondary mb-2">
+            <li class="breadcrumb-item"><a href="/" class="text-secondary text-decoration-none">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="/{{ article['section'] }}" class="text-secondary text-decoration-none">{{ article['section_name'] }}</a></li>
+            <li class="breadcrumb-item active text-light" aria-current="page">{{ article['title'] | truncate(40) }}</li>
+          </ol>
+        </nav>
+
+        <a href="/{{ article['section'] }}" class="article-badge-section text-decoration-none">
+          {{ article['section_name'] }}
+        </a>
+
+        <h1 class="article-headline">{{ article['title'] }}</h1>
+        <p class="article-lead-subtitle">{{ article['subtitle'] }}</p>
+
+        <!-- Byline -->
+        <div class="byline-bar">
+          <div class="d-flex align-items-center gap-3">
+            <div class="author-avatar-circle">
+              {{ article['author'][:1] }}
+            </div>
+            <div>
+              <div class="text-white fw-bold">{{ article['author'] }}</div>
+              <div class="small text-secondary">Corresponsalía Central de PulsoMundial</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-3">
+            <span><i class="far fa-calendar-alt me-1"></i> {{ article['date'] }}</span>
+            <span>•</span>
+            <span><i class="far fa-clock me-1"></i> {{ article['read_time'] }}</span>
+          </div>
+          <div class="d-flex gap-2">
+            <a href="#" class="btn btn-sm btn-outline-secondary share-btn"><i class="fab fa-x-twitter"></i> Compartir</a>
+            <a href="#" class="btn btn-sm btn-outline-secondary share-btn"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+            <a href="#" class="btn btn-sm btn-outline-secondary share-btn" onclick="navigator.clipboard.writeText(window.location.href); alert('Enlace copiado al portapapeles'); return false;">
+              <i class="fas fa-link"></i> Copiar
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</article>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="row g-5">
+
+        <!-- Article Main Content Column -->
+        <div class="col-lg-8">
+          
+          <img src="https://picsum.photos/1200/600?random={{ article['image_id'] }}" alt="{{ article['title'] }}" class="hero-article-image">
+          <div class="img-caption">
+            <i class="fas fa-camera me-1"></i> Archivo fotográfico internacional para PulsoMundial. Cobertura del evento en directo.
+          </div>
+
+          <div class="article-body-text">
+            {% for para in article['content'] %}
+              <p>{{ para }}</p>
+              {% if loop.index == 2 %}
+              <div class="pull-quote">
+                "Los acontecimientos de las últimas horas marcan un punto de inflexión cuyas repercusiones se extenderán durante los próximos meses en los mercados y en la geopolítica."
+              </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          <!-- Tags -->
+          <div class="d-flex align-items-center flex-wrap gap-2 my-4 pt-3 border-top border-secondary">
+            <span class="text-secondary small fw-bold me-2"><i class="fas fa-tags me-1"></i> Etiquetas:</span>
+            {% for tag in article['tags'] %}
+            <span class="tag-pill">#{{ tag }}</span>
+            {% endfor %}
+          </div>
+
+          <!-- Author Bio box -->
+          <div class="p-4 my-5 rounded-3" style="background: var(--bg-card); border: 1px solid var(--border-color);">
+            <div class="d-flex gap-3 align-items-center">
+              <div class="author-avatar-circle" style="width: 56px; height: 56px; font-size: 1.4rem;">
+                {{ article['author'][:1] }}
+              </div>
+              <div>
+                <h6 class="text-white fw-bold mb-1">Escrito por {{ article['author'] }}</h6>
+                <p class="text-secondary small mb-0">
+                  Periodista senior e investigador para PulsoMundial con base internacional. Especializado en análisis de impacto y coberturas en tiempo real.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+          
+          <!-- Mas en esta seccion -->
+          <div class="card p-3 mb-4" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px;">
+            <div class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom border-secondary">
+              <h5 class="fw-bold mb-0 text-uppercase fs-6 text-light">
+                <i class="fas fa-bookmark me-2" style="color: {{ article['section_color'] }};"></i> Más en {{ article['section_name'] }}
+              </h5>
+            </div>
+            <div class="sidebar-trend-list">
+              {% for art in section_list %}
+              {% if art['slug'] != article['slug'] %}
+              <div class="sidebar-trend-item">
+                <div>
+                  <a href="/articulo/{{ art['slug'] }}" class="trend-title">
+                    {{ art['title'] }}
+                  </a>
+                  <div class="text-secondary small mt-1" style="font-size: 0.75rem;">
+                    {{ art['date'] }} · {{ art['read_time'] }}
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Real-time telemetría badge -->
+          <div class="card p-4" style="background: linear-gradient(135deg, #101426, #161c38); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px;">
+            <div class="d-flex align-items-center gap-2 mb-2 text-info small fw-bold">
+              <span class="pulse-dot"></span> AUDITORÍA EN TIEMPO REAL
+            </div>
+            <h6 class="text-white fw-bold mb-2">Lectores de esta Nota</h6>
+            <p class="text-secondary small mb-3">
+              Esta visualización ha sido computada en el panel central de analítica de tráfico de PulsoMundial.
+            </p>
+            <a href="/analytics" class="btn btn-outline-info btn-sm fw-bold w-100 py-2">
+              <i class="fas fa-chart-line me-1"></i> Ver Estadísticas del Sitio
+            </a>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Related Articles Row -->
+      {% if related %}
+      <div class="my-5 pt-4 border-top border-secondary">
+        <h4 class="text-white fw-bold mb-4 text-uppercase fs-5">
+          <i class="fas fa-layer-group me-2" style="color: {{ article['section_color'] }};"></i> Artículos Relacionados
+        </h4>
+        <div class="row g-4">
+          {% for r in related %}
+          <div class="col-md-4">
+            <div class="article-card">
+              <div class="img-wrapper" style="height: 180px;">
+                <img src="https://picsum.photos/500/300?random={{ r['image_id'] }}" alt="{{ r['title'] }}" style="height: 100%;">
+                <span class="card-badge" style="background-color: {{ r['section_color'] }}; color: #fff;">
+                  {{ r['section_name'] }}
+                </span>
+              </div>
+              <div class="card-body-custom">
+                <a href="/articulo/{{ r['slug'] }}" class="card-title-custom">
+                  {{ r['title'] }}
+                </a>
+                <p class="card-subtitle-custom">
+                  {{ r['subtitle'] | truncate(90) }}
+                </p>
+                <div class="card-meta-custom mt-auto">
+                  <span>{{ r['author'] }}</span>
+                  <span>{{ r['read_time'] }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}

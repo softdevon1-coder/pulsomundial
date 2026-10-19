@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}PulsoMundial — Noticias Globales en Tiempo Real{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@300;400;500;600;700;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0b10;
+      --bg-card: #12141f;
+      --bg-card-hover: #191c2b;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --accent-red: #e63946;
+      --text-muted: #8b92a5;
+      --text-main: #f0f2f8;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* Top bar */
+    .top-header {
+      background: #06070a;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding: 6px 0;
+    }
+    .top-header a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .top-header a:hover {
+      color: #fff;
+    }
+
+    /* Breaking news bar */
+    .ticker-bar {
+      background: #0e1017;
+      border-bottom: 1px solid var(--border-color);
+      overflow: hidden;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      height: 38px;
+    }
+    .ticker-badge {
+      background: var(--accent-red);
+      color: white;
+      font-weight: 800;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      padding: 0 16px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      z-index: 2;
+    }
+    .ticker-content {
+      display: inline-block;
+      padding-left: 20px;
+      animation: ticker 35s linear infinite;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+    }
+    .ticker-content span {
+      margin-right: 40px;
+    }
+    .ticker-content a {
+      color: #e2e8f0;
+      text-decoration: none;
+    }
+    .ticker-content a:hover {
+      color: #fff;
+      text-decoration: underline;
+    }
+    @keyframes ticker {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-50%, 0, 0); }
+    }
+
+    /* Main brand banner */
+    .brand-section {
+      padding: 24px 0 16px;
+      border-bottom: 1px solid var(--border-color);
+      background: linear-gradient(180deg, rgba(230, 57, 70, 0.04) 0%, transparent 100%);
+    }
+    .brand-logo {
+      font-family: 'Cinzel', serif;
+      font-size: 2.8rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+      text-decoration: none;
+      line-height: 1;
+    }
+    .brand-logo span {
+      color: var(--accent-red);
+    }
+    .brand-subtitle {
+      font-size: 0.78rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Navbar */
+    .main-nav {
+      background: #0d0f17;
+      border-bottom: 2px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .nav-link-custom {
+      color: #cbd5e1 !important;
+      font-weight: 600;
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 14px 18px !important;
+      transition: all 0.2s ease;
+      position: relative;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .nav-link-custom:hover {
+      color: #fff !important;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .nav-link-custom.active {
+      color: #fff !important;
+    }
+    .nav-link-custom.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 18px;
+      right: 18px;
+      height: 3px;
+      background: var(--accent-red);
+    }
+
+    .analytics-pill-btn {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid #38bdf8;
+      color: #38bdf8 !important;
+      border-radius: 50px;
+      padding: 6px 16px !important;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    }
+    .analytics-pill-btn:hover {
+      background: #38bdf8;
+      color: #0b1120 !important;
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.5);
+      transform: translateY(-1px);
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #22c55e;
+      animation: pulseAnim 1.6s infinite;
+    }
+    @keyframes pulseAnim {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.3); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Cards & typography */
+    .article-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .article-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
+    .article-card img {
+      width: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .article-card:hover img {
+      transform: scale(1.04);
+    }
+    .img-wrapper {
+      overflow: hidden;
+      position: relative;
+    }
+    .card-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      z-index: 2;
+    }
+    .card-body-custom {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+    .card-title-custom {
+      font-size: 1.12rem;
+      font-weight: 700;
+      line-height: 1.35;
+      margin-bottom: 8px;
+      color: #fff;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .card-title-custom:hover {
+      color: #93c5fd;
+    }
+    .card-subtitle-custom {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 16px;
+      flex-grow: 1;
+    }
+    .card-meta-custom {
+      font-size: 0.78rem;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border-color);
+      padding-top: 10px;
+    }
+
+    /* Section titles */
+    .section-header-custom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border-color);
+      position: relative;
+    }
+    .section-header-custom h2 {
+      font-size: 1.45rem;
+      font-weight: 800;
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-header-custom::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 70px;
+      height: 2px;
+      background: var(--accent-red);
+    }
+    .view-more-link {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    .view-more-link:hover {
+      color: #fff;
+    }
+
+    /* Footer */
+    footer {
+      background: #050608;
+      border-top: 1px solid var(--border-color);
+      padding: 50px 0 30px;
+      margin-top: 70px;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+    footer a {
+      color: #94a3b8;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    footer a:hover {
+      color: #fff;
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Top bar -->
+  <div class="top-header">
+    <div class="container d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-3">
+        <span><i class="far fa-calendar-alt me-1 text-danger"></i> Domingo, 18 de Octubre de 2026</span>
+        <span class="d-none d-md-inline">|</span>
+        <span class="d-none d-md-inline"><i class="fas fa-globe-americas me-1 text-primary"></i> Edición Global</span>
+        <span class="d-none d-lg-inline">|</span>
+        <span class="d-none d-lg-inline"><i class="fas fa-cloud-sun me-1 text-warning"></i> Nueva York 17°C · Londres 14°C · Tokio 21°C</span>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <a href="/analytics" class="text-info fw-bold"><i class="fas fa-satellite-dish me-1"></i> Monitor de Tráfico en Vivo</a>
+        <div class="d-none d-sm-flex gap-2 ms-2">
+          <a href="#" class="text-secondary"><i class="fab fa-x-twitter"></i></a>
+          <a href="#" class="text-secondary"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="text-secondary"><i class="fab fa-linkedin-in"></i></a>
+          <a href="#" class="text-secondary"><i class="fab fa-telegram"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Breaking News Ticker -->
+  <div class="ticker-bar">
+    <div class="ticker-badge">
+      <i class="fas fa-bolt me-1"></i> URGENTE
+    </div>
+    <div class="ticker-content">
+      <span><a href="/articulo/colapso-diplomatico-oriente-medio"><strong>GINEBRA:</strong> Cumbre de emergencia de 12 potencias busca alto al fuego en Medio Oriente.</a></span>
+      <span><a href="/articulo/bancos-centrales-tasas-2026"><strong>ECONOMÍA:</strong> La FED y el BCE coordinan reducción de tipos de interés ante enfriamiento inflacionario.</a></span>
+      <span><a href="/articulo/ia-autonoma-regulacion-ue"><strong>TECNOLOGÍA:</strong> Entra en vigor histórico marco regulatorio para inteligencias artificiales de 5ª generación.</a></span>
+      <span><a href="/articulo/mundial-2026-sedes-listas"><strong>DEPORTES:</strong> FIFA valida los 16 estadios del Mundial 2026 tras última ronda de inspección técnica.</a></span>
+      <span><a href="/articulo/vacuna-universal-gripe-fase3"><strong>SALUD:</strong> La OMS califica de 'punto de inflexión' resultados de la primera vacuna universal contra virus respiratorios.</a></span>
+      <span><a href="/articulo/fusion-nuclear-record-neto"><strong>CIENCIA:</strong> Reactor internacional de fusión produce energía neta continua durante 45 minutos.</a></span>
+      <!-- Repeated for smooth infinite scroll -->
+      <span><a href="/articulo/colapso-diplomatico-oriente-medio"><strong>GINEBRA:</strong> Cumbre de emergencia de 12 potencias busca alto al fuego en Medio Oriente.</a></span>
+      <span><a href="/articulo/bancos-centrales-tasas-2026"><strong>ECONOMÍA:</strong> La FED y el BCE coordinan reducción de tipos de interés ante enfriamiento inflacionario.</a></span>
+      <span><a href="/articulo/ia-autonoma-regulacion-ue"><strong>TECNOLOGÍA:</strong> Entra en vigor histórico marco regulatorio para inteligencias artificiales de 5ª generación.</a></span>
+    </div>
+  </div>
+
+  <!-- Brand logo header -->
+  <div class="brand-section">
+    <div class="container text-center">
+      <a href="/" class="brand-logo">PULSO<span>MUNDIAL</span></a>
+      <div class="brand-subtitle">Periodismo Internacional Independiente · Redacción 24/7</div>
+    </div>
+  </div>
+
+  <!-- Navigation bar -->
+  <nav class="main-nav">
+    <div class="container d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center overflow-auto py-1">
+        <a href="/" class="nav-link-custom {% if request.path == '/' %}active{% endif %}">Inicio</a>
+        {% for sec in sections %}
+        <a href="/{{ sec['id'] }}" class="nav-link-custom {% if request.path == '/' + sec['id'] %}active{% endif %}" style="{% if request.path == '/' + sec['id'] %}border-bottom-color: {{ sec['color'] }};{% endif %}">
+          {{ sec['name'] }}
+        </a>
+        {% endfor %}
+      </div>
+      <div class="d-flex align-items-center gap-2 py-2">
+        <a href="/analytics" class="analytics-pill-btn">
+          <span class="pulse-dot"></span>
+          <span>ESTADÍSTICAS EN VIVO</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="py-4">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+          <a href="/" class="brand-logo fs-3 mb-2 d-inline-block">PULSO<span>MUNDIAL</span></a>
+          <p class="text-secondary small mt-2">
+            Medio de comunicación internacional independiente con corresponsalías en más de 45 países. Análisis riguroso, cobertura en directo y tecnología de vanguardia para entender los acontecimientos del siglo XXI.
+          </p>
+          <div class="d-flex gap-3 mt-3">
+            <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-x-twitter"></i></a>
+            <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-youtube"></i></a>
+            <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-telegram"></i></a>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-2">
+          <h6 class="text-light fw-bold text-uppercase mb-3 small">Secciones</h6>
+          <ul class="list-unstyled small d-flex flex-column gap-2">
+            {% for sec in sections %}
+            <li><a href="/{{ sec['id'] }}"><i class="fas fa-chevron-right me-1 text-danger small"></i> {{ sec['name'] }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <h6 class="text-light fw-bold text-uppercase mb-3 small">Servicios & Auditoría</h6>
+          <ul class="list-unstyled small d-flex flex-column gap-2">
+            <li><a href="/analytics" class="text-info fw-bold"><i class="fas fa-chart-line me-1"></i> Panel de Visitas en Vivo</a></li>
+            <li><a href="/api/stats"><i class="fas fa-code me-1"></i> API Pública de Estadísticas</a></li>
+            <li><a href="#"><i class="fas fa-shield-alt me-1"></i> Código Deontológico</a></li>
+            <li><a href="#"><i class="fas fa-envelope-open-text me-1"></i> Boletín Diario Global</a></li>
+            <li><a href="#"><i class="fas fa-rss me-1"></i> Canales RSS</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-3">
+          <h6 class="text-light fw-bold text-uppercase mb-3 small">Auditoría de Audiencia</h6>
+          <p class="small text-secondary">
+            PulsoMundial audita de forma pública y abierta el tráfico recibido en tiempo real mediante telemetría directa de servidor.
+          </p>
+          <a href="/analytics" class="btn btn-outline-info btn-sm w-100 py-2">
+            <i class="fas fa-eye me-1"></i> Ver Métricas en Directo
+          </a>
+        </div>
+      </div>
+
+      <div class="border-top border-secondary pt-3 mt-4 d-flex flex-column flex-md-row justify-content-between align-items-center text-secondary small">
+        <div>© 2026 PulsoMundial Inc. Todos los derechos reservados.</div>
+        <div class="d-flex gap-3 mt-2 mt-md-0">
+          <a href="#">Términos de Servicio</a>
+          <a href="#">Política de Privacidad</a>
+          <a href="#">Cookies</a>
+          <a href="/analytics">Métricas del Portal</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>
