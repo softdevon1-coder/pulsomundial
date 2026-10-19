@@ -47,42 +47,54 @@ DEVICE_PROFILES = [
         "viewport": {"width": 1920, "height": 1080},
         "locale": "es-AR",
         "timezone": "America/Argentina/Buenos_Aires",
-        "platform": "Win32"
+        "platform": "Win32",
+        "gpu_vendor": "Google Inc. (NVIDIA)",
+        "gpu_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0, D3D11)"
     },
     {
         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
         "viewport": {"width": 1536, "height": 864},
         "locale": "es-ES",
         "timezone": "Europe/Madrid",
-        "platform": "Win32"
+        "platform": "Win32",
+        "gpu_vendor": "Google Inc. (Intel)",
+        "gpu_renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics Direct3D11 vs_5_0 ps_5_0, D3D11)"
     },
     {
         "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
         "viewport": {"width": 1440, "height": 900},
         "locale": "es-MX",
         "timezone": "America/Mexico_City",
-        "platform": "MacIntel"
+        "platform": "MacIntel",
+        "gpu_vendor": "Apple",
+        "gpu_renderer": "Apple M2"
     },
     {
         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:130.0) Gecko/20100101 Firefox/130.0",
         "viewport": {"width": 1366, "height": 768},
         "locale": "es-AR",
         "timezone": "America/Argentina/Buenos_Aires",
-        "platform": "Win32"
+        "platform": "Win32",
+        "gpu_vendor": "Google Inc. (NVIDIA)",
+        "gpu_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 Direct3D11 vs_5_0 ps_5_0, D3D11)"
     },
     {
         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 Edg/129.0.0.0",
         "viewport": {"width": 1920, "height": 1080},
         "locale": "en-US",
         "timezone": "America/New_York",
-        "platform": "Win32"
+        "platform": "Win32",
+        "gpu_vendor": "Google Inc. (NVIDIA)",
+        "gpu_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 Direct3D11 vs_5_0 ps_5_0, D3D11)"
     },
     {
         "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15",
         "viewport": {"width": 1470, "height": 956},
         "locale": "es-ES",
         "timezone": "Europe/Madrid",
-        "platform": "MacIntel"
+        "platform": "MacIntel",
+        "gpu_vendor": "Apple",
+        "gpu_renderer": "Apple M3 Pro"
     },
 ]
 
@@ -227,7 +239,6 @@ async def run_playwright_visit(browser, client_ip: str, profile: dict) -> bool:
     headers = {
         "X-Forwarded-For": client_ip,
         "X-Real-IP": client_ip,
-        "CF-Connecting-IP": client_ip,
         "Accept-Language": profile.get("locale", "es-AR") + ",es;q=0.9,en;q=0.8",
         "DNT": "1",
     }
@@ -241,6 +252,101 @@ async def run_playwright_visit(browser, client_ip: str, profile: dict) -> bool:
         timezone_id=profile["timezone"],
         extra_http_headers=headers,
     )
+
+    # Inyectar script de stealth WebGL y evasión de detección de automatización
+    stealth_js = f"""
+    (function() {{
+        // 1. Ocultar huellas de automatización
+        try {{
+            Object.defineProperty(navigator, 'webdriver', {{
+                get: () => undefined,
+                configurable: true
+            }});
+        }} catch(e) {{}}
+
+        // 2. Simular entorno Chrome completo
+        if (!window.chrome) {{
+            window.chrome = {{
+                app: {{ isInstalled: false }},
+                runtime: {{ OnInstalledReason: {{}}, OnRestartRequiredReason: {{}} }},
+                loadTimes: function() {{}},
+                csi: function() {{}}
+            }};
+        }}
+
+        // 3. Camuflaje de GPU WebGL / WebGL2
+        const targetVendor = "{profile['gpu_vendor']}";
+        const targetRenderer = "{profile['gpu_renderer']}";
+
+        function hookWebGL(proto) {{
+            if (!proto || !proto.getParameter) return;
+            const origGetParam = proto.getParameter;
+            const origGetExt = proto.getExtension;
+            const origGetExts = proto.getSupportedExtensions;
+
+            proto.getParameter = function(param) {{
+                // UNMASKED_VENDOR_WEBGL (37445)
+                if (param === 37445) return targetVendor;
+                // UNMASKED_RENDERER_WEBGL (37446)
+                if (param === 37446) return targetRenderer;
+                // VENDOR (7936)
+                if (param === 7936) return 'WebKit';
+                // RENDERER (7937)
+                if (param === 7937) return 'WebKit WebGL';
+                return origGetParam.apply(this, arguments);
+            }};
+
+            try {{
+                Object.defineProperty(proto.getParameter, 'toString', {{
+                    value: () => 'function getParameter() {{ [native code] }}',
+                    configurable: true
+                }});
+            }} catch(e) {{}}
+
+            proto.getExtension = function(name) {{
+                const ext = origGetExt.apply(this, arguments);
+                if (name === 'WEBGL_debug_renderer_info') {{
+                    return ext || {{ UNMASKED_VENDOR_WEBGL: 37445, UNMASKED_RENDERER_WEBGL: 37446 }};
+                }}
+                return ext;
+            }};
+
+            try {{
+                Object.defineProperty(proto.getExtension, 'toString', {{
+                    value: () => 'function getExtension() {{ [native code] }}',
+                    configurable: true
+                }});
+            }} catch(e) {{}}
+
+            if (origGetExts) {{
+                proto.getSupportedExtensions = function() {{
+                    const list = origGetExts.apply(this, arguments) || [];
+                    const hardwareExts = [
+                        'WEBGL_compressed_texture_s3tc',
+                        'WEBGL_compressed_texture_s3tc_srgb',
+                        'EXT_texture_filter_anisotropic',
+                        'WEBGL_debug_renderer_info'
+                    ];
+                    hardwareExts.forEach(h => {{
+                        if (!list.includes(h)) list.push(h);
+                    }});
+                    return list;
+                }};
+
+                try {{
+                    Object.defineProperty(proto.getSupportedExtensions, 'toString', {{
+                        value: () => 'function getSupportedExtensions() {{ [native code] }}',
+                        configurable: true
+                    }});
+                }} catch(e) {{}}
+            }}
+        }}
+
+        if (window.WebGLRenderingContext) hookWebGL(window.WebGLRenderingContext.prototype);
+        if (window.WebGL2RenderingContext) hookWebGL(window.WebGL2RenderingContext.prototype);
+    }})();
+    """
+    await context.add_init_script(stealth_js)
 
     page = await context.new_page()
     mouse_pos = (random.randint(100, 400), random.randint(100, 300))
@@ -361,7 +467,7 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
     import aiohttp
     import json
 
-    connector = aiohttp.TCPConnector(limit=1, ssl=False)
+    connector = aiohttp.TCPConnector(limit=50, ssl=False)
     async with aiohttp.ClientSession(connector=connector, timeout=aiohttp.ClientTimeout(total=45)) as session:
         while time.monotonic() < deadline:
             client_ip = generate_random_ip()
@@ -375,7 +481,6 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
                 "Accept-Language": profile.get("locale", "es-AR") + ",es;q=0.9,en;q=0.8",
                 "X-Forwarded-For": client_ip,
                 "X-Real-IP": client_ip,
-                "CF-Connecting-IP": client_ip,
                 "DNT": "1",
             }
 
@@ -383,8 +488,11 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
             try:
                 # 1. Petición GET a la página
                 async with session.get(url, headers=headers) as resp:
+                    await resp.read()
                     if resp.status < 400:
                         success = True
+                    else:
+                        success = False
 
                 # 2. Generación y envío de telemetría biométrica compatible con nuestro detector
                 if success:
@@ -411,8 +519,8 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
                         "path": entry_section,
                         "time_on_page": random.randint(18000, 45000),
                         "canvas_hash": f"cv_{random.randint(100000, 999999):x}",
-                        "webgl_renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics Direct3D11 vs_5_0 ps_5_0, D3D11)",
-                        "webgl_vendor": "Google Inc. (Intel)",
+                        "webgl_renderer": profile.get("gpu_renderer", "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0, D3D11)"),
+                        "webgl_vendor": profile.get("gpu_vendor", "Google Inc. (NVIDIA)"),
                         "screen": {
                             "width": profile["viewport"]["width"],
                             "height": profile["viewport"]["height"],
@@ -436,10 +544,11 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
                         TARGET_URL + "/api/beacon",
                         headers=beacon_headers,
                         data=json.dumps(beacon_data)
-                    ):
-                        pass
+                    ) as b_resp:
+                        await b_resp.read()
 
-            except Exception:
+            except Exception as e:
+                log.error(f"Error in visit: {type(e).__name__}: {e}")
                 success = False
 
             async with lock:
