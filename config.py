@@ -3,7 +3,7 @@
 # ============================================================
 
 # ── Tu sitio ──────────────────────────────────────────────
-TARGET_URL = "https://tu-app.onrender.com"   # ← Render.com te da esta URL al deployar
+TARGET_URL = "https://pulsomundial.onrender.com"
 
 # Nota: las secciones (/mundo, /economia, /tecnologia, etc.) y los artículos
 # son manejados automáticamente por visitor.py — no hace falta configurarlos aquí.
