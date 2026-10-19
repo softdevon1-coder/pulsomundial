@@ -84,9 +84,35 @@ ACCEPT_LANGUAGES = [
 ]
 
 
-def build_headers(user_agent: str, referrer: Optional[str] = None,
+def generate_random_ip() -> str:
+    """Genera una dirección IPv4 pública y realista de distintos proveedores globales."""
+    pool = random.choice([
+        # Argentina / América Latina (Telecom, Fibertel, Movistar, Claro)
+        (181, random.randint(16, 220)),
+        (186, random.randint(10, 240)),
+        (190, random.randint(1, 245)),
+        (200, random.randint(5, 125)),
+        (201, random.randint(15, 250)),
+        # España / Europa (Telefónica, Vodafone, Orange)
+        (80, random.randint(1, 250)),
+        (81, random.randint(1, 250)),
+        (88, random.randint(1, 250)),
+        # Estados Unidos (Comcast, AT&T, Verizon, Spectrum)
+        (24, random.randint(1, 250)),
+        (67, random.randint(1, 250)),
+        (73, random.randint(1, 250)),
+        (98, random.randint(1, 250)),
+        # México / Brasil (Telmex, Totalplay, Vivo, Claro)
+        (187, random.randint(10, 240)),
+        (189, random.randint(10, 240)),
+        (177, random.randint(10, 240)),
+    ])
+    return f"{pool[0]}.{pool[1]}.{random.randint(1, 254)}.{random.randint(1, 254)}"
+
+
+def build_headers(user_agent: str, client_ip: str, referrer: Optional[str] = None,
                   is_asset: bool = False, is_subpage: bool = False) -> dict:
-    """Headers HTTP realistas."""
+    """Headers HTTP realistas con IP única por visitante."""
     if is_asset:
         return {
             "User-Agent": user_agent,
@@ -94,6 +120,9 @@ def build_headers(user_agent: str, referrer: Optional[str] = None,
             "Accept-Encoding": "gzip, deflate, br",
             "Connection": "keep-alive",
             "Referer": TARGET_URL,
+            "X-Forwarded-For": client_ip,
+            "X-Real-IP": client_ip,
+            "CF-Connecting-IP": client_ip,
         }
     headers = {
         "User-Agent": user_agent,
@@ -108,6 +137,9 @@ def build_headers(user_agent: str, referrer: Optional[str] = None,
         "Sec-Fetch-User": "?1",
         "Cache-Control": "max-age=0",
         "DNT": random.choice(["1", "0"]),
+        "X-Forwarded-For": client_ip,
+        "X-Real-IP": client_ip,
+        "CF-Connecting-IP": client_ip,
     }
     if referrer:
         headers["Referer"] = referrer
@@ -168,12 +200,12 @@ def extract_article_links(base_url: str, html: str) -> list[str]:
     return list(links)
 
 
-async def fetch_assets(session: aiohttp.ClientSession, urls: list[str], user_agent: str) -> None:
-    """Descarga assets en paralelo."""
+async def fetch_assets(session: aiohttp.ClientSession, urls: list[str], user_agent: str, client_ip: str) -> None:
+    """Descarga assets en paralelo con la IP del visitante."""
     if not urls or not config.DOWNLOAD_ASSETS:
         return
 
-    headers = build_headers(user_agent, is_asset=True)
+    headers = build_headers(user_agent, client_ip, is_asset=True)
 
     async def fetch_one(url: str) -> None:
         try:
@@ -208,11 +240,12 @@ async def fetch_page(
     session: aiohttp.ClientSession,
     url: str,
     user_agent: str,
+    client_ip: str,
     referrer: Optional[str],
     is_subpage: bool = False,
 ) -> Optional[str]:
     """Descarga una página y sus assets. Devuelve el HTML o None si falla."""
-    headers = build_headers(user_agent, referrer=referrer, is_subpage=is_subpage)
+    headers = build_headers(user_agent, client_ip, referrer=referrer, is_subpage=is_subpage)
     try:
         async with session.get(url, headers=headers,
                                timeout=aiohttp.ClientTimeout(total=30)) as resp:
@@ -225,7 +258,7 @@ async def fetch_page(
 
         # Descarga assets en paralelo
         assets = extract_assets(url, html)
-        await fetch_assets(session, assets, user_agent)
+        await fetch_assets(session, assets, user_agent, client_ip)
 
         return html
     except Exception:
@@ -235,13 +268,15 @@ async def fetch_page(
 async def do_visit(session: aiohttp.ClientSession) -> bool:
     """
     Simula una visita completa con navegación realista:
+    Cada visitante tiene una IP pública única generada en cada sesión.
     1. Elige una sección aleatoria de entrada
-    2. Carga la sección + assets
+    2. Carga la sección + assets con su IP única
     3. Lee la sección (pausa)
-    4. Hace clic en 1-3 artículos y los lee
+    4. Hace clic en 1-3 artículos y los lee con la misma IP
     5. A veces navega a otra sección antes de salir
     """
     user_agent = random.choice(USER_AGENTS)
+    client_ip = generate_random_ip()
     referrer = random.choice(REFERRERS) or None
 
     # ── Paso 1: Elegir página de entrada ──────────────────────────────────
@@ -249,7 +284,7 @@ async def do_visit(session: aiohttp.ClientSession) -> bool:
     entry_url = TARGET_URL.rstrip("/") + entry_section
 
     t0 = time.monotonic()
-    html = await fetch_page(session, entry_url, user_agent, referrer)
+    html = await fetch_page(session, entry_url, user_agent, client_ip, referrer)
     if html is None:
         return False
 
@@ -283,6 +318,7 @@ async def do_visit(session: aiohttp.ClientSession) -> bool:
                 session,
                 article_url,
                 user_agent,
+                client_ip,
                 referrer=entry_url,       # Referer = la sección de donde viene
                 is_subpage=True,
             )
@@ -304,7 +340,7 @@ async def do_visit(session: aiohttp.ClientSession) -> bool:
                         await asyncio.sleep(random.uniform(2, 5))
                         t_related = time.monotonic()
                         related_html = await fetch_page(
-                            session, next_article, user_agent,
+                            session, next_article, user_agent, client_ip,
                             referrer=article_url, is_subpage=True
                         )
                         if related_html:
@@ -323,7 +359,7 @@ async def do_visit(session: aiohttp.ClientSession) -> bool:
         await asyncio.sleep(random.uniform(1.5, 4))
         t_sec = time.monotonic()
         sec_html = await fetch_page(
-            session, next_url, user_agent,
+            session, next_url, user_agent, client_ip,
             referrer=entry_url, is_subpage=True
         )
         if sec_html:

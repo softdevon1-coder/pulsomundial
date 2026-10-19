@@ -54,7 +54,10 @@ init_db()
 def track_visit():
     if request.path.startswith('/static') or request.path == '/favicon.ico':
         return
-    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    ip = request.headers.get('CF-Connecting-IP') or \
+         request.headers.get('X-Real-IP') or \
+         request.headers.get('X-Forwarded-For') or \
+         request.remote_addr
     if ip and ',' in ip:
         ip = ip.split(',')[0].strip()
     ua = request.headers.get('User-Agent', '')
