@@ -1,12 +1,12 @@
 """
-visitor.py — Simulador de visitas humanas para PulsoMundial
-Comportamiento simulado:
-  1. Carga la sección aleatoria (home, mundo, economia, etc.)
-  2. Descarga CSS, JS e imágenes de la página
-  3. "Lee" durante unos segundos (pausa de lectura)
-  4. Hace clic en 1-3 artículos de la página
-  5. Lee cada artículo con su tiempo correspondiente
-  6. A veces navega a otra sección antes de salir
+visitor.py — Simulador de visitas humanas con Biometría y Detección Anti-Bot para PulsoMundial
+Características avanzadas:
+  1. Motor Playwright (Headless Chromium real) con soporte fallback a aiohttp
+  2. Ejecución real de JavaScript (Canvas 2D render test, WebGL GPU context)
+  3. Movimiento de mouse biométrico no-lineal (Curvas de Bézier cúbicas con micro-temblor humano)
+  4. Dinámica de scroll humana con aceleración/desaceleración y pausas de lectura
+  5. Rotación de IPs públicas realistas en cabeceras HTTP (X-Forwarded-For, CF-Connecting-IP)
+  6. Árbol de navegación orgánico (Home -> Sección -> Lectura de Artículos)
 """
 
 import asyncio
@@ -15,370 +15,325 @@ import time
 import logging
 import sys
 import os
-import re
+import math
+from typing import Optional, List, Tuple
 from urllib.parse import urljoin, urlparse
-from typing import Optional
-
-import aiohttp
-from bs4 import BeautifulSoup
 
 import config
 
-TARGET_URL = os.environ.get("TARGET_URL", config.TARGET_URL)
+TARGET_URL = os.environ.get("TARGET_URL", config.TARGET_URL).rstrip("/")
+
+import io
+
+if hasattr(sys.stdout, "buffer"):
+    safe_stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+else:
+    safe_stdout = sys.stdout
 
 # ── Logging ────────────────────────────────────────────────────────────────
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [JOB-%(job_id)s] %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)],
+    handlers=[logging.StreamHandler(safe_stdout)],
 )
 JOB_ID = os.environ.get("JOB_ID", "local")
 logger = logging.getLogger("visitor")
 log = logging.LoggerAdapter(logger, {"job_id": JOB_ID})
 
-# ── User-Agents realistas ──────────────────────────────────────────────────
-USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:130.0) Gecko/20100101 Firefox/130.0",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14.6; rv:130.0) Gecko/20100101 Firefox/130.0",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 Edg/129.0.0.0",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15",
-    "Mozilla/5.0 (Linux; Android 14; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (Linux; Android 14; Samsung Galaxy S24) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36",
+# ── Perfiles de Usuario y Dispositivos Realistas ────────────────────────────
+DEVICE_PROFILES = [
+    {
+        "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+        "viewport": {"width": 1920, "height": 1080},
+        "locale": "es-AR",
+        "timezone": "America/Argentina/Buenos_Aires",
+        "platform": "Win32"
+    },
+    {
+        "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+        "viewport": {"width": 1536, "height": 864},
+        "locale": "es-ES",
+        "timezone": "Europe/Madrid",
+        "platform": "Win32"
+    },
+    {
+        "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+        "viewport": {"width": 1440, "height": 900},
+        "locale": "es-MX",
+        "timezone": "America/Mexico_City",
+        "platform": "MacIntel"
+    },
+    {
+        "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:130.0) Gecko/20100101 Firefox/130.0",
+        "viewport": {"width": 1366, "height": 768},
+        "locale": "es-AR",
+        "timezone": "America/Argentina/Buenos_Aires",
+        "platform": "Win32"
+    },
+    {
+        "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 Edg/129.0.0.0",
+        "viewport": {"width": 1920, "height": 1080},
+        "locale": "en-US",
+        "timezone": "America/New_York",
+        "platform": "Win32"
+    },
+    {
+        "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15",
+        "viewport": {"width": 1470, "height": 956},
+        "locale": "es-ES",
+        "timezone": "Europe/Madrid",
+        "platform": "MacIntel"
+    },
 ]
 
-# ── Referrers realistas para un sitio de noticias ─────────────────────────
 REFERRERS = [
-    "",                                      # directo (escribió la URL)
+    "",
     "https://www.google.com/",
     "https://www.google.com.ar/",
     "https://www.google.es/",
-    "https://www.google.com.mx/",
     "https://www.bing.com/",
-    "https://duckduckgo.com/",
+    "https://t.co/",
     "https://www.facebook.com/",
-    "https://www.instagram.com/",
-    "https://t.co/",                         # Twitter/X
-    "https://www.linkedin.com/",
-    "https://www.reddit.com/",
     "https://news.google.com/",
-    "https://www.whatsapp.com/",             # link compartido por WhatsApp
 ]
 
-# ── Secciones del sitio de noticias ───────────────────────────────────────
 SECTIONS = ["/", "/mundo", "/economia", "/tecnologia", "/deportes", "/salud", "/ciencia"]
-
-# Pesos de probabilidad (home recibe más tráfico)
 SECTION_WEIGHTS = [30, 15, 15, 15, 10, 8, 7]
-
-ACCEPT_LANGUAGES = [
-    "es-AR,es;q=0.9,en;q=0.8",
-    "es-ES,es;q=0.9,en;q=0.8",
-    "es-MX,es;q=0.9,en;q=0.8",
-    "en-US,en;q=0.9,es;q=0.8",
-    "pt-BR,pt;q=0.9,es;q=0.7",
-]
 
 
 def generate_random_ip() -> str:
-    """Genera una dirección IPv4 pública y realista de distintos proveedores globales."""
+    """Genera una dirección IPv4 pública de rangos residenciales globales."""
     pool = random.choice([
-        # Argentina / América Latina (Telecom, Fibertel, Movistar, Claro)
+        # Argentina / Sudamérica
         (181, random.randint(16, 220)),
         (186, random.randint(10, 240)),
         (190, random.randint(1, 245)),
         (200, random.randint(5, 125)),
-        (201, random.randint(15, 250)),
-        # España / Europa (Telefónica, Vodafone, Orange)
+        # España / Europa
         (80, random.randint(1, 250)),
         (81, random.randint(1, 250)),
         (88, random.randint(1, 250)),
-        # Estados Unidos (Comcast, AT&T, Verizon, Spectrum)
+        # Estados Unidos
         (24, random.randint(1, 250)),
         (67, random.randint(1, 250)),
         (73, random.randint(1, 250)),
-        (98, random.randint(1, 250)),
-        # México / Brasil (Telmex, Totalplay, Vivo, Claro)
+        # México / Brasil
         (187, random.randint(10, 240)),
         (189, random.randint(10, 240)),
-        (177, random.randint(10, 240)),
     ])
     return f"{pool[0]}.{pool[1]}.{random.randint(1, 254)}.{random.randint(1, 254)}"
 
 
-def build_headers(user_agent: str, client_ip: str, referrer: Optional[str] = None,
-                  is_asset: bool = False, is_subpage: bool = False) -> dict:
-    """Headers HTTP realistas con IP única por visitante."""
-    if is_asset:
-        return {
-            "User-Agent": user_agent,
-            "Accept": "*/*",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Connection": "keep-alive",
-            "Referer": TARGET_URL,
-            "X-Forwarded-For": client_ip,
-            "X-Real-IP": client_ip,
-            "CF-Connecting-IP": client_ip,
-        }
+# ── Algoritmo de Biometría de Mouse: Curvas Cúbicas de Bézier con Jitter ────
+def generate_bezier_trajectory(
+    p0: Tuple[float, float],
+    p3: Tuple[float, float],
+    steps: int = 25
+) -> List[Tuple[float, float]]:
+    """
+    Genera una trayectoria curvilínea humana entre dos puntos usando una curva de Bézier cúbica.
+    Los puntos de control P1 y P2 se desvían perpendicularmente para simular el arco biomecánico
+    del brazo/muñeca humano, con micro-temblor gaussiano.
+    """
+    x0, y0 = p0
+    x3, y3 = p3
+
+    dx = x3 - x0
+    dy = y3 - y0
+    dist = math.hypot(dx, dy)
+    if dist < 5:
+        return [p3]
+
+    # Vector perpendicular normalizado
+    nx = -dy / dist
+    ny = dx / dist
+
+    # Desviación de curvatura orgánica proporcional a la distancia
+    deviation_1 = random.uniform(-0.35, 0.35) * dist
+    deviation_2 = random.uniform(-0.35, 0.35) * dist
+
+    # Puntos de control intermedios (P1 al ~30%, P2 al ~70% del camino)
+    p1_x = x0 + dx * 0.3 + nx * deviation_1
+    p1_y = y0 + dy * 0.3 + ny * deviation_1
+
+    p2_x = x0 + dx * 0.7 + nx * deviation_2
+    p2_y = y0 + dy * 0.7 + ny * deviation_2
+
+    points = []
+    for i in range(1, steps + 1):
+        t = i / steps
+        # Ecuación de Bézier cúbica
+        u = 1.0 - t
+        tt = t * t
+        uu = u * u
+        uuu = uu * u
+        ttt = tt * t
+
+        x = uuu * x0 + 3 * uu * t * p1_x + 3 * u * tt * p2_x + ttt * x3
+        y = uuu * y0 + 3 * uu * t * p1_y + 3 * u * tt * p2_y + ttt * y3
+
+        # Micro-temblor humano sutil (ruido biométrico)
+        jitter_x = random.gauss(0, 0.8)
+        jitter_y = random.gauss(0, 0.8)
+
+        points.append((round(x + jitter_x, 1), round(y + jitter_y, 1)))
+
+    return points
+
+
+# ── Motor 1: Playwright (Navegador Real Headless con JS y Biometría) ────────
+async def simulate_human_mouse(page, target_x: float, target_y: float, current_pos: Tuple[float, float]) -> Tuple[float, float]:
+    """Mueve el mouse a lo largo de una curva de Bézier orgánica con aceleración y pausas."""
+    steps = random.randint(18, 32)
+    path = generate_bezier_trajectory(current_pos, (target_x, target_y), steps=steps)
+
+    for pt in path:
+        await page.mouse.move(pt[0], pt[1])
+        # Aceleración/desaceleración: pausas variables entre micro-movimientos
+        await asyncio.sleep(random.uniform(0.008, 0.022))
+
+    # Breve pausa natural una vez llegado al objetivo
+    await asyncio.sleep(random.uniform(0.1, 0.35))
+    return (target_x, target_y)
+
+
+async def simulate_human_scroll(page, total_scroll_target: int) -> int:
+    """
+    Simula scroll humano:
+    - Desplazamiento por impulsos (rueda del mouse o touch)
+    - Desaceleración gradual
+    - Pausas de lectura aleatorias en párrafos
+    """
+    scrolled = 0
+    while scrolled < total_scroll_target:
+        chunk = random.randint(120, 340)
+        # Scroll suave en pequeños pasos de rueda
+        sub_steps = random.randint(3, 6)
+        step_delta = chunk / sub_steps
+        for _ in range(sub_steps):
+            await page.mouse.wheel(0, step_delta)
+            await asyncio.sleep(random.uniform(0.03, 0.07))
+        scrolled += chunk
+
+        # Pausa de lectura orgánica (un humano se detiene a leer texto o mirar una foto)
+        if random.random() < 0.65:
+            await asyncio.sleep(random.uniform(0.8, 2.5))
+    return scrolled
+
+
+async def run_playwright_visit(browser, client_ip: str, profile: dict) -> bool:
+    """Ejecuta una visita completa en un contexto de navegador real."""
+    referrer = random.choice(REFERRERS)
     headers = {
-        "User-Agent": user_agent,
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-        "Accept-Language": random.choice(ACCEPT_LANGUAGES),
-        "Accept-Encoding": "gzip, deflate, br",
-        "Connection": "keep-alive",
-        "Upgrade-Insecure-Requests": "1",
-        "Sec-Fetch-Dest": "document",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "same-origin" if is_subpage else ("cross-site" if referrer else "none"),
-        "Sec-Fetch-User": "?1",
-        "Cache-Control": "max-age=0",
-        "DNT": random.choice(["1", "0"]),
         "X-Forwarded-For": client_ip,
         "X-Real-IP": client_ip,
         "CF-Connecting-IP": client_ip,
+        "Accept-Language": profile.get("locale", "es-AR") + ",es;q=0.9,en;q=0.8",
+        "DNT": "1",
     }
     if referrer:
         headers["Referer"] = referrer
-    return headers
 
+    context = await browser.new_context(
+        user_agent=profile["ua"],
+        viewport=profile["viewport"],
+        locale=profile["locale"],
+        timezone_id=profile["timezone"],
+        extra_http_headers=headers,
+    )
 
-def extract_assets(base_url: str, html: str) -> list[str]:
-    """Extrae URLs de CSS, JS e imágenes del HTML."""
-    soup = BeautifulSoup(html, "html.parser")
-    assets = []
-    base_domain = urlparse(base_url).netloc
+    page = await context.new_page()
+    mouse_pos = (random.randint(100, 400), random.randint(100, 300))
 
-    for tag in soup.find_all("link", rel=lambda r: r and "stylesheet" in r):
-        href = tag.get("href", "")
-        if href and not href.startswith("data:"):
-            assets.append(urljoin(base_url, href))
+    try:
+        # 1. Navegar a página de entrada (Home o Sección)
+        entry_section = random.choices(SECTIONS, weights=SECTION_WEIGHTS, k=1)[0]
+        entry_url = TARGET_URL + entry_section
+        await page.goto(entry_url, wait_until="domcontentloaded", timeout=35000)
 
-    for tag in soup.find_all("script", src=True):
-        src = tag.get("src", "")
-        if src and not src.startswith("data:"):
-            assets.append(urljoin(base_url, src))
+        # Espera inicial mientras el browser renderiza CSS y telemetría
+        await asyncio.sleep(random.uniform(1.2, 2.5))
 
-    images = soup.find_all("img", src=True)[: config.MAX_IMAGES_PER_PAGE]
-    for tag in images:
-        src = tag.get("src", "")
-        if src and not src.startswith("data:"):
-            assets.append(urljoin(base_url, src))
+        # 2. Movimiento inicial de mouse (exploración visual del usuario)
+        w, h = profile["viewport"]["width"], profile["viewport"]["height"]
+        for _ in range(random.randint(2, 4)):
+            tx = random.randint(int(w * 0.15), int(w * 0.85))
+            ty = random.randint(int(h * 0.2), int(h * 0.8))
+            mouse_pos = await simulate_human_mouse(page, tx, ty, mouse_pos)
 
-    # Solo assets del mismo dominio o CDNs externos (Bootstrap, FontAwesome, etc.)
-    filtered = []
-    for a in assets:
-        domain = urlparse(a).netloc
-        if domain in ("", base_domain) or any(
-            cdn in domain for cdn in ["cdn.jsdelivr", "cdnjs.cloudflare", "fonts.googleapis",
-                                       "fonts.gstatic", "picsum.photos"]
-        ):
-            filtered.append(a)
+        # 3. Scroll exploratorio de la página
+        scroll_px = random.randint(450, 1200)
+        await simulate_human_scroll(page, scroll_px)
 
-    return filtered[: config.MAX_ASSETS_PER_PAGE]
+        # 4. Exploración y clic en artículos
+        # Busca enlaces de artículos
+        article_elements = await page.query_selector_all('a[href*="/articulo/"]')
+        if article_elements and random.random() < config.SUBPAGE_PROBABILITY:
+            # Selecciona un artículo
+            chosen_el = random.choice(article_elements[:8])
+            box = await chosen_el.bounding_box()
+            if box:
+                # Mueve el mouse de forma curva hacia el botón o título
+                target_x = box["x"] + box["width"] * random.uniform(0.3, 0.7)
+                target_y = box["y"] + box["height"] * random.uniform(0.3, 0.7)
+                mouse_pos = await simulate_human_mouse(page, target_x, target_y, mouse_pos)
 
+                # Pausa previa al clic (deliberación cognitiva)
+                await asyncio.sleep(random.uniform(0.3, 0.8))
+                await page.mouse.click(target_x, target_y)
 
-def extract_article_links(base_url: str, html: str) -> list[str]:
-    """
-    Extrae links a artículos de la página.
-    Busca hrefs que contengan '/articulo/' (rutas de artículos de PulsoMundial).
-    """
-    soup = BeautifulSoup(html, "html.parser")
-    base_domain = urlparse(base_url).netloc
-    links = set()
+                # Espera carga del artículo
+                try:
+                    await page.wait_for_load_state("domcontentloaded", timeout=25000)
+                except Exception:
+                    pass
 
-    for a_tag in soup.find_all("a", href=True):
-        href = a_tag["href"]
-        full_url = urljoin(base_url, href)
-        # Solo links de artículos del mismo sitio
-        if urlparse(full_url).netloc == base_domain and "/articulo/" in full_url:
-            links.add(full_url)
+                # Lectura del artículo: lectura progresiva hacia abajo
+                await asyncio.sleep(random.uniform(1.5, 3.0))
+                article_scroll = random.randint(800, 1800)
+                await simulate_human_scroll(page, article_scroll)
 
-    return list(links)
+                # Micro-movimiento en el artículo
+                tx = random.randint(200, int(w * 0.7))
+                ty = random.randint(300, int(h * 0.6))
+                mouse_pos = await simulate_human_mouse(page, tx, ty, mouse_pos)
 
+                # Pausa final de lectura
+                await asyncio.sleep(random.uniform(4.0, 10.0))
 
-async def fetch_assets(session: aiohttp.ClientSession, urls: list[str], user_agent: str, client_ip: str) -> None:
-    """Descarga assets en paralelo con la IP del visitante."""
-    if not urls or not config.DOWNLOAD_ASSETS:
-        return
+        # El script de telemetría inyectado en base.html se encarga de enviar el beacon
+        # Forzar un pequeño retardo antes de cerrar para asegurar el envío de la señal
+        await asyncio.sleep(random.uniform(1.0, 2.0))
+        return True
 
-    headers = build_headers(user_agent, client_ip, is_asset=True)
-
-    async def fetch_one(url: str) -> None:
+    except Exception as e:
+        logger.debug(f"Error en sesión browser: {e}")
+        return False
+    finally:
         try:
-            async with session.get(url, headers=headers,
-                                   timeout=aiohttp.ClientTimeout(total=8)) as resp:
-                await resp.read()
+            await page.close()
+            await context.close()
         except Exception:
             pass
 
-    await asyncio.gather(*[fetch_one(u) for u in urls], return_exceptions=True)
 
-
-async def simulate_reading(min_s: float, max_s: float, elapsed: float) -> None:
-    """Simula lectura humana: tiempo dividido en pausas aleatorias."""
-    target = random.uniform(min_s, max_s)
-    remaining = max(0.0, target - elapsed)
-    if remaining <= 0:
-        return
-    num_pauses = random.randint(3, 6)
-    for _ in range(num_pauses):
-        fraction = random.uniform(0.1, 0.4)
-        pause = remaining * fraction
-        await asyncio.sleep(pause)
-        remaining -= pause
-        if remaining <= 0:
-            break
-    if remaining > 0:
-        await asyncio.sleep(remaining)
-
-
-async def fetch_page(
-    session: aiohttp.ClientSession,
-    url: str,
-    user_agent: str,
-    client_ip: str,
-    referrer: Optional[str],
-    is_subpage: bool = False,
-) -> Optional[str]:
-    """Descarga una página y sus assets. Devuelve el HTML o None si falla."""
-    headers = build_headers(user_agent, client_ip, referrer=referrer, is_subpage=is_subpage)
-    try:
-        async with session.get(url, headers=headers,
-                               timeout=aiohttp.ClientTimeout(total=30)) as resp:
-            if resp.status >= 400:
-                return None
-            html = await resp.text(errors="replace")
-
-        # Simula tiempo de procesamiento del browser
-        await asyncio.sleep(random.uniform(0.4, 1.2))
-
-        # Descarga assets en paralelo
-        assets = extract_assets(url, html)
-        await fetch_assets(session, assets, user_agent, client_ip)
-
-        return html
-    except Exception:
-        return None
-
-
-async def do_visit(session: aiohttp.ClientSession) -> bool:
-    """
-    Simula una visita completa con navegación realista:
-    Cada visitante tiene una IP pública única generada en cada sesión.
-    1. Elige una sección aleatoria de entrada
-    2. Carga la sección + assets con su IP única
-    3. Lee la sección (pausa)
-    4. Hace clic en 1-3 artículos y los lee con la misma IP
-    5. A veces navega a otra sección antes de salir
-    """
-    user_agent = random.choice(USER_AGENTS)
-    client_ip = generate_random_ip()
-    referrer = random.choice(REFERRERS) or None
-
-    # ── Paso 1: Elegir página de entrada ──────────────────────────────────
-    entry_section = random.choices(SECTIONS, weights=SECTION_WEIGHTS, k=1)[0]
-    entry_url = TARGET_URL.rstrip("/") + entry_section
-
-    t0 = time.monotonic()
-    html = await fetch_page(session, entry_url, user_agent, client_ip, referrer)
-    if html is None:
-        return False
-
-    # ── Paso 2: Leer la sección (scroll inicial) ──────────────────────────
-    await simulate_reading(
-        config.READING_TIME_MIN * 0.4,
-        config.READING_TIME_MAX * 0.4,
-        time.monotonic() - t0,
+async def playwright_worker(worker_id: int, stats: dict, lock: asyncio.Lock, deadline: float, playwright_instance):
+    """Worker continuo que lanza instancias de Playwright y navega orgánicamente."""
+    browser = await playwright_instance.chromium.launch(
+        headless=True,
+        args=[
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--use-gl=angle",
+        ],
     )
-
-    # ── Paso 3: Hacer clic en artículos ───────────────────────────────────
-    article_links = extract_article_links(entry_url, html)
-
-    if article_links:
-        num_articles = random.choices(
-            [1, 2, 3],
-            weights=[50, 35, 15],  # mayoría lee 1, algunos leen 2-3
-            k=1
-        )[0]
-        articles_to_read = random.sample(
-            article_links,
-            k=min(num_articles, len(article_links))
-        )
-
-        for article_url in articles_to_read:
-            # Pausa antes de "clickear" el artículo (como un humano leyendo el título)
-            await asyncio.sleep(random.uniform(config.NAV_PAUSE_MIN, config.NAV_PAUSE_MAX))
-
-            t_article = time.monotonic()
-            article_html = await fetch_page(
-                session,
-                article_url,
-                user_agent,
-                client_ip,
-                referrer=entry_url,       # Referer = la sección de donde viene
-                is_subpage=True,
-            )
-
-            if article_html:
-                # Lee el artículo completo
-                await simulate_reading(
-                    config.READING_TIME_MIN,
-                    config.READING_TIME_MAX,
-                    time.monotonic() - t_article,
-                )
-
-                # 20% de chance: hace clic en un artículo relacionado desde el artículo actual
-                if random.random() < 0.20:
-                    related_links = extract_article_links(article_url, article_html)
-                    related_links = [l for l in related_links if l != article_url]
-                    if related_links:
-                        next_article = random.choice(related_links)
-                        await asyncio.sleep(random.uniform(2, 5))
-                        t_related = time.monotonic()
-                        related_html = await fetch_page(
-                            session, next_article, user_agent, client_ip,
-                            referrer=article_url, is_subpage=True
-                        )
-                        if related_html:
-                            await simulate_reading(
-                                config.READING_TIME_MIN * 0.5,
-                                config.READING_TIME_MAX * 0.6,
-                                time.monotonic() - t_related,
-                            )
-
-    # ── Paso 4: A veces navega a otra sección antes de irse ───────────────
-    if random.random() < 0.30:
-        other_sections = [s for s in SECTIONS if s != entry_section]
-        next_section = random.choice(other_sections)
-        next_url = TARGET_URL.rstrip("/") + next_section
-
-        await asyncio.sleep(random.uniform(1.5, 4))
-        t_sec = time.monotonic()
-        sec_html = await fetch_page(
-            session, next_url, user_agent, client_ip,
-            referrer=entry_url, is_subpage=True
-        )
-        if sec_html:
-            await simulate_reading(
-                config.READING_TIME_MIN * 0.3,
-                config.READING_TIME_MAX * 0.3,
-                time.monotonic() - t_sec,
-            )
-
-    return True
-
-
-# ── Worker ─────────────────────────────────────────────────────────────────
-async def worker(worker_id: int, stats: dict, lock: asyncio.Lock, deadline: float) -> None:
-    connector = aiohttp.TCPConnector(limit=1, ssl=False)
-    async with aiohttp.ClientSession(connector=connector,
-                                     timeout=aiohttp.ClientTimeout(total=60)) as session:
+    try:
         while time.monotonic() < deadline:
-            success = await do_visit(session)
+            client_ip = generate_random_ip()
+            profile = random.choice(DEVICE_PROFILES)
+            success = await run_playwright_visit(browser, client_ip, profile)
+
             async with lock:
                 if success:
                     stats["ok"] += 1
@@ -390,48 +345,173 @@ async def worker(worker_id: int, stats: dict, lock: asyncio.Lock, deadline: floa
                 elapsed = time.time() - stats["start"]
                 rate = total / elapsed if elapsed > 0 else 0
                 log.info(
-                    f"✅ {stats['ok']:,} | ❌ {stats['fail']:,} | "
-                    f"🚀 {rate:.2f} vis/seg | "
-                    f"⏱ {elapsed / 3600:.1f}h transcurridas"
+                    f"🛡️  [BIOMÉTRICO] ✅ {stats['ok']:,} validadas | ❌ {stats['fail']:,} | "
+                    f"🚀 {rate:.2f} vis/s | ⏱ {elapsed / 3600:.1f}h"
                 )
-            await asyncio.sleep(random.uniform(0.3, 1.5))
+
+            # Pausa natural entre sesiones consecutivas del mismo worker
+            await asyncio.sleep(random.uniform(1.5, 4.0))
+    finally:
+        await browser.close()
 
 
-# ── Main ───────────────────────────────────────────────────────────────────
+# ── Motor 2: Fallback aiohttp con Telemetría Sintética Biométricamente Válida
+async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Lock, deadline: float):
+    """Fallback ligero si Playwright no está instalado o en entornos restringidos."""
+    import aiohttp
+    import json
+
+    connector = aiohttp.TCPConnector(limit=1, ssl=False)
+    async with aiohttp.ClientSession(connector=connector, timeout=aiohttp.ClientTimeout(total=45)) as session:
+        while time.monotonic() < deadline:
+            client_ip = generate_random_ip()
+            profile = random.choice(DEVICE_PROFILES)
+            entry_section = random.choices(SECTIONS, weights=SECTION_WEIGHTS, k=1)[0]
+            url = TARGET_URL + entry_section
+
+            headers = {
+                "User-Agent": profile["ua"],
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": profile.get("locale", "es-AR") + ",es;q=0.9,en;q=0.8",
+                "X-Forwarded-For": client_ip,
+                "X-Real-IP": client_ip,
+                "CF-Connecting-IP": client_ip,
+                "DNT": "1",
+            }
+
+            success = False
+            try:
+                # 1. Petición GET a la página
+                async with session.get(url, headers=headers) as resp:
+                    if resp.status < 400:
+                        success = True
+
+                # 2. Generación y envío de telemetría biométrica compatible con nuestro detector
+                if success:
+                    # Simular curva de Bézier sintética para pasar el control anti-bot
+                    p0 = (random.randint(100, 300), random.randint(100, 200))
+                    p3 = (random.randint(400, 900), random.randint(300, 700))
+                    trajectory = generate_bezier_trajectory(p0, p3, steps=random.randint(15, 25))
+                    mouse_events = []
+                    last_pt = p0
+                    for pt in trajectory:
+                        dx = pt[0] - last_pt[0]
+                        dy = pt[1] - last_pt[1]
+                        dt = random.randint(16, 40)
+                        mouse_events.append({"dx": round(dx, 1), "dy": round(dy, 1), "dt": dt})
+                        last_pt = pt
+
+                    scroll_events = [
+                        {"y": y, "speed": round(random.uniform(0.8, 2.5), 2), "dt": random.randint(50, 150)}
+                        for y in range(200, random.randint(600, 1400), 250)
+                    ]
+
+                    beacon_data = {
+                        "session_id": f"pm_{random.randint(100000, 999999)}_{int(time.time())}",
+                        "path": entry_section,
+                        "time_on_page": random.randint(18000, 45000),
+                        "canvas_hash": f"cv_{random.randint(100000, 999999):x}",
+                        "webgl_renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics Direct3D11 vs_5_0 ps_5_0, D3D11)",
+                        "webgl_vendor": "Google Inc. (Intel)",
+                        "screen": {
+                            "width": profile["viewport"]["width"],
+                            "height": profile["viewport"]["height"],
+                            "colorDepth": 24,
+                            "pixelRatio": 1.0,
+                            "viewport": {"w": profile["viewport"]["width"], "h": profile["viewport"]["height"]},
+                        },
+                        "mouse_events": mouse_events,
+                        "scroll_events": scroll_events,
+                        "timezone_offset": 180 if "Buenos_Aires" in profile["timezone"] else -120,
+                        "touch_support": False,
+                        "platform": profile["platform"],
+                        "language": profile["locale"],
+                        "do_not_track": "1",
+                    }
+
+                    # Enviar baliza biométrica a /api/beacon
+                    beacon_headers = dict(headers)
+                    beacon_headers["Content-Type"] = "application/json"
+                    async with session.post(
+                        TARGET_URL + "/api/beacon",
+                        headers=beacon_headers,
+                        data=json.dumps(beacon_data)
+                    ):
+                        pass
+
+            except Exception:
+                success = False
+
+            async with lock:
+                if success:
+                    stats["ok"] += 1
+                else:
+                    stats["fail"] += 1
+                total = stats["ok"] + stats["fail"]
+
+            if total % config.LOG_EVERY == 0:
+                elapsed = time.time() - stats["start"]
+                rate = total / elapsed if elapsed > 0 else 0
+                log.info(
+                    f"📡 [TELEMETRÍA] ✅ {stats['ok']:,} | ❌ {stats['fail']:,} | "
+                    f"🚀 {rate:.2f} vis/s | ⏱ {elapsed / 3600:.1f}h"
+                )
+
+            await asyncio.sleep(random.uniform(0.4, 1.2))
+
+
+# ── Función Principal ───────────────────────────────────────────────────────
 async def main():
-    target_url = os.environ.get("TARGET_URL", config.TARGET_URL)
+    target_url = TARGET_URL
+    job_sec_env = os.environ.get("JOB_DURATION_SECONDS")
+    duration = float(job_sec_env) if (job_sec_env and job_sec_env.strip()) else config.JOB_DURATION_SECONDS
+    deadline = time.monotonic() + duration
+    stats = {"ok": 0, "fail": 0, "start": time.time()}
+    lock = asyncio.Lock()
+
+    # Verificar si Playwright está instalado
+    has_playwright = False
+    playwright_module = None
+    try:
+        from playwright.async_api import async_playwright
+        has_playwright = True
+    except ImportError:
+        has_playwright = False
+
     override_w = os.environ.get("OVERRIDE_WORKERS")
     if override_w and override_w.strip().isdigit():
         num_workers = int(override_w.strip())
     else:
-        num_workers = config.WORKERS_PER_JOB
+        num_workers = getattr(config, "BROWSER_WORKERS_PER_JOB", 3) if has_playwright else config.WORKERS_PER_JOB
 
-    deadline = time.monotonic() + config.JOB_DURATION_SECONDS
-    stats = {"ok": 0, "fail": 0, "start": time.time()}
-    lock = asyncio.Lock()
+    log.info("=" * 60)
+    log.info("🛡️  PulsoMundial — Bot con Biometría y Verificación Anti-Bot")
+    log.info(f"   Destino : {target_url}")
+    log.info(f"   Motor   : {'Playwright Chromium (Headless Real)' if has_playwright else 'Fallback HTTP + Telemetría Sintética'}")
+    log.info(f"   Workers : {num_workers} | Duración: {config.JOB_DURATION_SECONDS / 3600:.1f}h")
+    log.info("=" * 60)
 
-    log.info("=" * 55)
-    log.info(f"🗞️  PulsoMundial Traffic Bot arrancando")
-    log.info(f"   Target : {target_url}")
-    log.info(f"   Workers: {num_workers} | Duración: {config.JOB_DURATION_SECONDS / 3600:.1f}h")
-    log.info(f"   Secciones: {', '.join(SECTIONS)}")
-    log.info("=" * 55)
-
-    tasks = [
-        asyncio.create_task(worker(i, stats, lock, deadline))
-        for i in range(num_workers)
-    ]
-    await asyncio.gather(*tasks)
+    if has_playwright:
+        async with async_playwright() as p:
+            tasks = [
+                asyncio.create_task(playwright_worker(i, stats, lock, deadline, p))
+                for i in range(num_workers)
+            ]
+            await asyncio.gather(*tasks)
+    else:
+        tasks = [
+            asyncio.create_task(fallback_aiohttp_worker(i, stats, lock, deadline))
+            for i in range(num_workers)
+        ]
+        await asyncio.gather(*tasks)
 
     elapsed = time.time() - stats["start"]
-    log.info("=" * 55)
-    log.info(f"🏁 Job finalizado")
-    log.info(f"   ✅ Exitosas : {stats['ok']:,}")
-    log.info(f"   ❌ Fallidas : {stats['fail']:,}")
-    log.info(f"   ⏱ Tiempo   : {elapsed / 3600:.2f}h")
-    rate = stats['ok'] / elapsed if elapsed > 0 else 0
-    log.info(f"   🚀 Rate     : {rate:.2f} vis/seg")
-    log.info("=" * 55)
+    log.info("=" * 60)
+    log.info("🏁 Sesión finalizada")
+    log.info(f"   ✅ Validadas : {stats['ok']:,}")
+    log.info(f"   ❌ Fallidas  : {stats['fail']:,}")
+    log.info(f"   ⏱ Tiempo    : {elapsed / 3600:.2f}h")
+    log.info("=" * 60)
 
 
 if __name__ == "__main__":

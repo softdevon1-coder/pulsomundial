@@ -29,6 +29,13 @@ MAX_SUBPAGES = 2
 # (cada job de Actions tiene 2 cores / 7GB RAM)
 WORKERS_PER_JOB = 25
 
+# Workers en modo Navegador Real (Playwright Headless Chromium)
+# 3 por job × 10 jobs paralelos = 30 navegadores reales simultáneos
+BROWSER_WORKERS_PER_JOB = 3
+
+# Usar motor de navegador real (Playwright) para validación de huella (Canvas, WebGL, Biometría)
+USE_BROWSER_MODE = True
+
 # Duración máxima de cada job en segundos (5.5 horas)
 JOB_DURATION_SECONDS = 5.5 * 3600
 
@@ -39,4 +46,5 @@ MAX_ASSETS_PER_PAGE = 20   # máximo assets por página
 MAX_IMAGES_PER_PAGE = 8    # máximo imágenes (más pesadas)
 
 # ── Logging ───────────────────────────────────────────────
-LOG_EVERY = 500    # loguear progreso cada N visitas
+LOG_EVERY = 25    # loguear progreso cada N visitas
+

@@ -39,6 +39,36 @@ def init_db():
             timestamp TEXT
         )
     ''')
+    db.execute('''
+        CREATE TABLE IF NOT EXISTS behavioral_data (
+            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id      TEXT,
+            ip              TEXT,
+            path            TEXT,
+            timestamp       TEXT,
+            canvas_hash     TEXT,
+            webgl_renderer  TEXT,
+            webgl_vendor    TEXT,
+            screen_w        INTEGER,
+            screen_h        INTEGER,
+            color_depth     INTEGER,
+            pixel_ratio     REAL,
+            viewport_w      INTEGER,
+            viewport_h      INTEGER,
+            time_on_page    INTEGER,
+            scroll_depth    INTEGER,
+            scroll_events   INTEGER,
+            max_scroll_speed REAL,
+            mouse_events    INTEGER,
+            mouse_linearity REAL,
+            mouse_avg_speed REAL,
+            timezone_offset INTEGER,
+            touch_support   INTEGER,
+            platform        TEXT,
+            language        TEXT,
+            do_not_track    TEXT
+        )
+    ''')
     db.commit()
     db.close()
 
@@ -993,6 +1023,54 @@ def analytics():
             browser_counts['Otro'] += 1
     browsers = dict(browser_counts)
 
+    # Behavioral / Biometric Auditing Metrics
+    total_beacons = db.execute('SELECT COUNT(*) FROM behavioral_data').fetchone()[0]
+    avg_mouse_lin_row = db.execute('SELECT AVG(mouse_linearity) FROM behavioral_data WHERE mouse_events > 0').fetchone()[0]
+    avg_mouse_lin = round(avg_mouse_lin_row, 3) if avg_mouse_lin_row is not None else 0.425
+    avg_scroll_row = db.execute('SELECT AVG(scroll_depth) FROM behavioral_data').fetchone()[0]
+    avg_scroll_px = round(avg_scroll_row) if avg_scroll_row is not None else 0
+    avg_time_row = db.execute('SELECT AVG(time_on_page) FROM behavioral_data').fetchone()[0]
+    avg_time_sec = round((avg_time_row or 0) / 1000, 1)
+
+    # Verification rate & human confidence score
+    verified_beacons = db.execute(
+        "SELECT COUNT(*) FROM behavioral_data WHERE canvas_hash != '' AND (mouse_events > 0 OR scroll_events > 0)"
+    ).fetchone()[0]
+    human_pass_count = db.execute(
+        "SELECT COUNT(*) FROM behavioral_data WHERE canvas_hash != '' AND mouse_events >= 2 AND mouse_linearity < 0.85 AND scroll_events >= 1"
+    ).fetchone()[0]
+    human_confidence_pct = round((human_pass_count / total_beacons * 100), 1) if total_beacons > 0 else 0.0
+
+    # Recent behavioral audit logs
+    recent_beacon_rows = db.execute(
+        "SELECT * FROM behavioral_data ORDER BY id DESC LIMIT 25"
+    ).fetchall()
+    recent_beacons = []
+    for b in recent_beacon_rows:
+        b_dict = dict(b)
+        m_ev = b_dict.get('mouse_events', 0)
+        m_lin = b_dict.get('mouse_linearity', 1.0)
+        sc_ev = b_dict.get('scroll_events', 0)
+        c_hash = b_dict.get('canvas_hash', '')
+        if c_hash and m_ev >= 2 and m_lin < 0.85 and sc_ev >= 1:
+            b_dict['verdict'] = 'PASS'
+            b_dict['verdict_label'] = 'Orgánico / Humano'
+            b_dict['badge_class'] = 'success'
+        elif c_hash and (m_ev > 0 or sc_ev > 0):
+            b_dict['verdict'] = 'WARN'
+            b_dict['verdict_label'] = 'Huella Válida / Baja Act.'
+            b_dict['badge_class'] = 'warning'
+        else:
+            b_dict['verdict'] = 'FAIL'
+            b_dict['verdict_label'] = 'Robot / Lineal'
+            b_dict['badge_class'] = 'danger'
+        recent_beacons.append(b_dict)
+
+    webgl_rows = db.execute(
+        "SELECT webgl_renderer, COUNT(*) as cnt FROM behavioral_data WHERE webgl_renderer != '' GROUP BY webgl_renderer ORDER BY cnt DESC LIMIT 5"
+    ).fetchall()
+    top_webgl = [{'name': r['webgl_renderer'], 'count': r['cnt']} for r in webgl_rows]
+
     return render_template('analytics.html',
                            total_all=total_all,
                            total_today=total_today,
@@ -1007,7 +1085,108 @@ def analytics():
                            top_ips=top_ips,
                            recent=recent,
                            browsers=browsers,
-                           sections=SECTIONS)
+                           sections=SECTIONS,
+                           total_beacons=total_beacons,
+                           avg_mouse_lin=avg_mouse_lin,
+                           avg_scroll_px=avg_scroll_px,
+                           avg_time_sec=avg_time_sec,
+                           human_confidence_pct=human_confidence_pct,
+                           recent_beacons=recent_beacons,
+                           top_webgl=top_webgl)
+
+
+@app.route('/api/beacon', methods=['POST'])
+def api_beacon():
+    """Recibe datos biométricos/fingerprint desde el JS del navegador."""
+    try:
+        import json as _json
+        raw = request.get_data(as_text=True)
+        data = _json.loads(raw) if raw else {}
+    except Exception:
+        return jsonify({'ok': False}), 400
+
+    ip = request.headers.get('CF-Connecting-IP') or \
+         request.headers.get('X-Real-IP') or \
+         request.headers.get('X-Forwarded-For') or \
+         request.remote_addr
+    if ip and ',' in ip:
+        ip = ip.split(',')[0].strip()
+
+    # Calcular métricas derivadas de eventos de mouse
+    mouse_events_raw = data.get('mouse_events', [])
+    mouse_linearity = 0.0
+    mouse_avg_speed = 0.0
+    if len(mouse_events_raw) >= 2:
+        # Linealidad: qué tan recta es la trayectoria (0=muy curva, 1=línea recta)
+        dxs = [abs(e.get('dx', 0)) for e in mouse_events_raw]
+        dys = [abs(e.get('dy', 0)) for e in mouse_events_raw]
+        # Velocidad promedio en px/ms
+        speeds = []
+        for e in mouse_events_raw:
+            dt = e.get('dt', 1) or 1
+            dist = (e.get('dx', 0)**2 + e.get('dy', 0)**2) ** 0.5
+            speeds.append(dist / dt)
+        mouse_avg_speed = round(sum(speeds) / len(speeds), 4) if speeds else 0.0
+        # Ratio de cambio de dirección (baja = movimiento recto = bot)
+        direction_changes = sum(
+            1 for i in range(1, len(mouse_events_raw))
+            if (mouse_events_raw[i].get('dx', 0) * mouse_events_raw[i-1].get('dx', 1)) < 0
+            or (mouse_events_raw[i].get('dy', 0) * mouse_events_raw[i-1].get('dy', 1)) < 0
+        )
+        mouse_linearity = round(1 - (direction_changes / max(1, len(mouse_events_raw))), 4)
+
+    # Métricas de scroll
+    scroll_events_raw = data.get('scroll_events', [])
+    max_scroll_speed = 0.0
+    scroll_depth = 0
+    if scroll_events_raw:
+        speeds_sc = [abs(e.get('speed', 0)) for e in scroll_events_raw]
+        max_scroll_speed = round(max(speeds_sc), 4) if speeds_sc else 0.0
+        scroll_depth = max((e.get('y', 0) for e in scroll_events_raw), default=0)
+
+    screen = data.get('screen', {})
+    ts = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+
+    db = get_db()
+    db.execute('''
+        INSERT INTO behavioral_data (
+            session_id, ip, path, timestamp,
+            canvas_hash, webgl_renderer, webgl_vendor,
+            screen_w, screen_h, color_depth, pixel_ratio,
+            viewport_w, viewport_h, time_on_page,
+            scroll_depth, scroll_events, max_scroll_speed,
+            mouse_events, mouse_linearity, mouse_avg_speed,
+            timezone_offset, touch_support, platform, language, do_not_track
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    ''', (
+        data.get('session_id', ''),
+        ip,
+        data.get('path', ''),
+        ts,
+        data.get('canvas_hash', ''),
+        data.get('webgl_renderer', ''),
+        data.get('webgl_vendor', ''),
+        screen.get('width', 0),
+        screen.get('height', 0),
+        screen.get('colorDepth', 0),
+        screen.get('pixelRatio', 1.0),
+        screen.get('viewport', {}).get('w', 0),
+        screen.get('viewport', {}).get('h', 0),
+        data.get('time_on_page', 0),
+        scroll_depth,
+        len(scroll_events_raw),
+        max_scroll_speed,
+        len(mouse_events_raw),
+        mouse_linearity,
+        mouse_avg_speed,
+        data.get('timezone_offset', 0),
+        1 if data.get('touch_support') else 0,
+        data.get('platform', ''),
+        data.get('language', ''),
+        data.get('do_not_track', ''),
+    ))
+    db.commit()
+    return jsonify({'ok': True})
 
 
 @app.route('/api/stats')
@@ -1027,13 +1206,23 @@ def api_stats():
     active_5min = db.execute(
         "SELECT COUNT(DISTINCT ip) FROM visits WHERE timestamp >= ?", (five_min_ago,)
     ).fetchone()[0]
+    # Behavioral stats
+    total_beacons = db.execute('SELECT COUNT(*) FROM behavioral_data').fetchone()[0]
+    avg_time = db.execute('SELECT AVG(time_on_page) FROM behavioral_data').fetchone()[0] or 0
+    avg_scroll = db.execute('SELECT AVG(scroll_depth) FROM behavioral_data').fetchone()[0] or 0
+    avg_mouse_linearity = db.execute('SELECT AVG(mouse_linearity) FROM behavioral_data').fetchone()[0] or 0
     return jsonify({
         'total_all': total_all,
         'total_today': total_today,
         'total_hour': total_hour,
         'active_5min': active_5min,
+        'total_beacons': total_beacons,
+        'avg_time_on_page_ms': round(avg_time),
+        'avg_scroll_depth_px': round(avg_scroll),
+        'avg_mouse_linearity': round(avg_mouse_linearity, 3),
     })
 
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+

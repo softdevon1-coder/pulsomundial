@@ -461,6 +461,150 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- PulsoMundial Anti-Bot & Biometric Telemetry Engine -->
+  <script>
+  (function() {
+    if (window.__pm_telemetry_loaded) return;
+    window.__pm_telemetry_loaded = true;
+
+    const sessionId = 'pm_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
+    const startTime = Date.now();
+    let mouseEvents = [];
+    let scrollEvents = [];
+    let lastMouse = null;
+    let lastScroll = null;
+    let beaconSent = false;
+
+    // 1. Canvas Fingerprinting (2D Render Test)
+    function getCanvasHash() {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 200;
+        canvas.height = 50;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return 'unsupported';
+        ctx.textBaseline = 'top';
+        ctx.font = '14px Arial';
+        ctx.fillStyle = '#f60';
+        ctx.fillRect(120, 1, 62, 20);
+        ctx.fillStyle = '#069';
+        ctx.fillText('PulsoMundial 2026, 🚀 #1', 2, 15);
+        ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+        ctx.fillText('PulsoMundial 2026, 🚀 #1', 4, 17);
+        const dataURL = canvas.toDataURL();
+        let hash = 0;
+        for (let i = 0; i < dataURL.length; i++) {
+          hash = ((hash << 5) - hash) + dataURL.charCodeAt(i);
+          hash |= 0;
+        }
+        return 'cv_' + Math.abs(hash).toString(16);
+      } catch(e) {
+        return 'err_' + e.name;
+      }
+    }
+
+    // 2. WebGL Fingerprinting
+    function getWebGLInfo() {
+      try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (!gl) return { renderer: 'none', vendor: 'none' };
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        let renderer = 'standard';
+        let vendor = 'standard';
+        if (debugInfo) {
+          renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || 'standard';
+          vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) || 'standard';
+        }
+        return { renderer: renderer.substring(0, 80), vendor: vendor.substring(0, 60) };
+      } catch(e) {
+        return { renderer: 'err', vendor: 'err' };
+      }
+    }
+
+    // 3. Biometric Mouse Tracking (curvature, velocity, jitter)
+    window.addEventListener('mousemove', function(e) {
+      const now = Date.now();
+      if (lastMouse) {
+        const dt = Math.max(1, now - lastMouse.t);
+        const dx = e.clientX - lastMouse.x;
+        const dy = e.clientY - lastMouse.y;
+        if (dt > 16 || mouseEvents.length < 50) {
+          mouseEvents.push({ dx, dy, dt, t: now - startTime });
+          if (mouseEvents.length > 100) mouseEvents.shift();
+        }
+      }
+      lastMouse = { x: e.clientX, y: e.clientY, t: now };
+    }, { passive: true });
+
+    // 4. Scroll Tracking (depth, velocity, deceleration)
+    window.addEventListener('scroll', function() {
+      const now = Date.now();
+      const y = window.scrollY || window.pageYOffset || 0;
+      if (lastScroll) {
+        const dt = Math.max(1, now - lastScroll.t);
+        const dy = y - lastScroll.y;
+        const speed = Math.round((dy / dt) * 100) / 100;
+        scrollEvents.push({ y: Math.round(y), speed, dt });
+        if (scrollEvents.length > 60) scrollEvents.shift();
+      }
+      lastScroll = { y, t: now };
+    }, { passive: true });
+
+    // 5. Send Beacon to /api/beacon
+    function sendTelemetry(isFinal) {
+      if (beaconSent && isFinal) return;
+      const timeOnPage = Date.now() - startTime;
+      if (timeOnPage < 800 && !isFinal) return;
+
+      const webgl = getWebGLInfo();
+      const payload = {
+        session_id: sessionId,
+        path: window.location.pathname,
+        time_on_page: timeOnPage,
+        canvas_hash: getCanvasHash(),
+        webgl_renderer: webgl.renderer,
+        webgl_vendor: webgl.vendor,
+        screen: {
+          width: window.screen.width,
+          height: window.screen.height,
+          colorDepth: window.screen.colorDepth,
+          pixelRatio: window.devicePixelRatio || 1,
+          viewport: { w: window.innerWidth, h: window.innerHeight }
+        },
+        mouse_events: mouseEvents.slice(-50),
+        scroll_events: scrollEvents.slice(-30),
+        timezone_offset: new Date().getTimezoneOffset(),
+        touch_support: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+        platform: navigator.platform || '',
+        language: navigator.language || '',
+        do_not_track: navigator.doNotTrack || ''
+      };
+
+      const jsonStr = JSON.stringify(payload);
+      if (navigator.sendBeacon) {
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        navigator.sendBeacon('/api/beacon', blob);
+      } else {
+        fetch('/api/beacon', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: jsonStr,
+          keepalive: true
+        }).catch(function() {});
+      }
+      if (isFinal) beaconSent = true;
+    }
+
+    setInterval(function() { sendTelemetry(false); }, 7000);
+    window.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'hidden') sendTelemetry(true);
+    });
+    window.addEventListener('beforeunload', function() { sendTelemetry(true); });
+    setTimeout(function() { sendTelemetry(false); }, 2500);
+  })();
+  </script>
   {% block extra_scripts %}{% endblock %}
 </body>
 </html>
