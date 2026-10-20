@@ -4,7 +4,7 @@
 {% block meta_description %}{{ article.subtitle }}{% endblock %}
 
 {% block extra_head %}
-<!-- Schema.org JSON-LD para Artículos Financieros y FAQ (E-E-A-T & Google Rich Snippets) -->
+<!-- Schema.org JSON-LD para Artículos Financieros (E-E-A-T & Google Rich Snippets) -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -17,11 +17,7 @@
   },
   "publisher": {
     "@type": "Organization",
-    "name": "Criterio Financiero",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://pulsomundial.onrender.com/static/logo.png"
-    }
+    "name": "Criterio Financiero"
   },
   "datePublished": "2026-10-15T09:00:00-03:00",
   "dateModified": "2026-10-19T14:30:00-03:00"
@@ -34,8 +30,8 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb small">
-            <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Inicio</a></li>
-            <li class="breadcrumb-item"><a href="/{{ article.section }}" class="text-decoration-none text-muted">{{ article.section_name }}</a></li>
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none" style="color: #cbd5e1;">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="/{{ article.section }}" class="text-decoration-none" style="color: #cbd5e1;">{{ article.section_name }}</a></li>
             <li class="breadcrumb-item active text-white" aria-current="page">{{ article.title|truncate(35) }}</li>
         </ol>
     </nav>
@@ -50,8 +46,8 @@
                     <span class="trust-badge"><i class="fa-solid fa-shield-halved text-success me-1"></i> Verificado E-E-A-T</span>
                 </div>
 
-                <h1 class="display-6 fw-bold text-white mb-3">{{ article.title }}</h1>
-                <p class="fs-5 text-muted mb-4 lead">{{ article.subtitle }}</p>
+                <h1 class="display-6 fw-bold text-white mb-3" style="line-height: 1.25;">{{ article.title }}</h1>
+                <p class="fs-5 mb-4 lead" style="color: #e2e8f0; line-height: 1.7;">{{ article.subtitle }}</p>
 
                 <!-- Byline de Autor con Credenciales Financieras -->
                 <div class="d-flex align-items-center gap-3 p-3 card-custom border-secondary bg-dark">
@@ -60,11 +56,11 @@
                     </div>
                     <div>
                         <div class="text-white fw-bold">{{ article.author }}</div>
-                        <div class="text-muted small">Especialista en Mercado de Capitales & Planificación Fiscal</div>
+                        <div style="color: #cbd5e1; font-size: 0.85rem;">Especialista en Mercado de Capitales & Planificación Fiscal ante CNV y ARCA</div>
                     </div>
                     <div class="ms-auto text-end d-none d-sm-block">
-                        <div class="text-muted small">Actualizado:</div>
-                        <div class="text-white small fw-semibold">Octubre 2026</div>
+                        <div style="color: #94a3b8; font-size: 0.78rem;">Actualizado:</div>
+                        <div class="text-white small fw-bold">Octubre 2026</div>
                     </div>
                 </div>
             </header>
@@ -72,17 +68,17 @@
             <!-- Resumen Ejecutivo / Key Takeaways -->
             <div class="card-custom p-4 mb-4 border-start border-4 border-success bg-dark">
                 <h5 class="text-white fw-bold mb-3"><i class="fa-solid fa-bolt text-warning me-2"></i> Puntos Clave de este Análisis:</h5>
-                <ul class="text-muted small mb-0 d-flex flex-column gap-2">
-                    <li><strong class="text-light">Objetivo:</strong> Maximizar el rendimiento del capital invertido protegiéndolo de la devaluación y la inflación local.</li>
-                    <li><strong class="text-light">Perfil Recomendado:</strong> Apto para inversores conservadores, moderados y dinámicos según su horizonte temporal.</li>
-                    <li><strong class="text-light">Seguridad:</strong> Todas las entidades mencionadas operan bajo supervisión directa de la CNV o el BCRA.</li>
+                <ul class="mb-0 d-flex flex-column gap-2" style="color: #e2e8f0; font-size: 0.95rem;">
+                    <li><strong class="text-white">Objetivo:</strong> Maximizar el rendimiento del capital invertido protegiéndolo de la devaluación y la inflación local.</li>
+                    <li><strong class="text-white">Perfil Recomendado:</strong> Apto para inversores conservadores, moderados y dinámicos según su horizonte temporal.</li>
+                    <li><strong class="text-white">Seguridad:</strong> Todas las entidades mencionadas operan bajo supervisión directa de la CNV o el BCRA.</li>
                 </ul>
             </div>
 
-            <!-- Cuerpo del Artículo -->
-            <div class="article-body text-light fs-6" style="line-height: 1.85;">
+            <!-- Cuerpo del Artículo con Tipografía Clara y Altísimo Contraste -->
+            <div class="article-body fs-6" style="line-height: 1.85; color: #f1f5f9;">
                 {% for para in article.content %}
-                    <p class="mb-4 text-light text-opacity-75">{{ para }}</p>
+                    <p class="mb-4" style="color: #f1f5f9; font-size: 1.05rem;">{{ para }}</p>
                     
                     <!-- Inyección de Anuncio AdSense Estratégico tras el Párrafo 2 (Máximo RPM) -->
                     {% if loop.index == 2 %}
@@ -91,7 +87,7 @@
                         <div class="ad-mock-content">
                             <i class="fa-solid fa-rectangle-ad me-1 text-success"></i>
                             <strong>Google AdSense In-Article Native Display (336x280)</strong><br>
-                            <small class="text-muted">Anuncio de alta afinidad contextual (Apertura de cuentas de inversión y brokers)</small>
+                            <small style="color: #cbd5e1;">Anuncio de alta afinidad contextual (Apertura de cuentas de inversión y brokers)</small>
                         </div>
                     </div>
                     {% endif %}
@@ -100,42 +96,42 @@
                     {% if loop.index == 4 %}
                     <div class="card-custom p-4 my-4 border-start border-4 border-primary">
                         <h5 class="text-white fw-bold mb-2"><i class="fa-solid fa-calculator text-primary me-2"></i> Simulá tu Rendimiento</h5>
-                        <p class="small text-muted mb-3">Utilizá nuestras herramientas matemáticas gratuitas para calcular el interés compuesto y las tasas vigentes:</p>
+                        <p class="mb-3" style="color: #e2e8f0;">Utilizá nuestras herramientas matemáticas gratuitas para calcular el interés compuesto y las tasas vigentes:</p>
                         <div class="d-flex gap-2 flex-wrap">
-                            <a href="/calculadoras/interes-compuesto" class="btn btn-sm btn-outline-success">Calculadora Interés Compuesto</a>
-                            <a href="/calculadoras/rendimiento-billeteras" class="btn btn-sm btn-outline-warning">Rendimiento Billeteras</a>
+                            <a href="/calculadoras/interes-compuesto" class="btn btn-sm btn-outline-success text-white fw-semibold">Calculadora Interés Compuesto</a>
+                            <a href="/calculadoras/rendimiento-billeteras" class="btn btn-sm btn-outline-warning text-white fw-semibold">Rendimiento Billeteras</a>
                         </div>
                     </div>
                     {% endif %}
                 {% endfor %}
             </div>
 
-            <!-- Preguntas Frecuentes (FAQ Accordion con Schema JSON) -->
+            <!-- Preguntas Frecuentes (FAQ Accordion) -->
             <div class="card-custom p-4 my-4">
                 <h4 class="text-white fw-bold mb-3"><i class="fa-solid fa-circle-question text-info me-2"></i> Preguntas Frecuentes</h4>
                 <div class="accordion accordion-flush" id="faqAccordion">
                     <div class="accordion-item bg-transparent border-secondary">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed bg-transparent text-white fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                                ¿Qué monto mínimo se requiere para comenzar?
+                            <button class="accordion-button collapsed bg-transparent text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                ¿Qué monto mínimo se requiere para comenzar a invertir en bolsa en Argentina?
                             </button>
                         </h2>
                         <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body text-muted small">
-                                En la mayoría de los brokers y billeteras de Argentina podés comenzar desde montos muy bajos (a partir de $1.000 pesos o el equivalente a 1 acción o fracción de CEDEAR).
+                            <div class="accordion-body" style="color: #e2e8f0; line-height: 1.7;">
+                                En la gran mayoría de los brokers ALyC regulados por la CNV (como Cocos, IOL o Balanz) podés comenzar desde montos muy bajos, típicamente a partir de $1.000 pesos o el valor unitario de 1 acción, bono o fracción de CEDEAR. No existen costos de apertura ni comisiones mínimas fijas por mantenimiento de cuenta.
                             </div>
                         </div>
                     </div>
 
                     <div class="accordion-item bg-transparent border-secondary">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed bg-transparent text-white fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                                ¿Cómo tributan estos instrumentos ante AFIP/ARCA?
+                            <button class="accordion-button collapsed bg-transparent text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                ¿Cómo tributan estos instrumentos ante ARCA (ex-AFIP)?
                             </button>
                         </h2>
                         <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body text-muted small">
-                                La compraventa de acciones locales y bonos soberanos suele estar exenta de Ganancias para personas humanas. Los dividendos de CEDEARs tienen retención en origen y tributan Ganancias en escala local. Consulte siempre a su contador matriculado.
+                            <div class="accordion-body" style="color: #e2e8f0; line-height: 1.7;">
+                                La compraventa de acciones locales, bonos soberanos y CEDEARs en mercados autorizados por la CNV (BYMA) está <strong>exenta de Ganancias</strong> para personas humanas. Los intereses de bonos públicos también están exentos y no pagan Bienes Personales. En cambio, los dividendos de CEDEARs sufren retención en origen y tributan Ganancias en la escala general, mientras que la tenencia de CEDEARs al 31 de diciembre está alcanzada por Bienes Personales al considerarse activo con subyacente extranjero.
                             </div>
                         </div>
                     </div>
@@ -144,15 +140,15 @@
 
             <!-- Etiquetas / Tags -->
             <div class="d-flex align-items-center gap-2 flex-wrap my-4">
-                <span class="text-muted small fw-bold">Temas relacionados:</span>
+                <span class="small fw-bold text-white">Temas relacionados:</span>
                 {% for tag in article.tags %}
-                <span class="badge bg-dark border border-secondary text-muted px-3 py-2">#{{ tag }}</span>
+                <span class="badge bg-dark border border-secondary px-3 py-2 text-white">#{{ tag }}</span>
                 {% endfor %}
             </div>
 
             <!-- Descargo de Responsabilidad E-E-A-T -->
             <div class="disclaimer-box my-4">
-                <strong>Aviso de Independencia:</strong> Este artículo ha sido redactado por analistas independientes siguiendo nuestro código de ética editorial. Los enlaces a plataformas pueden incluir códigos de referencia o afiliación que ayudan a sostener nuestro portal sin costo adicional para el usuario. Ningún broker influye en nuestras calificaciones.
+                <strong class="text-white">Aviso de Independencia:</strong> Este artículo ha sido redactado por analistas independientes siguiendo nuestro código de ética editorial. Los enlaces a plataformas pueden incluir códigos de referencia que ayudan a sostener nuestro portal sin costo adicional para el usuario. Ningún broker influye en nuestras calificaciones.
             </div>
         </article>
 
@@ -164,7 +160,7 @@
                 <div class="ad-mock-content">
                     <i class="fa-solid fa-rectangle-ad me-1 text-primary"></i>
                     <strong>Google AdSense Sticky Half-Page (300x600)</strong><br>
-                    <small class="text-muted">Formato de máxima visibilidad y engagement durante la lectura prolongada</small>
+                    <small style="color: #cbd5e1;">Formato de máxima visibilidad y engagement durante la lectura prolongada</small>
                 </div>
             </div>
 
@@ -174,13 +170,13 @@
                 <div class="d-flex flex-column gap-3">
                     {% for rel in related_articles %}
                     <div class="border-bottom border-secondary border-opacity-25 pb-2">
-                        <span class="badge-cat badge-{{ rel.section }} mb-1" style="font-size: 0.65rem;">{{ rel.section_name }}</span>
-                        <h6 class="mb-1" style="font-size: 0.88rem;">
+                        <span class="badge-cat badge-{{ rel.section }} mb-1" style="font-size: 0.68rem;">{{ rel.section_name }}</span>
+                        <h6 class="mb-1" style="font-size: 0.92rem;">
                             <a href="/articulo/{{ rel.slug }}" class="text-white text-decoration-none hover-emerald">
                                 {{ rel.title }}
                             </a>
                         </h6>
-                        <span class="text-muted" style="font-size: 0.72rem;">{{ rel.read_time }} de lectura</span>
+                        <span style="font-size: 0.75rem; color: #cbd5e1;">{{ rel.read_time }} de lectura</span>
                     </div>
                     {% endfor %}
                 </div>

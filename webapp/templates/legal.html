@@ -8,7 +8,7 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb small">
-            <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none" style="color: #cbd5e1;">Inicio</a></li>
             <li class="breadcrumb-item active text-white" aria-current="page">{{ title }}</li>
         </ol>
     </nav>
@@ -21,86 +21,86 @@
                     <span class="trust-badge"><i class="fa-solid fa-check me-1 text-success"></i> Válido para Google AdSense</span>
                 </div>
 
-                <h1 class="display-6 fw-bold mb-4">{{ title }}</h1>
+                <h1 class="display-6 fw-bold mb-4 text-white">{{ title }}</h1>
 
                 {% if page_type == 'privacidad' %}
-                <div class="text-light text-opacity-75" style="line-height: 1.8;">
-                    <h4 class="text-white mt-4 mb-2">1. Introducción y Compromiso de Privacidad</h4>
-                    <p>En <strong>Criterio Financiero</strong> nos comprometemos a proteger la privacidad y los datos personales de nuestros usuarios y visitantes. Esta política detalla cómo recopilamos, utilizamos y salvaguardamos su información de conformidad con los estándares internacionales de protección de datos (RGPD, CCPA) y las leyes vigentes en la República Argentina.</p>
+                <div style="line-height: 1.85; color: #f1f5f9; font-size: 1.02rem;">
+                    <h4 class="text-white mt-4 mb-2 fw-bold">1. Introducción y Compromiso de Privacidad</h4>
+                    <p style="color: #e2e8f0;">En <strong>Criterio Financiero</strong> nos comprometemos a proteger la privacidad y los datos personales de nuestros usuarios y visitantes. Esta política detalla cómo recopilamos, utilizamos y salvaguardamos su información de conformidad con los estándares internacionales de protección de datos (RGPD, CCPA) y las leyes vigentes en la República Argentina.</p>
 
-                    <h4 class="text-white mt-4 mb-2">2. Uso de Cookies y Publicidad de Google (DoubleClick DART)</h4>
-                    <p>Google, como proveedor asociado de terceros, utiliza cookies para publicar anuncios en nuestro sitio:</p>
-                    <ul>
+                    <h4 class="text-white mt-4 mb-2 fw-bold">2. Uso de Cookies y Publicidad de Google (DoubleClick DART)</h4>
+                    <p style="color: #e2e8f0;">Google, como proveedor asociado de terceros, utiliza cookies para publicar anuncios en nuestro sitio:</p>
+                    <ul style="color: #e2e8f0;">
                         <li>El uso de la cookie <strong>DART</strong> permite a Google y a sus socios publicar anuncios basados en las visitas anteriores de los usuarios a este sitio web o a otros sitios en Internet.</li>
-                        <li>Los usuarios pueden inhabilitar el uso de la cookie DART para la publicidad basada en intereses accediendo a la <a href="https://policies.google.com/technologies/ads" target="_blank" class="text-success">Política de Privacidad de Google Ads</a>.</li>
-                        <li>También puede gestionar sus preferencias y excluirse de la publicidad personalizada de más de 100 redes en <a href="http://www.aboutads.info/choices/" target="_blank" class="text-success">AboutAds.info</a>.</li>
+                        <li>Los usuarios pueden inhabilitar el uso de la cookie DART para la publicidad basada en intereses accediendo a la <a href="https://policies.google.com/technologies/ads" target="_blank" class="text-success fw-bold">Política de Privacidad de Google Ads</a>.</li>
+                        <li>También puede gestionar sus preferencias y excluirse de la publicidad personalizada de más de 100 redes en <a href="http://www.aboutads.info/choices/" target="_blank" class="text-success fw-bold">AboutAds.info</a>.</li>
                     </ul>
 
-                    <h4 class="text-white mt-4 mb-2">3. Registros de Servidor (Logs)</h4>
-                    <p>Al igual que la mayoría de los sitios web profesionales, recopilamos información anónima transmitida por su navegador (dirección IP, tipo de navegador, proveedor de servicios de Internet, páginas de referencia/salida, sellos de fecha y hora y cantidad de clics) con fines de análisis estadístico y seguridad.</p>
+                    <h4 class="text-white mt-4 mb-2 fw-bold">3. Registros de Servidor (Logs)</h4>
+                    <p style="color: #e2e8f0;">Al igual que la mayoría de los sitios web profesionales, recopilamos información anónima transmitida por su navegador (dirección IP, tipo de navegador, proveedor de servicios de Internet, páginas de referencia/salida, sellos de fecha y hora y cantidad de clics) con fines de análisis estadístico y seguridad.</p>
 
-                    <h4 class="text-white mt-4 mb-2">4. Contacto de Privacidad</h4>
-                    <p>Si tiene preguntas adicionales o requiere más información sobre nuestra política de privacidad, no dude en contactarnos a través de <code class="text-info">privacidad@criteriofinanciero.com</code>.</p>
+                    <h4 class="text-white mt-4 mb-2 fw-bold">4. Contacto de Privacidad</h4>
+                    <p style="color: #e2e8f0;">Si tiene preguntas adicionales o requiere más información sobre nuestra política de privacidad, no dude en contactarnos a través de <code class="text-info bg-dark px-2 py-1 rounded">privacidad@criteriofinanciero.com</code>.</p>
                 </div>
 
                 {% elif page_type == 'terminos' %}
-                <div class="text-light text-opacity-75" style="line-height: 1.8;">
-                    <h4 class="text-white mt-4 mb-2">1. Aceptación de los Términos</h4>
-                    <p>Al acceder y utilizar el portal <strong>Criterio Financiero</strong>, usted acepta estar legalmente vinculado por estos Términos y Condiciones de Uso, todas las leyes y regulaciones aplicables, y acepta que es responsable del cumplimiento de cualquier ley local aplicable.</p>
+                <div style="line-height: 1.85; color: #f1f5f9; font-size: 1.02rem;">
+                    <h4 class="text-white mt-4 mb-2 fw-bold">1. Aceptación de los Términos</h4>
+                    <p style="color: #e2e8f0;">Al acceder y utilizar el portal <strong>Criterio Financiero</strong>, usted acepta estar legalmente vinculado por estos Términos y Condiciones de Uso, todas las leyes y regulaciones aplicables, y acepta que es responsable del cumplimiento de cualquier ley local aplicable.</p>
 
-                    <h4 class="text-white mt-4 mb-2">2. Limitación de Responsabilidad de Simuladores y Cálculos</h4>
-                    <p>Nuestras calculadoras de interés compuesto, simuladores de rendimiento de billeteras y conversores de divisas son herramientas orientativas basadas en proyecciones matemáticas y tasas informadas públicamente. No garantizan rentabilidades futuras ni constituyen ofertas contractuales vinculantes.</p>
+                    <h4 class="text-white mt-4 mb-2 fw-bold">2. Limitación de Responsabilidad de Simuladores y Cálculos</h4>
+                    <p style="color: #e2e8f0;">Nuestras calculadoras de interés compuesto, simuladores de rendimiento de billeteras y conversores de divisas son herramientas orientativas basadas en proyecciones matemáticas y tasas informadas públicamente. No garantizan rentabilidades futuras ni constituyen ofertas contractuales vinculantes.</p>
 
-                    <h4 class="text-white mt-4 mb-2">3. Propiedad Intelectual</h4>
-                    <p>Todos los contenidos, textos, gráficos, logotipos, código informático y metodologías de cálculo presentes en este sitio web son propiedad exclusiva de Criterio Financiero y están protegidos por las leyes de propiedad intelectual internacionales.</p>
+                    <h4 class="text-white mt-4 mb-2 fw-bold">3. Propiedad Intelectual</h4>
+                    <p style="color: #e2e8f0;">Todos los contenidos, textos, gráficos, logotipos, código informático y metodologías de cálculo presentes en este sitio web son propiedad exclusiva de Criterio Financiero y están protegidos por las leyes de propiedad intelectual internacionales.</p>
                 </div>
 
                 {% elif page_type == 'nosotros' %}
-                <div class="text-light text-opacity-75" style="line-height: 1.8;">
-                    <h4 class="text-white mt-4 mb-2">Nuestra Misión (E-E-A-T)</h4>
-                    <p><strong>Criterio Financiero</strong> nació con el objetivo de democratizar el conocimiento sobre el mercado de capitales en Argentina y América Latina. En economías con altos niveles de inflación y restricciones cambiarias, el acceso a información financiera transparente, precisa y desprovista de sesgos corporativos es indispensable para preservar el patrimonio.</p>
+                <div style="line-height: 1.85; color: #f1f5f9; font-size: 1.02rem;">
+                    <h4 class="text-white mt-4 mb-2 fw-bold">Nuestra Misión (E-E-A-T)</h4>
+                    <p style="color: #e2e8f0;"><strong>Criterio Financiero</strong> nació con el objetivo de democratizar el conocimiento sobre el mercado de capitales en Argentina y América Latina. En economías con altos niveles de inflación y restricciones cambiarias, el acceso a información financiera transparente, precisa y desprovista de sesgos corporativos es indispensable para preservar el patrimonio.</p>
 
-                    <h4 class="text-white mt-4 mb-2">Equipo Editorial & Idoneidad Profesional</h4>
+                    <h4 class="text-white mt-4 mb-2 fw-bold">Equipo Editorial & Idoneidad Profesional</h4>
                     <div class="row g-3 my-3">
                         <div class="col-md-6">
                             <div class="card-custom p-3 bg-dark border-secondary">
-                                <h5 class="text-white mb-1">Lic. Martín Soler</h5>
+                                <h5 class="text-white mb-1 fw-bold">Lic. Martín Soler</h5>
                                 <div class="text-success small fw-bold mb-2">Director Editorial & Analista de Renta Fija</div>
-                                <p class="small text-muted mb-0">Economista egresado de la UBA con más de 12 años de trayectoria en estructuración de carteras y análisis de bonos soberanos. Idóneo registrado ante la CNV.</p>
+                                <p class="small mb-0" style="color: #cbd5e1; line-height: 1.6;">Economista egresado de la UBA con más de 12 años de trayectoria en estructuración de carteras y análisis de bonos soberanos. Idóneo registrado ante la CNV.</p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="card-custom p-3 bg-dark border-secondary">
-                                <h5 class="text-white mb-1">Dra. Valeria Gómez</h5>
+                                <h5 class="text-white mb-1 fw-bold">Dra. Valeria Gómez</h5>
                                 <div class="text-primary small fw-bold mb-2">Especialista en Planificación Fiscal & Fintech</div>
-                                <p class="small text-muted mb-0">Contadora Pública Nacional y Magíster en Finanzas. Asesora a empresas y personas físicas en optimización tributaria y adopción de activos digitales.</p>
+                                <p class="small mb-0" style="color: #cbd5e1; line-height: 1.6;">Contadora Pública Nacional y Magíster en Finanzas. Asesora a empresas y personas físicas en optimización tributaria y adopción de activos digitales.</p>
                             </div>
                         </div>
                     </div>
 
-                    <h4 class="text-white mt-4 mb-2">Independencia y Código de Ética</h4>
-                    <p>Nuestros análisis y calificaciones de brokers, billeteras y exchanges no se venden. Cuando recomendamos una plataforma, lo hacemos sobre la base de pruebas reales de depósitos, retiros, comisiones y respaldo institucional regulado.</p>
+                    <h4 class="text-white mt-4 mb-2 fw-bold">Independencia y Código de Ética</h4>
+                    <p style="color: #e2e8f0;">Nuestros análisis y calificaciones de brokers, billeteras y exchanges no se venden. Cuando recomendamos una plataforma, lo hacemos sobre la base de pruebas reales de depósitos, retiros, comisiones y respaldo institucional regulado.</p>
                 </div>
 
                 {% elif page_type == 'contacto' %}
-                <div class="text-light text-opacity-75" style="line-height: 1.8;">
+                <div style="line-height: 1.85; color: #f1f5f9; font-size: 1.02rem;">
                     <p class="lead text-white mb-4">¿Tenés dudas, consultas de prensa o sugerencias sobre nuestro contenido? Nuestro equipo de redacción responde dentro de las 24 a 48 horas hábiles.</p>
 
                     <div class="row g-4 mb-4">
                         <div class="col-md-6">
                             <div class="card-custom p-4 bg-dark border-secondary h-100">
-                                <h5 class="text-white mb-3"><i class="fa-solid fa-envelope text-success me-2"></i> Canales Directos</h5>
-                                <ul class="list-unstyled d-flex flex-column gap-2 small">
-                                    <li><strong>Redacción general:</strong> <code class="text-info">contacto@criteriofinanciero.com</code></li>
-                                    <li><strong>Consultas editoriales:</strong> <code class="text-info">redaccion@criteriofinanciero.com</code></li>
-                                    <li><strong>Privacidad y Datos:</strong> <code class="text-info">privacidad@criteriofinanciero.com</code></li>
+                                <h5 class="text-white mb-3 fw-bold"><i class="fa-solid fa-envelope text-success me-2"></i> Canales Directos</h5>
+                                <ul class="list-unstyled d-flex flex-column gap-2 small" style="color: #e2e8f0;">
+                                    <li><strong>Redacción general:</strong> <code class="text-info bg-dark px-2 py-1 rounded">contacto@criteriofinanciero.com</code></li>
+                                    <li><strong>Consultas editoriales:</strong> <code class="text-info bg-dark px-2 py-1 rounded">redaccion@criteriofinanciero.com</code></li>
+                                    <li><strong>Privacidad y Datos:</strong> <code class="text-info bg-dark px-2 py-1 rounded">privacidad@criteriofinanciero.com</code></li>
                                 </ul>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="card-custom p-4 bg-dark border-secondary h-100">
-                                <h5 class="text-white mb-3"><i class="fa-solid fa-location-dot text-primary me-2"></i> Oficina de Redacción</h5>
-                                <p class="small text-muted mb-0">
+                                <h5 class="text-white mb-3 fw-bold"><i class="fa-solid fa-location-dot text-primary me-2"></i> Oficina de Redacción</h5>
+                                <p class="small mb-0" style="color: #cbd5e1; line-height: 1.6;">
                                     Av. Corrientes 1250, Piso 8<br>
                                     Ciudad Autónoma de Buenos Aires (C1043AAZ)<br>
                                     República Argentina
@@ -110,7 +110,7 @@
                     </div>
 
                     <div class="disclaimer-box">
-                        <strong>Descargo de Responsabilidad:</strong> No respondemos consultas orientadas a brindar asesoramiento financiero individual o recomendaciones puntuales de compra/venta de activos específicos. Para tales fines, consulte a su asesor financiero matriculado.
+                        <strong class="text-white">Descargo de Responsabilidad:</strong> No respondemos consultas orientadas a brindar asesoramiento financiero individual o recomendaciones puntuales de compra/venta de activos específicos. Para tales fines, consulte a su asesor financiero matriculado.
                     </div>
                 </div>
                 {% endif %}

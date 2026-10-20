@@ -8,8 +8,8 @@
     <!-- Breadcrumbs -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb small">
-            <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Inicio</a></li>
-            <li class="breadcrumb-item"><a href="/calculadoras" class="text-decoration-none text-muted">Calculadoras</a></li>
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none" style="color: #cbd5e1;">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="/calculadoras" class="text-decoration-none" style="color: #cbd5e1;">Calculadoras</a></li>
             <li class="breadcrumb-item active text-white" aria-current="page">Rendimiento Billeteras</li>
         </ol>
     </nav>
@@ -18,11 +18,11 @@
         <div class="col-lg-8">
             <div class="d-flex align-items-center gap-2 mb-2">
                 <span class="badge-cat badge-calculadoras"><i class="fa-solid fa-wallet me-1"></i> Comparador Dinámico</span>
-                <span class="trust-badge"><i class="fa-solid fa-rotate text-success me-1"></i> Tasas Reales Actualizadas (Octubre 2026)</span>
+                <span class="trust-badge"><i class="fa-solid fa-rotate text-success me-1"></i> Tasas Reales Verificadas (Octubre 2026)</span>
             </div>
-            <h1 class="display-6 fw-bold mb-2">Simulador de Rendimiento de Billeteras Virtuales</h1>
-            <p class="text-muted mb-0">
-                Calculá cuántos pesos genera tu saldo disponible día a día. Compará de forma transparente las cuentas remuneradas y fondos comunes de inversión de bajo riesgo (*money market*).
+            <h1 class="display-6 fw-bold mb-2 text-white">Simulador de Rendimiento de Billeteras Virtuales</h1>
+            <p class="mb-0" style="color: #e2e8f0; line-height: 1.7;">
+                Calculá cuántos pesos genera tu saldo disponible día a día. Compará de forma transparente las cuentas remuneradas y fondos comunes de inversión de bajo riesgo (*money market*) autorizados por BCRA y CNV.
             </p>
         </div>
         <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
@@ -41,23 +41,23 @@
                 </div>
             </div>
             <div class="col-md-6 col-lg-7 d-flex align-items-center gap-2 flex-wrap pt-md-4">
-                <span class="text-muted small">Atajos rápidos:</span>
-                <button class="btn btn-sm btn-outline-secondary text-white quick-btn" data-val="100000">$100.000</button>
-                <button class="btn btn-sm btn-outline-secondary text-white quick-btn" data-val="250000">$250.000</button>
-                <button class="btn btn-sm btn-outline-secondary text-white quick-btn" data-val="500000">$500.000</button>
-                <button class="btn btn-sm btn-outline-secondary text-white quick-btn" data-val="1000000">$1.000.000</button>
+                <span class="small fw-semibold" style="color: #cbd5e1;">Atajos rápidos:</span>
+                <button class="btn btn-sm btn-outline-light text-white quick-btn fw-semibold" data-val="100000">$100.000</button>
+                <button class="btn btn-sm btn-outline-light text-white quick-btn fw-semibold" data-val="250000">$250.000</button>
+                <button class="btn btn-sm btn-outline-light text-white quick-btn fw-semibold" data-val="500000">$500.000</button>
+                <button class="btn btn-sm btn-outline-light text-white quick-btn fw-semibold" data-val="1000000">$1.000.000</button>
             </div>
         </div>
     </div>
 
     <!-- Tabla Comparativa en Tiempo Real -->
     <div class="card-custom p-4 mb-4">
-        <h4 class="fs-5 text-white mb-3"><i class="fa-solid fa-table-list text-primary me-2"></i> Tabla de Ganancias Comparadas (TNA Vigente)</h4>
+        <h4 class="fs-5 text-white mb-3 fw-bold"><i class="fa-solid fa-table-list text-primary me-2"></i> Tabla de Ganancias Comparadas (Tasas TNA Vigentes)</h4>
         
         <div class="table-responsive">
             <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
                 <thead>
-                    <tr class="text-muted border-secondary small text-uppercase">
+                    <tr class="border-secondary small text-uppercase" style="color: #94a3b8;">
                         <th>Billetera / Plataforma</th>
                         <th>Tasa TNA</th>
                         <th>Ganancia Diaria</th>
@@ -80,31 +80,31 @@
         <div class="ad-mock-content">
             <i class="fa-solid fa-rectangle-ad me-1 text-warning"></i>
             <strong>Google AdSense Responsive In-Article Display</strong><br>
-            <small class="text-muted">Anuncios de productos bancarios, plazos fijos y cuentas remuneradas de alta conversión</small>
+            <small style="color: #cbd5e1;">Anuncios de productos bancarios, plazos fijos y cuentas remuneradas de alta conversión</small>
         </div>
     </div>
 
-    <!-- Guía Explicativa & Metodología E-E-A-T -->
+    <!-- Guía Explicativa & Metodología E-E-A-T con Alto Contraste -->
     <div class="row g-4 mt-2">
         <div class="col-lg-6">
             <div class="card-custom p-4 h-100">
-                <h5 class="text-white mb-2"><i class="fa-solid fa-circle-question text-info me-2"></i> ¿Cómo se calculan estos rendimientos?</h5>
-                <p class="small text-muted mb-2">
-                    Las billeteras virtuales no realizan intermediación financiera directa, sino que colocan los saldos de los usuarios en Fondos Comunes de Inversión (FCI) *Money Market*.
+                <h5 class="text-white mb-2 fw-bold"><i class="fa-solid fa-circle-question text-info me-2"></i> ¿Cómo se calculan estos rendimientos?</h5>
+                <p class="small mb-2" style="color: #e2e8f0; line-height: 1.7;">
+                    Las billeteras virtuales no realizan intermediación financiera especulativa, sino que colocan los saldos de los usuarios en Fondos Comunes de Inversión (FCI) *Money Market* administrados por bancos depositarios.
                 </p>
-                <p class="small text-muted mb-0">
-                    La fórmula para calcular la ganancia diaria exacta es: <code class="text-info">Ganancia = Saldo × (TNA / 365)</code>. El interés generado se acredita todos los días hábiles (y en algunas billeteras también fines de semana).
+                <p class="small mb-0" style="color: #cbd5e1; line-height: 1.7;">
+                    La fórmula matemática para calcular el interés diario exacto es: <code class="text-info bg-dark px-2 py-1 rounded">Ganancia = Saldo × (TNA / 365)</code>. Las acreditaciones son diarias y no sufren comisiones de rescate ni penalizaciones por retiro temprano.
                 </p>
             </div>
         </div>
         <div class="col-lg-6">
             <div class="card-custom p-4 h-100">
-                <h5 class="text-white mb-2"><i class="fa-solid fa-shield-halved text-success me-2"></i> Respaldo y Seguridad de Fondos</h5>
-                <p class="small text-muted mb-2">
-                    Los fondos están custodiados en bancos autorizados por el Banco Central de la República Argentina (BCRA) y regulados por la Comisión Nacional de Valores (CNV).
+                <h5 class="text-white mb-2 fw-bold"><i class="fa-solid fa-shield-halved text-success me-2"></i> Respaldo y Seguridad de Fondos</h5>
+                <p class="small mb-2" style="color: #e2e8f0; line-height: 1.7;">
+                    Los fondos están custodiados en entidades financieras supervisadas por el Banco Central de la República Argentina (BCRA) y reguladas por la Comisión Nacional de Valores (CNV).
                 </p>
-                <p class="small text-muted mb-0">
-                    Recordá verificar periódicamente las condiciones de cada aplicación, ya que algunas plataformas imponen límites máximos de saldo con tasa preferencial (por ejemplo, hasta $600.000).
+                <p class="small mb-0" style="color: #cbd5e1; line-height: 1.7;">
+                    En plataformas como Naranja X, la tasa del 20% aplica hasta un tope máximo de $1.000.000 de saldo en cuenta. Billeteras como Mercado Pago o Personal Pay no aplican topes máximos fijos de saldo remunerado.
                 </p>
             </div>
         </div>
@@ -116,11 +116,11 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const wallets = [
-            { name: "Naranja X", tna: 42.0, tea: 51.1, limit: "$600.000", badge: "Tasa más alta", badgeColor: "bg-success", icon: "fa-credit-card", iconColor: "text-warning" },
-            { name: "Personal Pay (Nivel 3)", tna: 40.5, tea: 48.9, limit: "Sin tope", badge: "Beneficios extra", badgeColor: "bg-primary", icon: "fa-mobile-screen", iconColor: "text-info" },
-            { name: "Ualá (Cuenta Remunerada)", tna: 39.0, tea: 46.8, limit: "$500.000", badge: "Directo en caja", badgeColor: "bg-danger", icon: "fa-building-columns", iconColor: "text-danger" },
-            { name: "Mercado Pago", tna: 37.2, tea: 44.2, limit: "Sin tope", badge: "Mayor liquidez", badgeColor: "bg-secondary", icon: "fa-handshake", iconColor: "text-primary" },
-            { name: "Prex Argentina", tna: 36.8, tea: 43.6, limit: "Sin tope", badge: "Internacional", badgeColor: "bg-dark", icon: "fa-globe", iconColor: "text-purple" }
+            { name: "Ualá (Cuenta Remunerada)", tna: 22.5, tea: 24.9, limit: "Hasta $500.000", badge: "Tasa Líder", badgeColor: "bg-success text-white fw-bold", icon: "fa-building-columns", iconColor: "text-danger" },
+            { name: "Naranja X", tna: 20.0, tea: 21.9, limit: "Hasta $1.000.000", badge: "Saldo remunerado", badgeColor: "bg-warning text-dark fw-bold", icon: "fa-credit-card", iconColor: "text-warning" },
+            { name: "Personal Pay (Nivel 3)", tna: 19.5, tea: 21.3, limit: "Sin tope", badge: "Bonificaciones", badgeColor: "bg-primary text-white fw-bold", icon: "fa-mobile-screen", iconColor: "text-info" },
+            { name: "Mercado Pago", tna: 19.0, tea: 20.7, limit: "Sin tope", badge: "Mayor liquidez", badgeColor: "bg-secondary text-white fw-bold", icon: "fa-handshake", iconColor: "text-primary" },
+            { name: "Prex Argentina", tna: 18.5, tea: 20.1, limit: "Sin tope", badge: "Internacional", badgeColor: "bg-dark text-light border border-secondary", icon: "fa-globe", iconColor: "text-purple" }
         ];
 
         const amountInput = document.getElementById('walletAmount');
@@ -153,16 +153,16 @@
                             <i class="fa-solid ${w.icon} ${w.iconColor} fs-5"></i>
                             <div>
                                 <span class="fw-bold text-white">${w.name}</span>
-                                <span class="badge ${w.badgeColor} ms-1" style="font-size: 0.65rem;">${w.badge}</span>
+                                <span class="badge ${w.badgeColor} ms-1" style="font-size: 0.68rem;">${w.badge}</span>
                             </div>
                         </div>
                     </td>
-                    <td><span class="badge bg-dark border border-secondary text-white fs-6">${w.tna.toFixed(1)}%</span></td>
+                    <td><span class="badge bg-dark border border-secondary text-white fs-6 fw-bold">${w.tna.toFixed(1)}%</span></td>
                     <td class="text-success fw-bold">+$${Math.round(daily).toLocaleString('es-AR')}</td>
                     <td class="text-success fw-bold">+$${Math.round(monthly).toLocaleString('es-AR')}</td>
-                    <td class="text-info fw-semibold">+$${Math.round(annual).toLocaleString('es-AR')}</td>
-                    <td><span class="text-muted small">${w.limit}</span></td>
-                    <td><a href="/comparativas" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 0.8rem;">Ver Análisis</a></td>
+                    <td class="text-info fw-bold">+$${Math.round(annual).toLocaleString('es-AR')}</td>
+                    <td><span style="color: #cbd5e1; font-size: 0.85rem;">${w.limit}</span></td>
+                    <td><a href="/comparativas" class="btn btn-sm btn-outline-primary py-1 px-3 text-white fw-semibold" style="font-size: 0.82rem;">Ver Análisis</a></td>
                 `;
                 tbody.appendChild(tr);
             });

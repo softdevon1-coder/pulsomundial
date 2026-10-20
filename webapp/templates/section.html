@@ -8,7 +8,7 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb small">
-            <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none" style="color: #cbd5e1;">Inicio</a></li>
             <li class="breadcrumb-item active text-white" aria-current="page">{{ section_title }}</li>
         </ol>
     </nav>
@@ -17,10 +17,10 @@
     <div class="card-custom p-4 p-md-5 mb-4 border-start border-4 border-{{ section_color }}">
         <div class="d-flex align-items-center gap-2 mb-2">
             <span class="badge-cat badge-{{ section_slug }}">{{ section_title }}</span>
-            <span class="trust-badge"><i class="fa-solid fa-list-check me-1 text-success"></i> {{ articles|length }} Artículos Publicados</span>
+            <span class="trust-badge"><i class="fa-solid fa-list-check me-1 text-success"></i> {{ articles|length }} Artículos Especializados</span>
         </div>
-        <h1 class="display-6 fw-bold mb-2">{{ section_title }}</h1>
-        <p class="text-muted mb-0 lead fs-6">
+        <h1 class="display-6 fw-bold mb-2 text-white">{{ section_title }}</h1>
+        <p class="mb-0 lead fs-6" style="color: #e2e8f0; line-height: 1.7;">
             {{ section_description }}
         </p>
     </div>
@@ -29,27 +29,33 @@
     {% if section_slug == 'calculadoras' %}
     <div class="row g-4 mb-5">
         <div class="col-md-4">
-            <div class="card-custom p-4 h-100 border-start border-4 border-success">
-                <i class="fa-solid fa-arrow-trend-up text-success fs-2 mb-3"></i>
-                <h4 class="text-white fs-5 fw-bold">Interés Compuesto</h4>
-                <p class="small text-muted mb-3">Calculá el retorno proyectado de tus ahorros con aportes mensuales y reinversión de intereses.</p>
-                <a href="/calculadoras/interes-compuesto" class="btn btn-sm btn-success">Abrir Calculadora →</a>
+            <div class="card-custom p-4 h-100 border-start border-4 border-success d-flex flex-column justify-content-between">
+                <div>
+                    <i class="fa-solid fa-arrow-trend-up text-success fs-2 mb-3"></i>
+                    <h4 class="text-white fs-5 fw-bold">Interés Compuesto</h4>
+                    <p class="small mb-3" style="color: #cbd5e1; line-height: 1.6;">Calculá el retorno proyectado de tus ahorros con aportes mensuales y reinversión de intereses.</p>
+                </div>
+                <a href="/calculadoras/interes-compuesto" class="btn btn-sm btn-success fw-bold text-white">Abrir Calculadora →</a>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card-custom p-4 h-100 border-start border-4 border-warning">
-                <i class="fa-solid fa-wallet text-warning fs-2 mb-3"></i>
-                <h4 class="text-white fs-5 fw-bold">Rendimiento Billeteras</h4>
-                <p class="small text-muted mb-3">Compará las tasas TNA/TEA líquidas que pagan Mercado Pago, Naranja X, Ualá y Personal Pay.</p>
+            <div class="card-custom p-4 h-100 border-start border-4 border-warning d-flex flex-column justify-content-between">
+                <div>
+                    <i class="fa-solid fa-wallet text-warning fs-2 mb-3"></i>
+                    <h4 class="text-white fs-5 fw-bold">Rendimiento Billeteras</h4>
+                    <p class="small mb-3" style="color: #cbd5e1; line-height: 1.6;">Compará las tasas TNA/TEA líquidas que pagan Mercado Pago, Naranja X, Ualá y Personal Pay.</p>
+                </div>
                 <a href="/calculadoras/rendimiento-billeteras" class="btn btn-sm btn-warning text-dark fw-bold">Abrir Comparador →</a>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card-custom p-4 h-100 border-start border-4 border-primary">
-                <i class="fa-solid fa-dollar-sign text-primary fs-2 mb-3"></i>
-                <h4 class="text-white fs-5 fw-bold">Dólar & Brecha Cambiaria</h4>
-                <p class="small text-muted mb-3">Conversor en vivo para Dólar MEP, Cripto (USDT), CCL y tipo de cambio oficial con cálculo de brecha.</p>
-                <a href="/calculadoras/conversor-dolar" class="btn btn-sm btn-primary">Abrir Monitor →</a>
+            <div class="card-custom p-4 h-100 border-start border-4 border-primary d-flex flex-column justify-content-between">
+                <div>
+                    <i class="fa-solid fa-dollar-sign text-primary fs-2 mb-3"></i>
+                    <h4 class="text-white fs-5 fw-bold">Dólar & Brecha Cambiaria</h4>
+                    <p class="small mb-3" style="color: #cbd5e1; line-height: 1.6;">Conversor en vivo para Dólar MEP, Cripto (USDT), CCL y tipo de cambio oficial con cálculo de brecha.</p>
+                </div>
+                <a href="/calculadoras/conversor-dolar" class="btn btn-sm btn-primary fw-bold text-white">Abrir Monitor →</a>
             </div>
         </div>
     </div>
@@ -65,20 +71,20 @@
                         <div>
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <span class="badge-cat badge-{{ art.section }}">{{ art.section_name }}</span>
-                                <span class="text-muted" style="font-size: 0.72rem;">{{ art.read_time }}</span>
+                                <span style="font-size: 0.75rem; color: #cbd5e1;"><i class="fa-solid fa-clock me-1"></i> {{ art.read_time }}</span>
                             </div>
                             <h5 class="fs-6 fw-bold mb-2">
                                 <a href="/articulo/{{ art.slug }}" class="text-white text-decoration-none hover-emerald">
                                     {{ art.title }}
                                 </a>
                             </h5>
-                            <p class="small text-muted mb-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                            <p class="small mb-3" style="color: #cbd5e1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6;">
                                 {{ art.subtitle }}
                             </p>
                         </div>
-                        <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary border-opacity-25 small text-muted">
-                            <span><i class="fa-solid fa-user me-1"></i> {{ art.author }}</span>
-                            <a href="/articulo/{{ art.slug }}" class="text-success text-decoration-none fw-semibold">Leer más →</a>
+                        <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary border-opacity-25 small" style="color: #cbd5e1;">
+                            <span><i class="fa-solid fa-user-check text-success me-1"></i> {{ art.author }}</span>
+                            <a href="/articulo/{{ art.slug }}" class="text-success text-decoration-none fw-bold">Leer Guía →</a>
                         </div>
                     </div>
                 </div>
@@ -93,18 +99,18 @@
                 <div class="ad-mock-content">
                     <i class="fa-solid fa-rectangle-ad me-1 text-primary"></i>
                     <strong>Google AdSense Category Display (300x250)</strong><br>
-                    <small class="text-muted">Segmentación por categoría financiera con alta intención transaccional</small>
+                    <small style="color: #cbd5e1;">Segmentación por categoría financiera con alta intención transaccional</small>
                 </div>
             </div>
 
             <!-- Accesos a Otras Secciones -->
             <div class="card-custom p-4 mb-4">
-                <h5 class="text-white fw-bold mb-3">Otras Secciones</h5>
+                <h5 class="text-white fw-bold mb-3">Secciones Especializadas</h5>
                 <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
-                    <li><a href="/guias" class="text-decoration-none text-light small d-flex justify-content-between"><span><i class="fa-solid fa-book-open text-primary me-2"></i> Guías y Educación</span> <i class="fa-solid fa-chevron-right text-muted"></i></a></li>
-                    <li><a href="/comparativas" class="text-decoration-none text-light small d-flex justify-content-between"><span><i class="fa-solid fa-scale-balanced text-success me-2"></i> Comparativas de Brokers</span> <i class="fa-solid fa-chevron-right text-muted"></i></a></li>
-                    <li><a href="/calculadoras" class="text-decoration-none text-light small d-flex justify-content-between"><span><i class="fa-solid fa-calculator text-warning me-2"></i> Calculadoras Interactivas</span> <i class="fa-solid fa-chevron-right text-muted"></i></a></li>
-                    <li><a href="/mercados" class="text-decoration-none text-light small d-flex justify-content-between"><span><i class="fa-solid fa-arrow-trend-up text-info me-2"></i> Actualidad & Mercados</span> <i class="fa-solid fa-chevron-right text-muted"></i></a></li>
+                    <li><a href="/guias" class="text-decoration-none small d-flex justify-content-between py-1" style="color: #e2e8f0;"><span><i class="fa-solid fa-book-open text-primary me-2"></i> Guías y Educación</span> <i class="fa-solid fa-chevron-right text-muted"></i></a></li>
+                    <li><a href="/comparativas" class="text-decoration-none small d-flex justify-content-between py-1" style="color: #e2e8f0;"><span><i class="fa-solid fa-scale-balanced text-success me-2"></i> Comparativas de Brokers</span> <i class="fa-solid fa-chevron-right text-muted"></i></a></li>
+                    <li><a href="/calculadoras" class="text-decoration-none small d-flex justify-content-between py-1" style="color: #e2e8f0;"><span><i class="fa-solid fa-calculator text-warning me-2"></i> Calculadoras Interactivas</span> <i class="fa-solid fa-chevron-right text-muted"></i></a></li>
+                    <li><a href="/mercados" class="text-decoration-none small d-flex justify-content-between py-1" style="color: #e2e8f0;"><span><i class="fa-solid fa-arrow-trend-up text-info me-2"></i> Actualidad & Mercados</span> <i class="fa-solid fa-chevron-right text-muted"></i></a></li>
                 </ul>
             </div>
         </div>

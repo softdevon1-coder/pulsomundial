@@ -112,7 +112,7 @@ ARTICLES = [
     {
         "slug": "como-invertir-en-cedears-argentina-guia-paso-a-paso",
         "title": "Cómo Invertir en CEDEARs en Argentina: Guía Paso a Paso 2026",
-        "subtitle": "Descubrí cómo comprar acciones de Apple, Google, Coca-Cola y Microsoft en pesos y dolarizar tu cartera legalmente sin cepo cambiario.",
+        "subtitle": "Descubrí cómo comprar acciones de Apple, Google, Coca-Cola y el índice S&P 500 (SPY) en pesos y dolarizar tu cartera legalmente a través de BYMA.",
         "section": "guias",
         "section_name": "Guías y Educación",
         "author": "Lic. Martín Soler",
@@ -120,44 +120,44 @@ ARTICLES = [
         "tags": ["CEDEARs", "Inversiones", "Bolsa Argentina", "Dolarización"],
         "content": [
             "Los Certificados de Depósito Argentinos (CEDEARs) se han consolidado como el vehículo de inversión predilecto para los ahorristas locales que buscan proteger su patrimonio de la depreciación del peso sin depender de cupos cambiarios ni pagar costos de transferencia al exterior.",
-            "Un CEDEAR representa una fracción o múltiplo de una acción que cotiza en mercados internacionales (como Wall Street, NASDAQ o la Bolsa de Londres). Al operar un CEDEAR en la Bolsa de Comercio de Buenos Aires (BYMA), el inversor adquiere derechos económicos directos sobre el activo subyacente, cobrando dividendos en dólares billete en su cuenta bancaria o de corretaje.",
-            "Para comprar CEDEARs en Argentina se requiere una cuenta comitente en un broker registrado ante la Comisión Nacional de Valores (CNV). El proceso consta de cuatro etapas sencillas: 1) Transferencia de pesos desde home banking; 2) Búsqueda del ticker correspondiente (ej. AAPL para Apple, KO para Coca-Cola, SPY para el índice S&P 500); 3) Selección del plazo de liquidación (Contado Inmediato o 24 horas); y 4) Confirmación del precio límite o de mercado.",
-            "Una ventaja fundamental de los CEDEARs radica en su doble cobertura: el precio del activo replica la cotización en dólares de la empresa en el exterior combinada con el valor implícito del dólar Contado con Liquidación (CCL). Si el dólar sube, el valor del CEDEAR en pesos sube proporcionalmente, manteniendo intacto el poder adquisitivo en moneda dura.",
-            "En materia tributaria, para personas humanas residentes en Argentina, la ganancia de capital derivada de la compraventa de CEDEARs está exenta del Impuesto a las Ganancias en BYMA. No obstante, los dividendos percibidos sufren retención en origen en Estados Unidos (generalmente 30% bajo convenio fiscal) y se declaran en el régimen general local."
+            "Un CEDEAR representa una fracción o múltiplo de una acción o ETF que cotiza en mercados internacionales (como Wall Street, NASDAQ o la Bolsa de Londres). Al operar un CEDEAR en Bolsas y Mercados Argentinos (BYMA), el inversor adquiere derechos económicos directos sobre el activo subyacente, cobrando dividendos en dólares billete en su cuenta de corretaje.",
+            "Para comprar CEDEARs en Argentina se requiere una cuenta comitente en un Agente de Liquidación y Compensación (ALyC) registrado ante la Comisión Nacional de Valores (CNV). El proceso consta de cuatro etapas sencillas: 1) Transferencia de pesos vía CBU/CVU desde home banking; 2) Búsqueda del ticker correspondiente (ej. SPY para el S&P 500, AAPL para Apple, KO para Coca-Cola o MELI para MercadoLibre); 3) Selección del plazo de liquidación (Contado Inmediato o 24 horas); y 4) Confirmación de la orden de compra a precio límite.",
+            "Una ventaja fundamental de los CEDEARs radica en su doble cobertura cambiaria: el precio en pesos replica la cotización en dólares del activo en el exterior multiplicada por el valor implícito del dólar Contado con Liquidación (CCL) ajustado por el ratio de conversión oficial. Si el dólar financiero sube, el valor del CEDEAR en pesos sube automáticamente en la misma proporción.",
+            "En materia tributaria ante ARCA (ex-AFIP), para personas humanas residentes en el país, el resultado positivo obtenido por la compraventa de CEDEARs está totalmente exento del Impuesto a las Ganancias en BYMA. En contrapartida, los dividendos distribuidos están alcanzados a la alícuota progresiva de la escala general (hasta el 35%), pudiendo computar como pago a cuenta la retención en origen practicada en Estados Unidos (Foreign Tax Credit). En cuanto a Bienes Personales al 31 de diciembre, la tenencia de CEDEARs está gravada al considerarse activo con subyacente radicado en el exterior."
         ]
     },
     {
         "slug": "mejores-brokers-argentina-comparativa-comisiones",
         "title": "Los 5 Mejores Brokers de Argentina: Comparativa de Comisiones 2026",
-        "subtitle": "Análisis exhaustivo de Balanz, InvertirOnline, Cocos Capital, Bull Market y PPI. Costos de operación, plataformas y seguridad regulada por CNV.",
+        "subtitle": "Análisis exhaustivo de Balanz, InvertirOnline, Cocos Capital, PPI y Bull Market. Costos reales de operación, plataformas y seguridad regulada por CNV.",
         "section": "comparativas",
         "section_name": "Comparativas y Reseñas",
         "author": "Dra. Valeria Gómez",
         "read_time": "9 min",
         "tags": ["Brokers", "Comisiones", "Balanz", "IOL", "Cocos"],
         "content": [
-            "Elegir el Agente de Liquidación y Compensación (ALyC) adecuado es una decisión estratégica que impacta directamente en la rentabilidad neta de cualquier cartera de inversión. Con la evolución tecnológica de las fintech, la competencia entre brokers argentinos ha generado una drástica reducción en las comisiones operativas.",
-            "En nuestro relevamiento independiente de 2026, evaluamos cinco pilares críticos: aranceles de compraventa de acciones y bonos, costo de custodia, agilidad en la operatoria de Dólar MEP automático, estabilidad de las aplicaciones móviles y calidad del asesoramiento profesional asignado.",
-            "Balanz Capital destaca por su servicio integral de asesoramiento financiero personalizado, ideal para perfiles que gestionan carteras medianas o avanzadas y valoran recomendaciones periódicas de research sobre renta fija y bonos soberanos. Por su parte, InvertirOnline (IOL) se mantiene como la plataforma más intuitiva para principiantes, ofreciendo una cuenta remunerada que genera rendimientos diarios sobre los pesos no invertidos.",
-            "Cocos Capital y Bull Market mantienen su liderazgo entre usuarios de perfil activo ('traders') gracias a esquemas de comisión cero o tarifas ultra competitivas en suscripciones mensuales de fondos comunes y bonos públicos.",
-            "Todas las entidades analizadas se encuentran debidamente inscriptas y supervisadas por la Comisión Nacional de Valores (CNV) y custodian sus tenencias en Caja de Valores S.A., garantizando la titularidad inalienable de los títulos a nombre del inversor independientemente de la solvencia comercial de la plataforma."
+            "Elegir el Agente de Liquidación y Compensación (ALyC) adecuado es una decisión estratégica que impacta directamente en la rentabilidad neta de cualquier cartera de inversión. En Argentina, todos los brokers formales operan bajo estricta regulación de la Comisión Nacional de Valores (CNV) y custodian las tenencias de los clientes en Caja de Valores S.A., garantizando la titularidad de los títulos.",
+            "El costo real de operar en bolsa se compone de tres variables oficiales: la comisión propia del broker (arancel), el IVA del 21% sobre dicha comisión, y los derechos de mercado que percibe BYMA (entre 0.05% y 0.08% por operación).",
+            "Cocos Capital (ALyC N° 570) se destaca entre inversores que buscan costos mínimos y autogestión, ofreciendo comisiones de compraventa en acciones y CEDEARs en torno al 0.45% + IVA con una aplicación móvil rápida y operatoria de Dólar MEP simplificada.",
+            "InvertirOnline (IOL, ALyC N° 273) mantiene una base superior a los dos millones de comitentes gracias a su interfaz intuitiva para principiantes, excelentes reportes fiscales anuales para contadores y su cuenta remunerada automática que genera intereses diarios sobre pesos líquidos.",
+            "Balanz Capital (ALyC N° 210) lidera el segmento de asesoramiento financiero personalizado, asignando un asesor idóneo matriculado ante CNV para orientar la cartera sin costo fijo de mantenimiento. Por su parte, PPI (Portfolio Personal Inversiones) se consolida como la referencia indiscutida en research macroeconómico y herramientas avanzadas para inversores profesionales con una comisión cercana al 0.60% + IVA."
         ]
     },
     {
         "slug": "que-billetera-virtual-paga-mas-tasa-argentina",
         "title": "Billeteras Virtuales: Qué Plataforma Paga Más Tasa Hoy en Argentina",
-        "subtitle": "Comparativa de rendimientos diarios de Mercado Pago, Naranja X, Ualá, Personal Pay y Prex. Cuánto rinde tu saldo líquido día a día.",
+        "subtitle": "Comparativa de rendimientos diarios verificados entre Ualá, Naranja X, Personal Pay y Mercado Pago. Cuánto rinde tu saldo líquido día a día.",
         "section": "comparativas",
         "section_name": "Comparativas y Reseñas",
         "author": "Lic. Martín Soler",
         "read_time": "6 min",
         "tags": ["Billeteras Virtuales", "Mercado Pago", "Naranja X", "Uala", "Tasas"],
         "content": [
-            "Con la dinámica inflacionaria de Argentina, dejar dinero estancado en una caja de ahorro tradicional sin remunerar representa una pérdida real de poder adquisitivo cada 24 horas. Las cuentas remuneradas de billeteras virtuales permiten mitigar este impacto con liquidez inmediata.",
-            "A diferencia de un plazo fijo bancario tradicional, donde el capital queda inmovilizado durante al menos 30 días sin posibilidad de rescate anticipado, las billeteras virtuales invierten el dinero en Fondos Comunes de Inversión (FCI) de tipo 'Money Market' o pagan intereses directos sobre saldo, acreditando ganancias todos los días sin restricciones de retiro.",
-            "Al cierre de octubre de 2026, Naranja X continúa ofreciendo una de las Tasas Nominales Anuales (TNA) más atractivas del mercado (rondando el 42% TNA), aunque aplicando un tope remunerado de hasta $600.000 pesos de saldo.",
-            "Personal Pay premia la fidelidad de sus clientes a través de un esquema por niveles (Tier 1 a Tier 3) según los consumos mensuales en telefonía y servicios, alcanzando rendimientos comparables al 40.5% TNA sin límites estrictos de capital.",
-            "Mercado Pago y Ualá ofrecen la mayor estabilidad operativa y liquidez en transferencias inmediatas. Para optimizar el rendimiento, la estrategia recomendada por expertos consiste en diversificar el saldo disponible entre dos aplicaciones para aprovechar los topes de tasa alta simultáneamente."
+            "Con la dinámica monetaria de Argentina, dejar dinero estancado en una caja de ahorro tradicional sin remunerar representa una pérdida real de poder adquisitivo cada 24 horas. Las cuentas remuneradas de billeteras virtuales permiten mitigar este impacto con liquidez inmediata.",
+            "A diferencia de un plazo fijo bancario tradicional, donde el capital queda inmovilizado durante al menos 30 días sin posibilidad de rescate anticipado, las billeteras virtuales invierten el dinero en Fondos Comunes de Inversión (FCI) de tipo 'Money Market' administrados por bancos o pagan intereses directos sobre saldo, acreditando ganancias todos los días sin restricciones de retiro.",
+            "Al cierre de octubre de 2026, Ualá se posiciona en lo más alto del ranking gracias a su cuenta remunerada en alianza con Uilo, ofreciendo tasas efectivas que oscilan entre el 20% y el 24% TNA según el nivel de consumos y beneficios del usuario.",
+            "Naranja X ofrece un rendimiento sumamente competitivo del 20% TNA con acreditación diaria garantizada, aplicando un tope remunerado de hasta $1.000.000 de pesos de saldo en cuenta. Los excedentes sobre ese monto no devengan interés, por lo que se recomienda diversificar.",
+            "Mercado Pago rinde un promedio estimado del 18.6% al 19.5% TNA a través de su Fondo Común de Inversión gestionado por el BIND (Banco Industrial), con la gran ventaja de no aplicar ningún tope máximo de saldo. Personal Pay se mueve en un rango similar del 18.9% al 19.5% TNA con bonificaciones adicionales según consumos de telefonía."
         ]
     },
     {
@@ -282,18 +282,18 @@ ARTICLES = [
     {
         "slug": "bienes-personales-inversiones-exentas-argentina-2026",
         "title": "Impuesto a los Bienes Personales: Qué Inversiones Están Exentas en 2026",
-        "subtitle": "Conocé cómo estructurar tu patrimonio para optimizar tu carga tributaria legalmente según la normativa fiscal argentina vigente.",
+        "subtitle": "Conocé cómo estructurar tu patrimonio para optimizar tu carga tributaria legalmente según la normativa fiscal de ARCA (ex-AFIP).",
         "section": "guias",
         "section_name": "Guías y Educación",
         "author": "Dra. Valeria Gómez",
         "read_time": "8 min",
         "tags": ["Bienes Personales", "Impuestos", "Fiscalidad", "Bonos"],
         "content": [
-            "La planificación impositiva legal es un componente fundamental de la educación financiera moderna. Conocer qué activos están exentos del Impuesto sobre los Bienes Personales al 31 de diciembre de cada año puede significar un ahorro patrimonial sustancial.",
-            "De acuerdo con la legislación argentina, los títulos públicos emitidos por el Estado Nacional, Provincial y Municipal (bonos soberanos y subsoberanos) se encuentran totalmente exentos de Bienes Personales, independientemente de su moneda de denominación.",
-            "Asimismo, los depósitos en moneda argentina y extranjera en cajas de ahorro y plazos fijos en entidades bancarias locales autorizadas por el BCRA gozan de exención, siempre que cumplan con los plazos de permanencia mínimos estipulados por la ley para evitar maniobras de elusión.",
-            "Por el contrario, los CEDEARs son considerados activos situados en el país pero representativos de títulos valores extranjeros, por lo que tributan a la alícuota general de bienes en el país según la escala progresiva vigente.",
-            "Antes del cierre del año fiscal, es prudente consultar con un contador público matriculado para verificar las tenencias al 31 de diciembre y optimizar la asignación entre instrumentos gravados y exentos de forma legítima."
+            "La planificación impositiva legal es un componente fundamental de la educación financiera moderna. Conocer qué activos están exentos del Impuesto sobre los Bienes Personales al 31 de diciembre de cada año fiscal puede significar un ahorro patrimonial sustancial frente a ARCA (ex-AFIP).",
+            "De acuerdo con la Ley de Impuesto sobre los Bienes Personales (Ley 23.966 y sus modificatorias), los títulos públicos emitidos por el Estado Nacional (como los bonos soberanos AL30, GD30, Boncer y Letras del Tesoro), las Provincias y los Municipios se encuentran 100% exentos de Bienes Personales, independientemente de que estén nominados en pesos o en dólares.",
+            "Asimismo, los depósitos bancarios en moneda nacional y extranjera colocados en cajas de ahorro y plazos fijos tradicionales o UVA en entidades reguladas por el Banco Central (BCRA) gozan de exención total, siempre que cumplan con las pautas de permanencia temporal mínima fijadas por la normativa.",
+            "Por el contrario, los CEDEARs no gozan de exención en Bienes Personales: para ARCA se consideran activos con subyacente radicado en el exterior, por lo que su tenencia al 31 de diciembre tributa dentro de la escala general correspondiente.",
+            "En el Impuesto a las Ganancias, el artículo 26 (incisos u y h) de la ley exime de tributación tanto el resultado de la compraventa de bonos soberanos y acciones/CEDEARs en mercados autorizados como el cobro de intereses de títulos públicos para personas humanas residentes en el país."
         ]
     },
     {

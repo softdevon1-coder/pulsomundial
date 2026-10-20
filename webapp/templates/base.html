@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Criterio Financiero — Inversiones, Finanzas y Cripto en Argentina{% endblock %}</title>
-    <meta name="description" content="{% block meta_description %}Portal líder en finanzas personales, análisis de brokers, cotizaciones en tiempo real, calculadoras de inversión y guías para rentabilizar tu capital en Argentina y LatAm.{% endblock %}">
+    <meta name="description" content="{% block meta_description %}Portal líder en finanzas personales, análisis de brokers regulados por CNV, cotizaciones en tiempo real, calculadoras de inversión y guías para rentabilizar tu capital en Argentina y LatAm.{% endblock %}">
     
     <!-- Open Graph / SEO -->
     <meta property="og:type" content="website">
@@ -26,23 +26,24 @@
 
     <style>
         :root {
-            --bg-main: #0a1120;
-            --bg-card: #111d33;
-            --bg-card-hover: #162542;
-            --border-card: #1e3156;
+            --bg-main: #070d19;
+            --bg-card: #0f1a2e;
+            --bg-card-hover: #15243f;
+            --border-card: #1f3358;
             --accent-emerald: #10b981;
-            --accent-emerald-glow: rgba(16, 185, 129, 0.18);
+            --accent-emerald-glow: rgba(16, 185, 129, 0.2);
             --accent-blue: #3b82f6;
-            --text-title: #f8fafc;
-            --text-body: #94a3b8;
-            --text-muted: #64748b;
+            --text-title: #ffffff;
+            --text-body: #f1f5f9;         /* Blanco suave de altísimo contraste */
+            --text-muted: #cbd5e1;        /* Slate claro 300, 100% legible sobre fondo oscuro */
+            --text-secondary: #e2e8f0;    /* Slate 200 para párrafos y descripciones */
         }
 
         body {
             background-color: var(--bg-main);
             color: var(--text-body);
             font-family: 'Inter', sans-serif;
-            line-height: 1.65;
+            line-height: 1.7;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -54,12 +55,20 @@
             font-weight: 700;
         }
 
-        /* Top Bar & Ticker */
+        p, .lead {
+            color: var(--text-secondary);
+        }
+
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        /* Top Bar Ticker de Cotizaciones */
         .top-ticker-bar {
-            background: #060b14;
+            background: #030710;
             border-bottom: 1px solid #14213d;
-            font-size: 0.82rem;
-            padding: 7px 0;
+            font-size: 0.84rem;
+            padding: 8px 0;
             overflow: hidden;
             white-space: nowrap;
         }
@@ -67,65 +76,65 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            margin-right: 22px;
-            color: #cbd5e1;
+            margin-right: 24px;
+            color: #f1f5f9;
         }
-        .ticker-pill .rate-pos { color: #10b981; font-weight: 600; }
-        .ticker-pill .rate-neg { color: #ef4444; font-weight: 600; }
+        .ticker-pill .rate-pos { color: #34d399; font-weight: 700; }
+        .ticker-pill .rate-neg { color: #f87171; font-weight: 700; }
 
         /* Navbar */
         .navbar-custom {
-            background-color: rgba(10, 17, 32, 0.95);
+            background-color: rgba(7, 13, 25, 0.96);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-card);
-            padding: 14px 0;
+            padding: 15px 0;
             position: sticky;
             top: 0;
             z-index: 1000;
         }
         .navbar-brand {
-            font-size: 1.45rem;
+            font-size: 1.5rem;
             font-weight: 800;
             letter-spacing: -0.5px;
             color: #ffffff !important;
             display: flex;
             align-items: center;
-            gap: 9px;
+            gap: 10px;
         }
         .brand-icon {
             background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
             color: #ffffff;
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border-radius: 9px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+            font-size: 1.15rem;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
         }
         .nav-link {
-            color: #cbd5e1 !important;
-            font-weight: 500;
-            font-size: 0.93rem;
-            padding: 8px 16px !important;
-            border-radius: 7px;
+            color: #e2e8f0 !important;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 8px 18px !important;
+            border-radius: 8px;
             transition: all 0.2s ease;
         }
         .nav-link:hover, .nav-link.active {
             color: #ffffff !important;
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: rgba(255, 255, 255, 0.08);
         }
         .nav-link.highlight {
-            color: #10b981 !important;
-            background-color: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.25);
+            color: #34d399 !important;
+            background-color: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
         }
 
-        /* Mock AdSense Container (UX/Core Web Vitals Optimized) */
+        /* Mock AdSense Container (Core Web Vitals Optimized) */
         .ad-container {
-            background: #090e1a;
-            border: 1px dashed #1e293b;
+            background: #050b14;
+            border: 1px dashed #243b66;
             border-radius: 8px;
             margin: 24px 0;
             display: flex;
@@ -136,17 +145,18 @@
             overflow: hidden;
         }
         .ad-label {
-            font-size: 0.7rem;
-            letter-spacing: 1px;
+            font-size: 0.72rem;
+            letter-spacing: 1.2px;
             text-transform: uppercase;
-            color: #64748b;
+            color: #94a3b8;
             margin-bottom: 6px;
+            font-weight: 600;
         }
         .ad-mock-content {
-            color: #475569;
-            font-size: 0.85rem;
+            color: #cbd5e1;
+            font-size: 0.88rem;
             text-align: center;
-            padding: 10px;
+            padding: 12px;
         }
 
         /* Cards & UI */
@@ -158,46 +168,46 @@
             height: 100%;
         }
         .card-custom:hover {
-            transform: translateY(-3px);
-            border-color: #2b4577;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border-color: #3b82f6;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         }
         .badge-cat {
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.6px;
-            padding: 5px 10px;
+            padding: 5px 11px;
             border-radius: 6px;
         }
-        .badge-guias { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
-        .badge-comparativas { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-        .badge-calculadoras { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-        .badge-mercados { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+        .badge-guias { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
+        .badge-comparativas { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+        .badge-calculadoras { background: rgba(245, 158, 11, 0.2); color: #fde047; border: 1px solid rgba(245, 158, 11, 0.4); }
+        .badge-mercados { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.4); }
 
         /* Trust & E-E-A-T badges */
         .trust-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            font-size: 0.78rem;
-            color: #94a3b8;
-            background: rgba(255, 255, 255, 0.04);
-            padding: 4px 10px;
+            font-size: 0.82rem;
+            color: #e2e8f0;
+            background: rgba(255, 255, 255, 0.07);
+            padding: 5px 12px;
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            font-weight: 500;
         }
 
         /* Footer */
         .footer-custom {
-            background-color: #060b14;
+            background-color: #030710;
             border-top: 1px solid var(--border-card);
             margin-top: auto;
             padding: 48px 0 24px 0;
-            font-size: 0.88rem;
+            font-size: 0.9rem;
         }
         .footer-custom a {
-            color: #94a3b8;
+            color: #cbd5e1;
             text-decoration: none;
             transition: color 0.15s ease;
         }
@@ -205,13 +215,13 @@
             color: var(--accent-emerald);
         }
         .disclaimer-box {
-            background-color: #0a1120;
-            border: 1px solid #17243c;
+            background-color: #081122;
+            border: 1px solid #1f3358;
             border-radius: 8px;
-            padding: 16px 20px;
-            font-size: 0.78rem;
-            color: #64748b;
-            line-height: 1.55;
+            padding: 18px 22px;
+            font-size: 0.82rem;
+            color: #cbd5e1;
+            line-height: 1.65;
             margin-top: 28px;
         }
     </style>
@@ -219,7 +229,7 @@
 </head>
 <body>
 
-    <!-- 1. Ticker de Cotizaciones en Vivo (Mercados Clave Argentina 2026) -->
+    <!-- 1. Ticker de Cotizaciones Reales de Mercado (Argentina 2026) -->
     <div class="top-ticker-bar">
         <div class="container-fluid px-3">
             <div class="d-flex align-items-center justify-content-between">
@@ -227,19 +237,18 @@
                     <span class="ticker-pill"><i class="fa-solid fa-chart-line text-primary"></i> <strong>Dólar MEP:</strong> $1.285 <span class="rate-pos">+0.4%</span></span>
                     <span class="ticker-pill"><strong>Dólar CCL:</strong> $1.312 <span class="rate-neg">-0.2%</span></span>
                     <span class="ticker-pill"><strong>Dólar Cripto (USDT):</strong> $1.298 <span class="rate-pos">+0.1%</span></span>
-                    <span class="ticker-pill"><strong>TNA Billeteras (promedio):</strong> 38.5%</span>
+                    <span class="ticker-pill"><strong>TNA Ualá / Naranja X:</strong> 20% - 24%</span>
                     <span class="ticker-pill"><strong>Bitcoin (BTC):</strong> $68.420 USD <span class="rate-pos">+1.8%</span></span>
                     <span class="ticker-pill"><strong>Merval (S&P):</strong> 1.845.200 pts <span class="rate-pos">+0.9%</span></span>
                 </div>
-                <div class="d-none d-md-flex align-items-center gap-3 text-muted">
-                    <span class="trust-badge"><i class="fa-solid fa-shield-halved text-success"></i> Información Verificada E-E-A-T</span>
-                    <a href="/analytics" class="text-decoration-none text-muted"><i class="fa-solid fa-chart-pie me-1"></i> Auditoría en Vivo</a>
+                <div class="d-none d-md-flex align-items-center gap-3">
+                    <span class="trust-badge"><i class="fa-solid fa-shield-halved text-success"></i> Información Verificada CNV & BCRA</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 2. Navbar Principal -->
+    <!-- 2. Navbar Principal (Limpio, Sin enlaces a métricas de bot) -->
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="/">
@@ -269,20 +278,15 @@
                         <a class="nav-link dropdown-toggle highlight" href="#" id="calcDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa-solid fa-calculator me-1"></i> Calculadoras
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-dark" style="background: #111d33; border: 1px solid #1e3156;">
-                            <li><a class="dropdown-item py-2" href="/calculadoras/interes-compuesto"><i class="fa-solid fa-arrow-trend-up text-success me-2"></i> Interés Compuesto</a></li>
-                            <li><a class="dropdown-item py-2" href="/calculadoras/rendimiento-billeteras"><i class="fa-solid fa-wallet text-warning me-2"></i> Rendimiento Billeteras</a></li>
-                            <li><a class="dropdown-item py-2" href="/calculadoras/conversor-dolar"><i class="fa-solid fa-dollar-sign text-primary me-2"></i> Dólar & Brecha Cambiaria</a></li>
+                        <ul class="dropdown-menu dropdown-menu-dark" style="background: #0f1a2e; border: 1px solid #1f3358;">
+                            <li><a class="dropdown-item py-2 text-white" href="/calculadoras/interes-compuesto"><i class="fa-solid fa-arrow-trend-up text-success me-2"></i> Interés Compuesto</a></li>
+                            <li><a class="dropdown-item py-2 text-white" href="/calculadoras/rendimiento-billeteras"><i class="fa-solid fa-wallet text-warning me-2"></i> Rendimiento Billeteras</a></li>
+                            <li><a class="dropdown-item py-2 text-white" href="/calculadoras/conversor-dolar"><i class="fa-solid fa-dollar-sign text-primary me-2"></i> Dólar & Brecha Cambiaria</a></li>
                         </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if active_section == 'mercados' %}active{% endif %}" href="/mercados">
                             <i class="fa-solid fa-arrow-trend-up me-1 text-info"></i> Mercados
-                        </a>
-                    </li>
-                    <li class="nav-item ms-lg-2">
-                        <a href="/analytics" class="btn btn-sm btn-outline-secondary px-3 py-1 text-white border-secondary">
-                            <i class="fa-solid fa-circle-dot text-success me-1"></i> En Vivo
                         </a>
                     </li>
                 </ul>
@@ -297,7 +301,7 @@
             <div class="ad-mock-content">
                 <i class="fa-solid fa-rectangle-ad me-1 text-primary"></i>
                 <strong>Google AdSense Leaderboard (728x90 / 320x50 Responsive)</strong><br>
-                <small class="text-muted">Optimizado para Core Web Vitals (0% CLS con contenedor de altura fija pre-reservada)</small>
+                <small class="text-muted">Optimizado para Core Web Vitals (0% CLS con contenedor pre-reservado)</small>
             </div>
         </div>
     </div>
@@ -313,17 +317,17 @@
             <div class="row g-4 mb-4">
                 <div class="col-lg-4 col-md-6">
                     <div class="d-flex align-items-center gap-2 mb-3">
-                        <div class="brand-icon" style="width: 30px; height: 30px; font-size: 0.95rem;">
+                        <div class="brand-icon" style="width: 32px; height: 32px; font-size: 1rem;">
                             <i class="fa-solid fa-chart-simple"></i>
                         </div>
                         <span class="fs-5 fw-bold text-white">Criterio<span style="color: var(--accent-emerald);">Financiero</span></span>
                     </div>
-                    <p class="text-muted small pe-lg-4">
-                        Portal independiente de análisis económico, finanzas personales y comparativas de plataformas de inversión para Argentina y América Latina. Metodología basada en datos y transparencia.
+                    <p class="text-secondary small pe-lg-4" style="line-height: 1.7;">
+                        Portal independiente de análisis económico, finanzas personales y comparativas de plataformas de inversión para Argentina y América Latina. Metodología basada en datos oficiales y transparencia regulatoria.
                     </p>
-                    <div class="d-flex gap-2 text-muted small mt-2">
-                        <span class="trust-badge"><i class="fa-solid fa-building-columns text-primary"></i> CNV & BCRA Info</span>
-                        <span class="trust-badge"><i class="fa-solid fa-check-double text-success"></i> Datos 2026</span>
+                    <div class="d-flex gap-2 small mt-2 flex-wrap">
+                        <span class="trust-badge"><i class="fa-solid fa-building-columns text-primary"></i> ALyC & CNV Info</span>
+                        <span class="trust-badge"><i class="fa-solid fa-check-double text-success"></i> Datos Verificados</span>
                     </div>
                 </div>
 
@@ -331,20 +335,19 @@
                     <h6 class="text-white mb-3 fw-bold">Especialidades</h6>
                     <ul class="list-unstyled d-flex flex-column gap-2 small">
                         <li><a href="/guias">Guías CEDEARs</a></li>
-                        <li><a href="/comparativas">Mejores Brokers</a></li>
+                        <li><a href="/comparativas">Mejores Brokers ALyC</a></li>
                         <li><a href="/guias">Dólar MEP Paso a Paso</a></li>
                         <li><a href="/comparativas">Billeteras Virtuales</a></li>
-                        <li><a href="/mercados">Bonos & Inflación</a></li>
+                        <li><a href="/mercados">Bonos Soberanos AL30/GD30</a></li>
                     </ul>
                 </div>
 
                 <div class="col-lg-3 col-md-3 col-6">
-                    <h6 class="text-white mb-3 fw-bold">Simuladores</h6>
+                    <h6 class="text-white mb-3 fw-bold">Herramientas</h6>
                     <ul class="list-unstyled d-flex flex-column gap-2 small">
                         <li><a href="/calculadoras/interes-compuesto">Calculadora Interés Compuesto</a></li>
                         <li><a href="/calculadoras/rendimiento-billeteras">Comparador Tasas Billeteras</a></li>
                         <li><a href="/calculadoras/conversor-dolar">Conversor Dólar & Brecha</a></li>
-                        <li><a href="/analytics">Panel de Métricas en Vivo</a></li>
                     </ul>
                 </div>
 
@@ -365,10 +368,10 @@
                 El contenido publicado en <em>Criterio Financiero</em> tiene fines estrictamente educativos, informativos y de divulgación general. No constituye, bajo ninguna circunstancia, una recomendación de inversión, oferta pública, asesoramiento financiero personalizado, legal o tributario. Toda inversión en instrumentos del mercado de capitales (bonos, acciones, CEDEARs, fondos comunes, criptoactivos) conlleva riesgos inherentes de volatilidad y eventual pérdida del capital invertido. Rentabilidades pasadas no aseguran rendimientos futuros. Antes de tomar cualquier decisión patrimonial, consulte con un Asesor Idóneo registrado ante la Comisión Nacional de Valores (CNV) de la República Argentina.
             </div>
 
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center text-muted small pt-4 mt-3 border-top border-secondary border-opacity-25">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center small pt-4 mt-3 border-top border-secondary border-opacity-25" style="color: #94a3b8;">
                 <div>© 2026 Criterio Financiero. Todos los derechos reservados.</div>
                 <div class="mt-2 mt-md-0">
-                    <span class="text-muted">Cumplimiento Google AdSense & Directrices para Webmasters</span>
+                    <span>Cumplimiento Google AdSense & Directrices de Calidad para Webmasters</span>
                 </div>
             </div>
         </div>
@@ -377,16 +380,14 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Script de Telemetría Biometría Conductual (Anti-Bot & Calidad de Tráfico) -->
+    <!-- Script de Telemetría Biometría Conductual (Anti-Bot) -->
     <script>
         (function() {
             const startTime = Date.now();
             let mouseMoves = [];
             let scrollEvents = [];
             let lastMouse = null;
-            let lastScroll = window.scrollY;
 
-            // Muestreo de mouse
             window.addEventListener('mousemove', function(e) {
                 const now = Date.now();
                 if (!lastMouse || (now - lastMouse.t) > 30) {
@@ -400,17 +401,12 @@
                 }
             }, { passive: true });
 
-            // Muestreo de scroll
             window.addEventListener('scroll', function() {
-                const now = Date.now();
-                const cur = window.scrollY;
                 if (scrollEvents.length < 30) {
-                    scrollEvents.push({ y: Math.round(cur), dt: 50, speed: 1.0 });
+                    scrollEvents.push({ y: Math.round(window.scrollY), dt: 50, speed: 1.0 });
                 }
-                lastScroll = cur;
             }, { passive: true });
 
-            // Detección WebGL Fingerprint
             function getWebGLInfo() {
                 try {
                     const canvas = document.createElement('canvas');
@@ -426,7 +422,6 @@
                 }
             }
 
-            // Emisión de Beacon Biométrico al salir o tras 12 segundos
             let beaconSent = false;
             function sendBeacon() {
                 if (beaconSent) return;
@@ -459,7 +454,7 @@
                 if (document.visibilityState === 'hidden') sendBeacon();
             });
             window.addEventListener('beforeunload', sendBeacon);
-            setTimeout(sendBeacon, 15000); // Enviar baliza temprana de respaldo
+            setTimeout(sendBeacon, 15000);
         })();
     </script>
 

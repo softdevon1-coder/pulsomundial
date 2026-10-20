@@ -3,7 +3,9 @@
 # ============================================================
 
 # ── Tu sitio ──────────────────────────────────────────────
-TARGET_URL = "https://pulsomundial.onrender.com"
+# Podés cambiar el nombre de tu servicio en Render (Settings > Name) para que sea criteriofinanciero.onrender.com
+import os
+TARGET_URL = os.environ.get("TARGET_URL", "https://pulsomundial.onrender.com")
 
 # Nota: las secciones (/mundo, /economia, /tecnologia, etc.) y los artículos
 # son manejados automáticamente por visitor.py — no hace falta configurarlos aquí.

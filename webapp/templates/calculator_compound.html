@@ -8,8 +8,8 @@
     <!-- Breadcrumb & Header -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb small">
-            <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Inicio</a></li>
-            <li class="breadcrumb-item"><a href="/calculadoras" class="text-decoration-none text-muted">Calculadoras</a></li>
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none" style="color: #cbd5e1;">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="/calculadoras" class="text-decoration-none" style="color: #cbd5e1;">Calculadoras</a></li>
             <li class="breadcrumb-item active text-white" aria-current="page">Interés Compuesto</li>
         </ol>
     </nav>
@@ -20,8 +20,8 @@
                 <span class="badge-cat badge-calculadoras"><i class="fa-solid fa-calculator me-1"></i> Herramienta Interactiva</span>
                 <span class="trust-badge"><i class="fa-solid fa-code me-1 text-primary"></i> Algoritmo Financiero Exacto</span>
             </div>
-            <h1 class="display-6 fw-bold mb-2">Calculadora de Interés Compuesto</h1>
-            <p class="text-muted mb-0">
+            <h1 class="display-6 fw-bold mb-2 text-white">Calculadora de Interés Compuesto</h1>
+            <p class="mb-0" style="color: #e2e8f0; line-height: 1.7;">
                 Visualizá el poder del interés compuesto a lo largo del tiempo. Ingresá tu capital inicial, aportes mensuales y tasa estimada para proyectar tu patrimonio futuro.
             </p>
         </div>
@@ -34,53 +34,53 @@
     <div class="row g-4">
         <div class="col-lg-5">
             <div class="card-custom p-4 shadow-sm">
-                <h4 class="fs-5 mb-3 text-white"><i class="fa-solid fa-sliders text-success me-2"></i> Parámetros de Inversión</h4>
+                <h4 class="fs-5 mb-3 text-white fw-bold"><i class="fa-solid fa-sliders text-success me-2"></i> Parámetros de Inversión</h4>
                 
                 <div class="mb-3">
-                    <label class="form-label small fw-semibold text-light">Capital Inicial ($ o USD)</label>
+                    <label class="form-label small fw-bold text-white">Capital Inicial ($ o USD)</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-dark border-secondary text-muted">$</span>
-                        <input type="number" id="initCapital" class="form-control bg-dark border-secondary text-white" value="5000" min="0" step="500">
+                        <span class="input-group-text bg-dark border-secondary text-white fw-bold">$</span>
+                        <input type="number" id="initCapital" class="form-control bg-dark border-secondary text-white fw-bold" value="5000" min="0" step="500">
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label small fw-semibold text-light">Aporte Mensual Adicional ($ o USD)</label>
+                    <label class="form-label small fw-bold text-white">Aporte Mensual Adicional ($ o USD)</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-dark border-secondary text-muted">$</span>
-                        <input type="number" id="monthlyDeposit" class="form-control bg-dark border-secondary text-white" value="300" min="0" step="50">
+                        <span class="input-group-text bg-dark border-secondary text-white fw-bold">$</span>
+                        <input type="number" id="monthlyDeposit" class="form-control bg-dark border-secondary text-white fw-bold" value="300" min="0" step="50">
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label small fw-semibold text-light">Tasa de Rendimiento Anual Estimada (%)</label>
+                    <label class="form-label small fw-bold text-white">Tasa de Rendimiento Anual Estimada (%)</label>
                     <div class="input-group">
-                        <input type="number" id="annualRate" class="form-control bg-dark border-secondary text-white" value="9.5" min="0.1" max="200" step="0.5">
-                        <span class="input-group-text bg-dark border-secondary text-muted">% anual</span>
+                        <input type="number" id="annualRate" class="form-control bg-dark border-secondary text-white fw-bold" value="9.5" min="0.1" max="200" step="0.5">
+                        <span class="input-group-text bg-dark border-secondary text-white fw-bold">% anual</span>
                     </div>
-                    <small class="text-muted d-block mt-1">Ej: S&P 500 histórico: ~10% USD anual | Bonos grado inversión: ~6-8%</small>
+                    <small class="d-block mt-1" style="color: #cbd5e1;">Ej: S&P 500 histórico: ~10% USD anual | Bonos corporativos: ~7-9%</small>
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label small fw-semibold text-light">Plazo de Inversión (Años)</label>
+                    <label class="form-label small fw-bold text-white">Plazo de Inversión (Años)</label>
                     <div class="d-flex align-items-center gap-3">
                         <input type="range" class="form-range" id="yearsRange" min="1" max="40" value="15">
-                        <span id="yearsVal" class="badge bg-primary fs-6 px-3 py-2">15 años</span>
+                        <span id="yearsVal" class="badge bg-primary fs-6 px-3 py-2 fw-bold">15 años</span>
                     </div>
                 </div>
 
-                <button class="btn btn-success w-100 py-2 fw-semibold" id="btnCalculate">
+                <button class="btn btn-success w-100 py-2 fw-bold text-white" id="btnCalculate">
                     <i class="fa-solid fa-arrows-rotate me-1"></i> Calcular y Proyectar
                 </button>
             </div>
 
-            <!-- AdSense In-Sidebar / In-Content Banner -->
+            <!-- AdSense In-Sidebar Banner -->
             <div class="ad-container" style="min-height: 250px;">
                 <div class="ad-label">Publicidad — Espacio Patrocinado</div>
                 <div class="ad-mock-content">
                     <i class="fa-solid fa-rectangle-ad me-1 text-success"></i>
                     <strong>Google AdSense Medium Rectangle (300x250)</strong><br>
-                    <small class="text-muted">Anuncio contextual financiero orientado a cuentas de inversión y brokers</small>
+                    <small style="color: #cbd5e1;">Anuncio contextual financiero orientado a cuentas de inversión y brokers</small>
                 </div>
             </div>
         </div>
@@ -90,30 +90,30 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
                     <div class="card-custom p-3 text-center border-start border-4 border-primary">
-                        <div class="text-muted small">Capital Total Aportado</div>
+                        <div class="small fw-semibold" style="color: #cbd5e1;">Capital Total Aportado</div>
                         <div class="fs-4 fw-bold text-white mt-1" id="resDeposits">$59.000</div>
-                        <div class="small text-muted">Ahorro propio</div>
+                        <div class="small" style="color: #94a3b8;">Ahorro propio</div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="col-12 card-custom p-3 text-center border-start border-4 border-warning">
-                        <div class="text-muted small">Interés Generado</div>
+                    <div class="card-custom p-3 text-center border-start border-4 border-warning">
+                        <div class="small fw-semibold" style="color: #cbd5e1;">Interés Generado</div>
                         <div class="fs-4 fw-bold text-warning mt-1" id="resInterest">$68.214</div>
-                        <div class="small text-success">+115.6% ganancia</div>
+                        <div class="small text-success fw-bold">+115.6% ganancia</div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="card-custom p-3 text-center border-start border-4 border-success">
-                        <div class="text-muted small">Patrimonio Total Final</div>
+                        <div class="small fw-semibold" style="color: #cbd5e1;">Patrimonio Total Final</div>
                         <div class="fs-4 fw-bold text-success mt-1" id="resTotal">$127.214</div>
-                        <div class="small text-muted">En el año final</div>
+                        <div class="small" style="color: #94a3b8;">En el año final</div>
                     </div>
                 </div>
             </div>
 
             <!-- Gráfico de Crecimiento Chart.js -->
             <div class="card-custom p-4 mb-4">
-                <h5 class="text-white mb-3"><i class="fa-solid fa-chart-area text-info me-2"></i> Proyección Patrimonial Año a Año</h5>
+                <h5 class="text-white mb-3 fw-bold"><i class="fa-solid fa-chart-area text-info me-2"></i> Proyección Patrimonial Año a Año</h5>
                 <div style="position: relative; height: 320px; width: 100%;">
                     <canvas id="compoundChart"></canvas>
                 </div>
@@ -121,12 +121,12 @@
 
             <!-- Explicación pedagógica -->
             <div class="card-custom p-4">
-                <h5 class="text-white mb-2"><i class="fa-solid fa-lightbulb text-warning me-2"></i> ¿Cómo funciona el Interés Compuesto?</h5>
-                <p class="small text-muted mb-2">
+                <h5 class="text-white mb-2 fw-bold"><i class="fa-solid fa-lightbulb text-warning me-2"></i> ¿Cómo funciona el Interés Compuesto?</h5>
+                <p class="small mb-2" style="color: #e2e8f0; line-height: 1.7;">
                     A diferencia del interés simple, en el interés compuesto los rendimientos generados en cada período se reinvierten inmediatamente, pasando a generar nuevos intereses en los períodos siguientes.
                 </p>
-                <p class="small text-muted mb-0">
-                    La fórmula matemática aplicada en esta calculadora es: <code class="text-info">VF = VP × (1 + r)^n + PMT × [((1 + r)^n - 1) / r]</code>, calculada con capitalización mensual periódica.
+                <p class="small mb-0" style="color: #cbd5e1; line-height: 1.7;">
+                    La fórmula matemática aplicada en esta calculadora es: <code class="text-info bg-dark px-2 py-1 rounded">VF = VP × (1 + r)^n + PMT × [((1 + r)^n - 1) / r]</code>, calculada con capitalización mensual periódica.
                 </p>
             </div>
         </div>
@@ -210,7 +210,7 @@
                             label: 'Patrimonio Total (Interés Compuesto)',
                             data: total,
                             borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
                             fill: true,
                             tension: 0.35,
                             borderWidth: 2
@@ -231,7 +231,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { labels: { color: '#cbd5e1' } },
+                        legend: { labels: { color: '#f1f5f9', font: { weight: 'bold' } } },
                         tooltip: {
                             callbacks: {
                                 label: function(c) {
@@ -241,13 +241,13 @@
                         }
                     },
                     scales: {
-                        x: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } },
+                        x: { ticks: { color: '#cbd5e1' }, grid: { color: '#1f3358' } },
                         y: {
                             ticks: {
-                                color: '#64748b',
+                                color: '#cbd5e1',
                                 callback: function(val) { return '$' + (val / 1000) + 'k'; }
                             },
-                            grid: { color: '#1e293b' }
+                            grid: { color: '#1f3358' }
                         }
                     }
                 }
