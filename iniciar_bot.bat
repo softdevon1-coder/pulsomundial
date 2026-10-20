@@ -32,6 +32,6 @@ echo Para detener el bot en cualquier momento, cerra esta ventana o presiona Ctr
 echo ============================================================
 echo.
 
-python visitor.py --mobile --rotate 1
+python visitor.py --mobile --rotate 1 --workers 1
 
 pause

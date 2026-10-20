@@ -27,9 +27,12 @@ ADB_PATH = os.path.join(os.path.dirname(__file__), "platform-tools", "adb.exe")
 USE_MOBILE_IP = ("--mobile" in sys.argv) or (os.environ.get("USE_MOBILE_USB", "0") == "1")
 # Cada cuántas visitas rotar la IP del celular (0 = desactivado)
 _rotate_arg = 0
+_workers_arg = 0
 for i, arg in enumerate(sys.argv):
     if arg == "--rotate" and i + 1 < len(sys.argv) and sys.argv[i + 1].isdigit():
         _rotate_arg = int(sys.argv[i + 1])
+    if arg == "--workers" and i + 1 < len(sys.argv) and sys.argv[i + 1].isdigit():
+        _workers_arg = int(sys.argv[i + 1])
 if _rotate_arg > 0:
     IP_ROTATE_EVERY = _rotate_arg
 elif USE_MOBILE_IP:
@@ -70,7 +73,7 @@ def _adb(*args, timeout=10) -> str:
         return f"ERROR: {e}"
 
 
-def rotate_mobile_ip(max_wait: float = 14.0) -> str:
+def rotate_mobile_ip(max_wait: float = 16.0) -> str:
     """
     Alterna el modo avión en el celular mediante ADB para forzar una nueva IP CGNAT en la red móvil.
     Espera dinámicamente hasta que la conexión se restablezca.
@@ -85,7 +88,10 @@ def rotate_mobile_ip(max_wait: float = 14.0) -> str:
         time.sleep(2)
         ip = _adb("shell", "curl -s --max-time 4 https://api.ipify.org", timeout=6)
         if ip and not ip.startswith("ERROR") and len(ip.split(".")) == 4:
+            # Pausa de estabilización para que Windows reconozca la ruta antes de la visita
+            time.sleep(2.5)
             return ip
+    time.sleep(3.0)
     return "IP_ACTIVA"
 
 TARGET_URL = os.environ.get("TARGET_URL", config.TARGET_URL).rstrip("/")
@@ -638,13 +644,7 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
     import aiohttp
     import json
 
-    bind_ip = get_cellular_bind_ip() if USE_MOBILE_IP else None
-    connector_kwargs = {"limit": 50, "ssl": False}
-    if bind_ip:
-        connector_kwargs["local_addr"] = (bind_ip, 0)
-        if worker_id == 0:
-            log.info(f"🔗 [ENRUTAMIENTO] Tráfico del bot enlazado exclusivamente al celular ({bind_ip})")
-    connector = aiohttp.TCPConnector(**connector_kwargs)
+    connector = aiohttp.TCPConnector(limit=50, ssl=False)
     visit_count = 0
     async with aiohttp.ClientSession(connector=connector, timeout=aiohttp.ClientTimeout(total=45)) as session:
         while time.monotonic() < deadline:
@@ -797,8 +797,14 @@ async def main():
         has_playwright = False
 
     override_w = os.environ.get("OVERRIDE_WORKERS")
-    if override_w and override_w.strip().isdigit():
+    if _workers_arg > 0:
+        num_workers = _workers_arg
+    elif override_w and override_w.strip().isdigit():
         num_workers = int(override_w.strip())
+    elif USE_MOBILE_IP:
+        # En modo módem celular USB con rotación 1 a 1, usamos 1 worker para garantizar
+        # ejecución secuencial limpia (Visita -> Rotar IP -> Visita) sin choques ni cortes
+        num_workers = 1
     else:
         num_workers = getattr(config, "BROWSER_WORKERS_PER_JOB", 3) if has_playwright else config.WORKERS_PER_JOB
 
