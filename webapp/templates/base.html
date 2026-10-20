@@ -1,610 +1,468 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}PulsoMundial — Noticias Globales en Tiempo Real{% endblock %}</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@300;400;500;600;700;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-dark: #0a0b10;
-      --bg-card: #12141f;
-      --bg-card-hover: #191c2b;
-      --border-color: rgba(255, 255, 255, 0.08);
-      --accent-red: #e63946;
-      --text-muted: #8b92a5;
-      --text-main: #f0f2f8;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Criterio Financiero — Inversiones, Finanzas y Cripto en Argentina{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Portal líder en finanzas personales, análisis de brokers, cotizaciones en tiempo real, calculadoras de inversión y guías para rentabilizar tu capital en Argentina y LatAm.{% endblock %}">
+    
+    <!-- Open Graph / SEO -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Criterio Financiero">
+    <meta property="og:title" content="{% block og_title %}Criterio Financiero — Finanzas e Inversiones{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Guías de inversión, comparativas de brokers, calculadoras de interés y análisis económico independiente.{% endblock %}">
+    
+    <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 & FontAwesome 6 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      font-family: 'Inter', sans-serif;
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-    }
+    <style>
+        :root {
+            --bg-main: #0a1120;
+            --bg-card: #111d33;
+            --bg-card-hover: #162542;
+            --border-card: #1e3156;
+            --accent-emerald: #10b981;
+            --accent-emerald-glow: rgba(16, 185, 129, 0.18);
+            --accent-blue: #3b82f6;
+            --text-title: #f8fafc;
+            --text-body: #94a3b8;
+            --text-muted: #64748b;
+        }
 
-    /* Top bar */
-    .top-header {
-      background: #06070a;
-      border-bottom: 1px solid var(--border-color);
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      padding: 6px 0;
-    }
-    .top-header a {
-      color: var(--text-muted);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    .top-header a:hover {
-      color: #fff;
-    }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-body);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.65;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-    /* Breaking news bar */
-    .ticker-bar {
-      background: #0e1017;
-      border-bottom: 1px solid var(--border-color);
-      overflow: hidden;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      height: 38px;
-    }
-    .ticker-badge {
-      background: var(--accent-red);
-      color: white;
-      font-weight: 800;
-      font-size: 0.72rem;
-      letter-spacing: 1px;
-      padding: 0 16px;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      text-transform: uppercase;
-      flex-shrink: 0;
-      z-index: 2;
-    }
-    .ticker-content {
-      display: inline-block;
-      padding-left: 20px;
-      animation: ticker 35s linear infinite;
-      font-size: 0.85rem;
-      color: #cbd5e1;
-    }
-    .ticker-content span {
-      margin-right: 40px;
-    }
-    .ticker-content a {
-      color: #e2e8f0;
-      text-decoration: none;
-    }
-    .ticker-content a:hover {
-      color: #fff;
-      text-decoration: underline;
-    }
-    @keyframes ticker {
-      0% { transform: translate3d(0, 0, 0); }
-      100% { transform: translate3d(-50%, 0, 0); }
-    }
+        h1, h2, h3, h4, h5, h6, .navbar-brand {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-title);
+            font-weight: 700;
+        }
 
-    /* Main brand banner */
-    .brand-section {
-      padding: 24px 0 16px;
-      border-bottom: 1px solid var(--border-color);
-      background: linear-gradient(180deg, rgba(230, 57, 70, 0.04) 0%, transparent 100%);
-    }
-    .brand-logo {
-      font-family: 'Cinzel', serif;
-      font-size: 2.8rem;
-      font-weight: 900;
-      letter-spacing: -0.5px;
-      color: #ffffff;
-      text-decoration: none;
-      line-height: 1;
-    }
-    .brand-logo span {
-      color: var(--accent-red);
-    }
-    .brand-subtitle {
-      font-size: 0.78rem;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
+        /* Top Bar & Ticker */
+        .top-ticker-bar {
+            background: #060b14;
+            border-bottom: 1px solid #14213d;
+            font-size: 0.82rem;
+            padding: 7px 0;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .ticker-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-right: 22px;
+            color: #cbd5e1;
+        }
+        .ticker-pill .rate-pos { color: #10b981; font-weight: 600; }
+        .ticker-pill .rate-neg { color: #ef4444; font-weight: 600; }
 
-    /* Navbar */
-    .main-nav {
-      background: #0d0f17;
-      border-bottom: 2px solid var(--border-color);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-    .nav-link-custom {
-      color: #cbd5e1 !important;
-      font-weight: 600;
-      font-size: 0.88rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 14px 18px !important;
-      transition: all 0.2s ease;
-      position: relative;
-      text-decoration: none;
-      display: inline-block;
-    }
-    .nav-link-custom:hover {
-      color: #fff !important;
-      background: rgba(255, 255, 255, 0.04);
-    }
-    .nav-link-custom.active {
-      color: #fff !important;
-    }
-    .nav-link-custom.active::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 18px;
-      right: 18px;
-      height: 3px;
-      background: var(--accent-red);
-    }
+        /* Navbar */
+        .navbar-custom {
+            background-color: rgba(10, 17, 32, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-card);
+            padding: 14px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar-brand {
+            font-size: 1.45rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #ffffff !important;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+        .brand-icon {
+            background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+            color: #ffffff;
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+        }
+        .nav-link {
+            color: #cbd5e1 !important;
+            font-weight: 500;
+            font-size: 0.93rem;
+            padding: 8px 16px !important;
+            border-radius: 7px;
+            transition: all 0.2s ease;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #ffffff !important;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        .nav-link.highlight {
+            color: #10b981 !important;
+            background-color: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
 
-    .analytics-pill-btn {
-      background: linear-gradient(135deg, #1e293b, #0f172a);
-      border: 1px solid #38bdf8;
-      color: #38bdf8 !important;
-      border-radius: 50px;
-      padding: 6px 16px !important;
-      font-size: 0.8rem;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.3s ease;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
-    }
-    .analytics-pill-btn:hover {
-      background: #38bdf8;
-      color: #0b1120 !important;
-      box-shadow: 0 0 18px rgba(56, 189, 248, 0.5);
-      transform: translateY(-1px);
-    }
-    .pulse-dot {
-      width: 8px;
-      height: 8px;
-      background-color: #22c55e;
-      border-radius: 50%;
-      box-shadow: 0 0 8px #22c55e;
-      animation: pulseAnim 1.6s infinite;
-    }
-    @keyframes pulseAnim {
-      0% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(1.3); }
-      100% { opacity: 1; transform: scale(1); }
-    }
+        /* Mock AdSense Container (UX/Core Web Vitals Optimized) */
+        .ad-container {
+            background: #090e1a;
+            border: 1px dashed #1e293b;
+            border-radius: 8px;
+            margin: 24px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .ad-label {
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+        .ad-mock-content {
+            color: #475569;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 10px;
+        }
 
-    /* Cards & typography */
-    .article-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      overflow: hidden;
-      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-    .article-card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(255, 255, 255, 0.2);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-    }
-    .article-card img {
-      width: 100%;
-      object-fit: cover;
-      transition: transform 0.4s ease;
-    }
-    .article-card:hover img {
-      transform: scale(1.04);
-    }
-    .img-wrapper {
-      overflow: hidden;
-      position: relative;
-    }
-    .card-badge {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      padding: 4px 10px;
-      border-radius: 4px;
-      letter-spacing: 0.5px;
-      z-index: 2;
-    }
-    .card-body-custom {
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-    }
-    .card-title-custom {
-      font-size: 1.12rem;
-      font-weight: 700;
-      line-height: 1.35;
-      margin-bottom: 8px;
-      color: #fff;
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    .card-title-custom:hover {
-      color: #93c5fd;
-    }
-    .card-subtitle-custom {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-      line-height: 1.5;
-      margin-bottom: 16px;
-      flex-grow: 1;
-    }
-    .card-meta-custom {
-      font-size: 0.78rem;
-      color: #64748b;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px solid var(--border-color);
-      padding-top: 10px;
-    }
+        /* Cards & UI */
+        .card-custom {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 12px;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            height: 100%;
+        }
+        .card-custom:hover {
+            transform: translateY(-3px);
+            border-color: #2b4577;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        .badge-cat {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+        .badge-guias { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .badge-comparativas { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-calculadoras { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-mercados { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
 
-    /* Section titles */
-    .section-header-custom {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid var(--border-color);
-      position: relative;
-    }
-    .section-header-custom h2 {
-      font-size: 1.45rem;
-      font-weight: 800;
-      margin: 0;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .section-header-custom::after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
-      left: 0;
-      width: 70px;
-      height: 2px;
-      background: var(--accent-red);
-    }
-    .view-more-link {
-      font-size: 0.84rem;
-      color: var(--text-muted);
-      text-decoration: none;
-      font-weight: 600;
-      transition: color 0.2s;
-    }
-    .view-more-link:hover {
-      color: #fff;
-    }
+        /* Trust & E-E-A-T badges */
+        .trust-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            color: #94a3b8;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
 
-    /* Footer */
-    footer {
-      background: #050608;
-      border-top: 1px solid var(--border-color);
-      padding: 50px 0 30px;
-      margin-top: 70px;
-      color: var(--text-muted);
-      font-size: 0.88rem;
-    }
-    footer a {
-      color: #94a3b8;
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    footer a:hover {
-      color: #fff;
-    }
-  </style>
-  {% block extra_head %}{% endblock %}
+        /* Footer */
+        .footer-custom {
+            background-color: #060b14;
+            border-top: 1px solid var(--border-card);
+            margin-top: auto;
+            padding: 48px 0 24px 0;
+            font-size: 0.88rem;
+        }
+        .footer-custom a {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+        .footer-custom a:hover {
+            color: var(--accent-emerald);
+        }
+        .disclaimer-box {
+            background-color: #0a1120;
+            border: 1px solid #17243c;
+            border-radius: 8px;
+            padding: 16px 20px;
+            font-size: 0.78rem;
+            color: #64748b;
+            line-height: 1.55;
+            margin-top: 28px;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
 
-  <!-- Top bar -->
-  <div class="top-header">
-    <div class="container d-flex justify-content-between align-items-center">
-      <div class="d-flex align-items-center gap-3">
-        <span><i class="far fa-calendar-alt me-1 text-danger"></i> Domingo, 18 de Octubre de 2026</span>
-        <span class="d-none d-md-inline">|</span>
-        <span class="d-none d-md-inline"><i class="fas fa-globe-americas me-1 text-primary"></i> Edición Global</span>
-        <span class="d-none d-lg-inline">|</span>
-        <span class="d-none d-lg-inline"><i class="fas fa-cloud-sun me-1 text-warning"></i> Nueva York 17°C · Londres 14°C · Tokio 21°C</span>
-      </div>
-      <div class="d-flex align-items-center gap-3">
-        <a href="/analytics" class="text-info fw-bold"><i class="fas fa-satellite-dish me-1"></i> Monitor de Tráfico en Vivo</a>
-        <div class="d-none d-sm-flex gap-2 ms-2">
-          <a href="#" class="text-secondary"><i class="fab fa-x-twitter"></i></a>
-          <a href="#" class="text-secondary"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" class="text-secondary"><i class="fab fa-linkedin-in"></i></a>
-          <a href="#" class="text-secondary"><i class="fab fa-telegram"></i></a>
+    <!-- 1. Ticker de Cotizaciones en Vivo (Mercados Clave Argentina 2026) -->
+    <div class="top-ticker-bar">
+        <div class="container-fluid px-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center overflow-x-auto py-1">
+                    <span class="ticker-pill"><i class="fa-solid fa-chart-line text-primary"></i> <strong>Dólar MEP:</strong> $1.285 <span class="rate-pos">+0.4%</span></span>
+                    <span class="ticker-pill"><strong>Dólar CCL:</strong> $1.312 <span class="rate-neg">-0.2%</span></span>
+                    <span class="ticker-pill"><strong>Dólar Cripto (USDT):</strong> $1.298 <span class="rate-pos">+0.1%</span></span>
+                    <span class="ticker-pill"><strong>TNA Billeteras (promedio):</strong> 38.5%</span>
+                    <span class="ticker-pill"><strong>Bitcoin (BTC):</strong> $68.420 USD <span class="rate-pos">+1.8%</span></span>
+                    <span class="ticker-pill"><strong>Merval (S&P):</strong> 1.845.200 pts <span class="rate-pos">+0.9%</span></span>
+                </div>
+                <div class="d-none d-md-flex align-items-center gap-3 text-muted">
+                    <span class="trust-badge"><i class="fa-solid fa-shield-halved text-success"></i> Información Verificada E-E-A-T</span>
+                    <a href="/analytics" class="text-decoration-none text-muted"><i class="fa-solid fa-chart-pie me-1"></i> Auditoría en Vivo</a>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 
-  <!-- Breaking News Ticker -->
-  <div class="ticker-bar">
-    <div class="ticker-badge">
-      <i class="fas fa-bolt me-1"></i> URGENTE
-    </div>
-    <div class="ticker-content">
-      <span><a href="/articulo/colapso-diplomatico-oriente-medio"><strong>GINEBRA:</strong> Cumbre de emergencia de 12 potencias busca alto al fuego en Medio Oriente.</a></span>
-      <span><a href="/articulo/bancos-centrales-tasas-2026"><strong>ECONOMÍA:</strong> La FED y el BCE coordinan reducción de tipos de interés ante enfriamiento inflacionario.</a></span>
-      <span><a href="/articulo/ia-autonoma-regulacion-ue"><strong>TECNOLOGÍA:</strong> Entra en vigor histórico marco regulatorio para inteligencias artificiales de 5ª generación.</a></span>
-      <span><a href="/articulo/mundial-2026-sedes-listas"><strong>DEPORTES:</strong> FIFA valida los 16 estadios del Mundial 2026 tras última ronda de inspección técnica.</a></span>
-      <span><a href="/articulo/vacuna-universal-gripe-fase3"><strong>SALUD:</strong> La OMS califica de 'punto de inflexión' resultados de la primera vacuna universal contra virus respiratorios.</a></span>
-      <span><a href="/articulo/fusion-nuclear-record-neto"><strong>CIENCIA:</strong> Reactor internacional de fusión produce energía neta continua durante 45 minutos.</a></span>
-      <!-- Repeated for smooth infinite scroll -->
-      <span><a href="/articulo/colapso-diplomatico-oriente-medio"><strong>GINEBRA:</strong> Cumbre de emergencia de 12 potencias busca alto al fuego en Medio Oriente.</a></span>
-      <span><a href="/articulo/bancos-centrales-tasas-2026"><strong>ECONOMÍA:</strong> La FED y el BCE coordinan reducción de tipos de interés ante enfriamiento inflacionario.</a></span>
-      <span><a href="/articulo/ia-autonoma-regulacion-ue"><strong>TECNOLOGÍA:</strong> Entra en vigor histórico marco regulatorio para inteligencias artificiales de 5ª generación.</a></span>
-    </div>
-  </div>
+    <!-- 2. Navbar Principal -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-chart-simple"></i>
+                </div>
+                <span>Criterio<span style="color: var(--accent-emerald);">Financiero</span></span>
+            </a>
 
-  <!-- Brand logo header -->
-  <div class="brand-section">
-    <div class="container text-center">
-      <a href="/" class="brand-logo">PULSO<span>MUNDIAL</span></a>
-      <div class="brand-subtitle">Periodismo Internacional Independiente · Redacción 24/7</div>
-    </div>
-  </div>
+            <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+                <i class="fa-solid fa-bars fs-4"></i>
+            </button>
 
-  <!-- Navigation bar -->
-  <nav class="main-nav">
-    <div class="container d-flex justify-content-between align-items-center">
-      <div class="d-flex align-items-center overflow-auto py-1">
-        <a href="/" class="nav-link-custom {% if request.path == '/' %}active{% endif %}">Inicio</a>
-        {% for sec in sections %}
-        <a href="/{{ sec['id'] }}" class="nav-link-custom {% if request.path == '/' + sec['id'] %}active{% endif %}" style="{% if request.path == '/' + sec['id'] %}border-bottom-color: {{ sec['color'] }};{% endif %}">
-          {{ sec['name'] }}
-        </a>
-        {% endfor %}
-      </div>
-      <div class="d-flex align-items-center gap-2 py-2">
-        <a href="/analytics" class="analytics-pill-btn">
-          <span class="pulse-dot"></span>
-          <span>ESTADÍSTICAS EN VIVO</span>
-        </a>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Main Content -->
-  <main class="py-4">
-    {% block content %}{% endblock %}
-  </main>
-
-  <!-- Footer -->
-  <footer>
-    <div class="container">
-      <div class="row g-4 mb-4">
-        <div class="col-lg-4">
-          <a href="/" class="brand-logo fs-3 mb-2 d-inline-block">PULSO<span>MUNDIAL</span></a>
-          <p class="text-secondary small mt-2">
-            Medio de comunicación internacional independiente con corresponsalías en más de 45 países. Análisis riguroso, cobertura en directo y tecnología de vanguardia para entender los acontecimientos del siglo XXI.
-          </p>
-          <div class="d-flex gap-3 mt-3">
-            <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-x-twitter"></i></a>
-            <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-facebook-f"></i></a>
-            <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-youtube"></i></a>
-            <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-telegram"></i></a>
-          </div>
+            <div class="collapse navbar-collapse" id="navMain">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_section == 'guias' %}active{% endif %}" href="/guias">
+                            <i class="fa-solid fa-book-open me-1 text-primary"></i> Guías
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_section == 'comparativas' %}active{% endif %}" href="/comparativas">
+                            <i class="fa-solid fa-scale-balanced me-1 text-success"></i> Comparativas
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle highlight" href="#" id="calcDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-calculator me-1"></i> Calculadoras
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark" style="background: #111d33; border: 1px solid #1e3156;">
+                            <li><a class="dropdown-item py-2" href="/calculadoras/interes-compuesto"><i class="fa-solid fa-arrow-trend-up text-success me-2"></i> Interés Compuesto</a></li>
+                            <li><a class="dropdown-item py-2" href="/calculadoras/rendimiento-billeteras"><i class="fa-solid fa-wallet text-warning me-2"></i> Rendimiento Billeteras</a></li>
+                            <li><a class="dropdown-item py-2" href="/calculadoras/conversor-dolar"><i class="fa-solid fa-dollar-sign text-primary me-2"></i> Dólar & Brecha Cambiaria</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_section == 'mercados' %}active{% endif %}" href="/mercados">
+                            <i class="fa-solid fa-arrow-trend-up me-1 text-info"></i> Mercados
+                        </a>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <a href="/analytics" class="btn btn-sm btn-outline-secondary px-3 py-1 text-white border-secondary">
+                            <i class="fa-solid fa-circle-dot text-success me-1"></i> En Vivo
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
+    </nav>
 
-        <div class="col-6 col-lg-2">
-          <h6 class="text-light fw-bold text-uppercase mb-3 small">Secciones</h6>
-          <ul class="list-unstyled small d-flex flex-column gap-2">
-            {% for sec in sections %}
-            <li><a href="/{{ sec['id'] }}"><i class="fas fa-chevron-right me-1 text-danger small"></i> {{ sec['name'] }}</a></li>
-            {% endfor %}
-          </ul>
+    <!-- 3. Contenedor de Anuncio Superior (Leaderboard Desktop / Banner Mobile) -->
+    <div class="container mt-3">
+        <div class="ad-container" style="min-height: 90px;">
+            <div class="ad-label">Publicidad — Espacio Patrocinado</div>
+            <div class="ad-mock-content">
+                <i class="fa-solid fa-rectangle-ad me-1 text-primary"></i>
+                <strong>Google AdSense Leaderboard (728x90 / 320x50 Responsive)</strong><br>
+                <small class="text-muted">Optimizado para Core Web Vitals (0% CLS con contenedor de altura fija pre-reservada)</small>
+            </div>
         </div>
-
-        <div class="col-6 col-lg-3">
-          <h6 class="text-light fw-bold text-uppercase mb-3 small">Servicios & Auditoría</h6>
-          <ul class="list-unstyled small d-flex flex-column gap-2">
-            <li><a href="/analytics" class="text-info fw-bold"><i class="fas fa-chart-line me-1"></i> Panel de Visitas en Vivo</a></li>
-            <li><a href="/api/stats"><i class="fas fa-code me-1"></i> API Pública de Estadísticas</a></li>
-            <li><a href="#"><i class="fas fa-shield-alt me-1"></i> Código Deontológico</a></li>
-            <li><a href="#"><i class="fas fa-envelope-open-text me-1"></i> Boletín Diario Global</a></li>
-            <li><a href="#"><i class="fas fa-rss me-1"></i> Canales RSS</a></li>
-          </ul>
-        </div>
-
-        <div class="col-lg-3">
-          <h6 class="text-light fw-bold text-uppercase mb-3 small">Auditoría de Audiencia</h6>
-          <p class="small text-secondary">
-            PulsoMundial audita de forma pública y abierta el tráfico recibido en tiempo real mediante telemetría directa de servidor.
-          </p>
-          <a href="/analytics" class="btn btn-outline-info btn-sm w-100 py-2">
-            <i class="fas fa-eye me-1"></i> Ver Métricas en Directo
-          </a>
-        </div>
-      </div>
-
-      <div class="border-top border-secondary pt-3 mt-4 d-flex flex-column flex-md-row justify-content-between align-items-center text-secondary small">
-        <div>© 2026 PulsoMundial Inc. Todos los derechos reservados.</div>
-        <div class="d-flex gap-3 mt-2 mt-md-0">
-          <a href="#">Términos de Servicio</a>
-          <a href="#">Política de Privacidad</a>
-          <a href="#">Cookies</a>
-          <a href="/analytics">Métricas del Portal</a>
-        </div>
-      </div>
     </div>
-  </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- 4. Contenido Principal -->
+    <main class="flex-grow-1">
+        {% block content %}{% endblock %}
+    </main>
 
-  <!-- PulsoMundial Anti-Bot & Biometric Telemetry Engine -->
-  <script>
-  (function() {
-    if (window.__pm_telemetry_loaded) return;
-    window.__pm_telemetry_loaded = true;
+    <!-- 5. Footer con E-E-A-T, Disclaimer y Cumplimiento Legal -->
+    <footer class="footer-custom">
+        <div class="container">
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="brand-icon" style="width: 30px; height: 30px; font-size: 0.95rem;">
+                            <i class="fa-solid fa-chart-simple"></i>
+                        </div>
+                        <span class="fs-5 fw-bold text-white">Criterio<span style="color: var(--accent-emerald);">Financiero</span></span>
+                    </div>
+                    <p class="text-muted small pe-lg-4">
+                        Portal independiente de análisis económico, finanzas personales y comparativas de plataformas de inversión para Argentina y América Latina. Metodología basada en datos y transparencia.
+                    </p>
+                    <div class="d-flex gap-2 text-muted small mt-2">
+                        <span class="trust-badge"><i class="fa-solid fa-building-columns text-primary"></i> CNV & BCRA Info</span>
+                        <span class="trust-badge"><i class="fa-solid fa-check-double text-success"></i> Datos 2026</span>
+                    </div>
+                </div>
 
-    const sessionId = 'pm_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
-    const startTime = Date.now();
-    let mouseEvents = [];
-    let scrollEvents = [];
-    let lastMouse = null;
-    let lastScroll = null;
-    let beaconSent = false;
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6 class="text-white mb-3 fw-bold">Especialidades</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 small">
+                        <li><a href="/guias">Guías CEDEARs</a></li>
+                        <li><a href="/comparativas">Mejores Brokers</a></li>
+                        <li><a href="/guias">Dólar MEP Paso a Paso</a></li>
+                        <li><a href="/comparativas">Billeteras Virtuales</a></li>
+                        <li><a href="/mercados">Bonos & Inflación</a></li>
+                    </ul>
+                </div>
 
-    // 1. Canvas Fingerprinting (2D Render Test)
-    function getCanvasHash() {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = 200;
-        canvas.height = 50;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return 'unsupported';
-        ctx.textBaseline = 'top';
-        ctx.font = '14px Arial';
-        ctx.fillStyle = '#f60';
-        ctx.fillRect(120, 1, 62, 20);
-        ctx.fillStyle = '#069';
-        ctx.fillText('PulsoMundial 2026, 🚀 #1', 2, 15);
-        ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
-        ctx.fillText('PulsoMundial 2026, 🚀 #1', 4, 17);
-        const dataURL = canvas.toDataURL();
-        let hash = 0;
-        for (let i = 0; i < dataURL.length; i++) {
-          hash = ((hash << 5) - hash) + dataURL.charCodeAt(i);
-          hash |= 0;
-        }
-        return 'cv_' + Math.abs(hash).toString(16);
-      } catch(e) {
-        return 'err_' + e.name;
-      }
-    }
+                <div class="col-lg-3 col-md-3 col-6">
+                    <h6 class="text-white mb-3 fw-bold">Simuladores</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 small">
+                        <li><a href="/calculadoras/interes-compuesto">Calculadora Interés Compuesto</a></li>
+                        <li><a href="/calculadoras/rendimiento-billeteras">Comparador Tasas Billeteras</a></li>
+                        <li><a href="/calculadoras/conversor-dolar">Conversor Dólar & Brecha</a></li>
+                        <li><a href="/analytics">Panel de Métricas en Vivo</a></li>
+                    </ul>
+                </div>
 
-    // 2. WebGL Fingerprinting
-    function getWebGLInfo() {
-      try {
-        const canvas = document.createElement('canvas');
-        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-        if (!gl) return { renderer: 'none', vendor: 'none' };
-        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-        let renderer = 'standard';
-        let vendor = 'standard';
-        if (debugInfo) {
-          renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || 'standard';
-          vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) || 'standard';
-        }
-        return { renderer: renderer.substring(0, 80), vendor: vendor.substring(0, 60) };
-      } catch(e) {
-        return { renderer: 'err', vendor: 'err' };
-      }
-    }
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-white mb-3 fw-bold">Cumplimiento Legal</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 small">
+                        <li><a href="/sobre-nosotros"><i class="fa-solid fa-user-check me-1 text-success"></i> Quiénes Somos (E-E-A-T)</a></li>
+                        <li><a href="/politica-privacidad"><i class="fa-solid fa-shield-halved me-1 text-primary"></i> Política de Privacidad</a></li>
+                        <li><a href="/terminos-condiciones"><i class="fa-solid fa-file-contract me-1 text-warning"></i> Términos y Condiciones</a></li>
+                        <li><a href="/contacto"><i class="fa-solid fa-envelope me-1 text-info"></i> Contacto y Redacción</a></li>
+                    </ul>
+                </div>
+            </div>
 
-    // 3. Biometric Mouse Tracking (curvature, velocity, jitter)
-    window.addEventListener('mousemove', function(e) {
-      const now = Date.now();
-      if (lastMouse) {
-        const dt = Math.max(1, now - lastMouse.t);
-        const dx = e.clientX - lastMouse.x;
-        const dy = e.clientY - lastMouse.y;
-        if (dt > 16 || mouseEvents.length < 50) {
-          mouseEvents.push({ dx, dy, dt, t: now - startTime });
-          if (mouseEvents.length > 100) mouseEvents.shift();
-        }
-      }
-      lastMouse = { x: e.clientX, y: e.clientY, t: now };
-    }, { passive: true });
+            <!-- Disclaimer Financiero Mandatorio -->
+            <div class="disclaimer-box">
+                <strong><i class="fa-solid fa-triangle-exclamation text-warning me-1"></i> AVISO LEGAL Y DESCARGO DE RESPONSABILIDAD FINANCIERA (DISCLAIMER):</strong>
+                El contenido publicado en <em>Criterio Financiero</em> tiene fines estrictamente educativos, informativos y de divulgación general. No constituye, bajo ninguna circunstancia, una recomendación de inversión, oferta pública, asesoramiento financiero personalizado, legal o tributario. Toda inversión en instrumentos del mercado de capitales (bonos, acciones, CEDEARs, fondos comunes, criptoactivos) conlleva riesgos inherentes de volatilidad y eventual pérdida del capital invertido. Rentabilidades pasadas no aseguran rendimientos futuros. Antes de tomar cualquier decisión patrimonial, consulte con un Asesor Idóneo registrado ante la Comisión Nacional de Valores (CNV) de la República Argentina.
+            </div>
 
-    // 4. Scroll Tracking (depth, velocity, deceleration)
-    window.addEventListener('scroll', function() {
-      const now = Date.now();
-      const y = window.scrollY || window.pageYOffset || 0;
-      if (lastScroll) {
-        const dt = Math.max(1, now - lastScroll.t);
-        const dy = y - lastScroll.y;
-        const speed = Math.round((dy / dt) * 100) / 100;
-        scrollEvents.push({ y: Math.round(y), speed, dt });
-        if (scrollEvents.length > 60) scrollEvents.shift();
-      }
-      lastScroll = { y, t: now };
-    }, { passive: true });
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center text-muted small pt-4 mt-3 border-top border-secondary border-opacity-25">
+                <div>© 2026 Criterio Financiero. Todos los derechos reservados.</div>
+                <div class="mt-2 mt-md-0">
+                    <span class="text-muted">Cumplimiento Google AdSense & Directrices para Webmasters</span>
+                </div>
+            </div>
+        </div>
+    </footer>
 
-    // 5. Send Beacon to /api/beacon
-    function sendTelemetry(isFinal) {
-      if (beaconSent && isFinal) return;
-      const timeOnPage = Date.now() - startTime;
-      if (timeOnPage < 800 && !isFinal) return;
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-      const webgl = getWebGLInfo();
-      const payload = {
-        session_id: sessionId,
-        path: window.location.pathname,
-        time_on_page: timeOnPage,
-        canvas_hash: getCanvasHash(),
-        webgl_renderer: webgl.renderer,
-        webgl_vendor: webgl.vendor,
-        screen: {
-          width: window.screen.width,
-          height: window.screen.height,
-          colorDepth: window.screen.colorDepth,
-          pixelRatio: window.devicePixelRatio || 1,
-          viewport: { w: window.innerWidth, h: window.innerHeight }
-        },
-        mouse_events: mouseEvents.slice(-50),
-        scroll_events: scrollEvents.slice(-30),
-        timezone_offset: new Date().getTimezoneOffset(),
-        touch_support: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
-        platform: navigator.platform || '',
-        language: navigator.language || '',
-        do_not_track: navigator.doNotTrack || ''
-      };
+    <!-- Script de Telemetría Biometría Conductual (Anti-Bot & Calidad de Tráfico) -->
+    <script>
+        (function() {
+            const startTime = Date.now();
+            let mouseMoves = [];
+            let scrollEvents = [];
+            let lastMouse = null;
+            let lastScroll = window.scrollY;
 
-      const jsonStr = JSON.stringify(payload);
-      if (navigator.sendBeacon) {
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        navigator.sendBeacon('/api/beacon', blob);
-      } else {
-        fetch('/api/beacon', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: jsonStr,
-          keepalive: true
-        }).catch(function() {});
-      }
-      if (isFinal) beaconSent = true;
-    }
+            // Muestreo de mouse
+            window.addEventListener('mousemove', function(e) {
+                const now = Date.now();
+                if (!lastMouse || (now - lastMouse.t) > 30) {
+                    if (mouseMoves.length < 50) {
+                        const dx = lastMouse ? e.clientX - lastMouse.x : 0;
+                        const dy = lastMouse ? e.clientY - lastMouse.y : 0;
+                        const dt = lastMouse ? now - lastMouse.t : 0;
+                        mouseMoves.push({ dx: dx, dy: dy, dt: dt });
+                    }
+                    lastMouse = { x: e.clientX, y: e.clientY, t: now };
+                }
+            }, { passive: true });
 
-    setInterval(function() { sendTelemetry(false); }, 7000);
-    window.addEventListener('visibilitychange', function() {
-      if (document.visibilityState === 'hidden') sendTelemetry(true);
-    });
-    window.addEventListener('beforeunload', function() { sendTelemetry(true); });
-    setTimeout(function() { sendTelemetry(false); }, 2500);
-  })();
-  </script>
-  {% block extra_scripts %}{% endblock %}
+            // Muestreo de scroll
+            window.addEventListener('scroll', function() {
+                const now = Date.now();
+                const cur = window.scrollY;
+                if (scrollEvents.length < 30) {
+                    scrollEvents.push({ y: Math.round(cur), dt: 50, speed: 1.0 });
+                }
+                lastScroll = cur;
+            }, { passive: true });
+
+            // Detección WebGL Fingerprint
+            function getWebGLInfo() {
+                try {
+                    const canvas = document.createElement('canvas');
+                    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                    if (!gl) return { vendor: 'None', renderer: 'None' };
+                    const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+                    return {
+                        vendor: dbg ? gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR),
+                        renderer: dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)
+                    };
+                } catch(e) {
+                    return { vendor: 'Unknown', renderer: 'Unknown' };
+                }
+            }
+
+            // Emisión de Beacon Biométrico al salir o tras 12 segundos
+            let beaconSent = false;
+            function sendBeacon() {
+                if (beaconSent) return;
+                beaconSent = true;
+                const glInfo = getWebGLInfo();
+                const payload = {
+                    session_id: 'cf_' + Math.random().toString(36).substr(2, 9),
+                    path: window.location.pathname,
+                    time_on_page: Date.now() - startTime,
+                    canvas_hash: 'cv_' + Math.random().toString(16).substr(2, 8),
+                    webgl_renderer: glInfo.renderer,
+                    webgl_vendor: glInfo.vendor,
+                    screen: { width: window.innerWidth, height: window.innerHeight },
+                    mouse_events: mouseMoves,
+                    scroll_events: scrollEvents,
+                    timezone_offset: new Date().getTimezoneOffset(),
+                    platform: navigator.platform,
+                    language: navigator.language
+                };
+
+                const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+                if (navigator.sendBeacon) {
+                    navigator.sendBeacon('/api/beacon', blob);
+                } else {
+                    fetch('/api/beacon', { method: 'POST', body: blob, keepalive: true }).catch(function(){});
+                }
+            }
+
+            window.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'hidden') sendBeacon();
+            });
+            window.addEventListener('beforeunload', sendBeacon);
+            setTimeout(sendBeacon, 15000); // Enviar baliza temprana de respaldo
+        })();
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

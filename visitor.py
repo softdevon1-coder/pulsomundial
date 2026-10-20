@@ -242,8 +242,17 @@ def choose_session_archetype() -> str:
     return random.choices(["bounce", "standard", "deep"], weights=[30, 50, 20], k=1)[0]
 
 
-SECTIONS = ["/", "/mundo", "/economia", "/tecnologia", "/deportes", "/salud", "/ciencia"]
-SECTION_WEIGHTS = [30, 15, 15, 15, 10, 8, 7]
+SECTIONS = [
+    "/",
+    "/guias",
+    "/comparativas",
+    "/calculadoras",
+    "/calculadoras/interes-compuesto",
+    "/calculadoras/rendimiento-billeteras",
+    "/calculadoras/conversor-dolar",
+    "/mercados"
+]
+SECTION_WEIGHTS = [25, 20, 18, 8, 11, 10, 4, 4]
 
 
 def generate_random_ip() -> str:
@@ -629,6 +638,9 @@ async def playwright_worker(worker_id: int, stats: dict, lock: asyncio.Lock, dea
                     None, lambda: rotate_mobile_ip(max_wait=14.0)
                 )
                 log.info(f"📱 [ADB] Nueva IP celular: {new_ip}")
+                # Actualizar la variable de IP actual para que la próxima visita use la IP nueva
+                if new_ip and len(new_ip.split(".")) == 4:
+                    current_mobile_ip = new_ip
 
             # Pausa natural modulada por el ritmo circadiano de la audiencia
             base_pause = random.uniform(1.8, 4.2)
@@ -640,16 +652,56 @@ async def playwright_worker(worker_id: int, stats: dict, lock: asyncio.Lock, dea
 
 # ── Motor 2: Fallback aiohttp con Telemetría Sintética Biométricamente Válida
 async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Lock, deadline: float):
-    """Fallback ligero si Playwright no está instalado o en entornos restringidos."""
+    """Fallback ligero si Playwright no está instalado o en entornos restringidos.
+
+    Modo móvil (--mobile):
+      - Detecta la IP interna del adaptador USB del celular (Ethernet 3 / RNDIS).
+      - Crea el TCPConnector con local_addr para forzar el tráfico por el modem 4G/5G.
+      - Después de cada rotación ADB, cierra la sesión vieja y crea una sesión nueva
+        con la IP interna actualizada. Así se evitan los TimeoutError por binding stale.
+      - Envía la IP pública real del celular en X-Forwarded-For / X-Real-IP para que
+        el dashboard de analítica registre esa IP y no la del Wi-Fi.
+    """
     import aiohttp
     import json
 
-    connector = aiohttp.TCPConnector(limit=50, ssl=False)
     visit_count = 0
-    async with aiohttp.ClientSession(connector=connector, timeout=aiohttp.ClientTimeout(total=45)) as session:
+
+    # ── Función interna: crear una sesión enlazada al adaptador USB del celular ──
+    def _make_session(log_binding: bool = False):
+        """Crea un ClientSession con el conector enlazado al adaptador USB actual."""
+        if USE_MOBILE_IP:
+            bind_ip = get_cellular_bind_ip()
+            if bind_ip:
+                if log_binding:
+                    log.info(
+                        f"🔗 [ENRUTAMIENTO] Tráfico enlazado al adaptador USB celular "
+                        f"({bind_ip}) | Wi-Fi libre para juegos y streaming"
+                    )
+                connector = aiohttp.TCPConnector(limit=5, ssl=False, local_addr=(bind_ip, 0))
+            else:
+                log.warning("⚠️  [ENRUTAMIENTO] No se detectó adaptador USB celular — usando red por defecto")
+                connector = aiohttp.TCPConnector(limit=5, ssl=False)
+        else:
+            connector = aiohttp.TCPConnector(limit=50, ssl=False)
+        return aiohttp.ClientSession(connector=connector, timeout=aiohttp.ClientTimeout(total=45))
+
+    # ── Obtener IP pública inicial del celular ──────────────────────────────────
+    current_mobile_ip = "0.0.0.0"
+    if USE_MOBILE_IP:
+        current_mobile_ip = _adb("shell", "curl -s --max-time 4 https://api.ipify.org", timeout=6) or "0.0.0.0"
+        if worker_id == 0:
+            log.info(f"📱 [ADB] IP pública inicial del celular: {current_mobile_ip}")
+
+    # ── Sesión inicial ──────────────────────────────────────────────────────────
+    session = _make_session(log_binding=(worker_id == 0))
+
+    try:
         while time.monotonic() < deadline:
             visit_count += 1
-            client_ip = generate_random_ip()
+
+            # En modo normal: IP simulada residencial. En modo móvil: la IP real del celular.
+            client_ip = current_mobile_ip if USE_MOBILE_IP else generate_random_ip()
             profile = random.choice(DEVICE_PROFILES)
             entry_section = random.choices(SECTIONS, weights=SECTION_WEIGHTS, k=1)[0]
             url = TARGET_URL + entry_section
@@ -660,25 +712,27 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                 "Accept-Language": profile.get("locale", "es-AR") + ",es;q=0.9,en;q=0.8",
                 "DNT": "1",
+                # Siempre enviar la IP real del celular para que el dashboard la registre
+                "X-Forwarded-For": client_ip,
+                "X-Real-IP": client_ip,
             }
-            if not USE_MOBILE_IP:
-                headers["X-Forwarded-For"] = client_ip
-                headers["X-Real-IP"] = client_ip
             if referrer:
                 headers["Referer"] = referrer
 
             success = False
             try:
-                # 1. Petición GET a la página
+                # 1. Petición GET a la página de entrada
+                html_body = ""
                 async with session.get(url, headers=headers) as resp:
-                    await resp.read()
+                    html_bytes = await resp.read()
+                    html_body = html_bytes.decode("utf-8", errors="ignore")
                     if resp.status < 400:
                         success = True
                     else:
-                        log.warning(f"HTTP GET {resp.status} on {url} (ref: {repr(headers.get('Referer'))})")
+                        log.warning(f"HTTP GET {resp.status} en {url}")
                         success = False
 
-                # 2. Generación y envío de telemetría biométrica compatible con nuestro detector
+                # 2. Telemetría biométrica sintética hacia /api/beacon
                 if success:
                     archetype = choose_session_archetype()
                     if archetype == "bounce":
@@ -688,7 +742,23 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
                     else:
                         sim_time = random.randint(80000, 160000)
 
-                    # Simular curva de Bézier sintética para pasar el control anti-bot
+                    # Simulación de navegación orgánica hacia artículos si no es rebote
+                    if archetype != "bounce" and html_body:
+                        import re
+                        art_links = list(set(re.findall(r'href="(/articulo/[a-zA-Z0-9_-]+)"', html_body)))
+                        if art_links:
+                            num_art = 1 if archetype == "standard" else random.randint(2, min(3, len(art_links)))
+                            selected_arts = random.sample(art_links, min(num_art, len(art_links)))
+                            for a_link in selected_arts:
+                                await asyncio.sleep(random.uniform(2.0, 4.5))
+                                art_headers = dict(headers)
+                                art_headers["Referer"] = url
+                                try:
+                                    async with session.get(TARGET_URL + a_link, headers=art_headers) as art_resp:
+                                        await art_resp.read()
+                                except Exception:
+                                    pass
+
                     p0 = (random.randint(100, 300), random.randint(100, 200))
                     p3 = (random.randint(400, 900), random.randint(300, 700))
                     trajectory = generate_bezier_trajectory(p0, p3, steps=random.randint(15, 25))
@@ -729,7 +799,6 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
                         "do_not_track": "1",
                     }
 
-                    # Enviar baliza biométrica a /api/beacon
                     beacon_headers = dict(headers)
                     beacon_headers["Content-Type"] = "application/json"
                     async with session.post(
@@ -759,11 +828,7 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
                     f"🚀 {rate:.2f} vis/s | ⏱ {elapsed / 3600:.1f}h | ⏰ Circadiano: {circadian:.2f}x"
                 )
 
-            # Pausa natural modulada por el ritmo circadiano
-            base_pause = random.uniform(0.6, 1.8)
-            circadian = get_circadian_factor()
-
-            # ── Rotación de IP vía ADB (solo worker 0)
+            # ── Rotación de IP vía ADB (solo worker 0) ─────────────────────────
             if (
                 worker_id == 0
                 and IP_ROTATE_EVERY > 0
@@ -771,11 +836,37 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
             ):
                 log.info(f"📱 [ADB] Rotando IP del celular tras {visit_count} visitas...")
                 new_ip = await asyncio.get_event_loop().run_in_executor(
-                    None, lambda: rotate_mobile_ip(max_wait=14.0)
+                    None, lambda: rotate_mobile_ip(max_wait=16.0)
                 )
                 log.info(f"📱 [ADB] Nueva IP celular: {new_ip}")
 
+                if new_ip and len(new_ip.split(".")) == 4:
+                    current_mobile_ip = new_ip
+
+                # ── CRÍTICO: Recrear sesión con el nuevo binding del adaptador USB ──
+                # Después del modo avión, Windows puede reasignar la IP interna del
+                # adaptador Ethernet 3 (ej: 10.179.143.203 → 10.179.143.205).
+                # Si no recreamos la sesión, el conector queda enlazado a la IP vieja
+                # y genera TimeoutError en la siguiente visita.
+                if USE_MOBILE_IP:
+                    try:
+                        await session.close()
+                    except Exception:
+                        pass
+                    await asyncio.sleep(1.0)  # Dar tiempo a Windows para estabilizar el adaptador
+                    session = _make_session(log_binding=False)
+                    log.info(f"🔄 [SESIÓN] Sesión recreada con nuevo binding USB | IP pública: {current_mobile_ip}")
+
+            # Pausa natural modulada por el ritmo circadiano
+            base_pause = random.uniform(0.6, 1.8)
+            circadian = get_circadian_factor()
             await asyncio.sleep(base_pause / circadian)
+
+    finally:
+        try:
+            await session.close()
+        except Exception:
+            pass
 
 
 # ── Función Principal ───────────────────────────────────────────────────────

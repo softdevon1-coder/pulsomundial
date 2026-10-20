@@ -1,317 +1,191 @@
 {% extends "base.html" %}
 
-{% block title %}{{ article['title'] }} — PulsoMundial{% endblock %}
+{% block title %}{{ article.title }} — Criterio Financiero{% endblock %}
+{% block meta_description %}{{ article.subtitle }}{% endblock %}
 
 {% block extra_head %}
-<style>
-  .article-header {
-    padding: 30px 0 20px;
-  }
-  .article-badge-section {
-    background-color: {{ article['section_color'] }};
-    color: white;
-    font-size: 0.78rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 5px 12px;
-    border-radius: 4px;
-    display: inline-block;
-    margin-bottom: 14px;
-  }
-  .article-headline {
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 800;
-    line-height: 1.2;
-    color: #ffffff;
-    margin-bottom: 16px;
-  }
-  .article-lead-subtitle {
-    font-size: 1.25rem;
-    line-height: 1.6;
-    color: #94a3b8;
-    margin-bottom: 24px;
-    font-weight: 400;
-  }
-  .byline-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 0;
-    border-top: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 28px;
-    font-size: 0.88rem;
-    color: #94a3b8;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .author-avatar-circle {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, {{ article['section_color'] }}, #e63946);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    color: white;
-    font-size: 1.1rem;
-  }
-  .hero-article-image {
-    width: 100%;
-    max-height: 540px;
-    object-fit: cover;
-    border-radius: 12px;
-    margin-bottom: 10px;
-  }
-  .img-caption {
-    font-size: 0.8rem;
-    color: #64748b;
-    margin-bottom: 30px;
-    font-style: italic;
-  }
-
-  /* Editorial Content */
-  .article-body-text {
-    font-family: 'Merriweather', serif;
-    font-size: 1.12rem;
-    line-height: 1.85;
-    color: #e2e8f0;
-  }
-  .article-body-text p {
-    margin-bottom: 24px;
-  }
-  .article-body-text p:first-of-type::first-letter {
-    font-size: 3.6rem;
-    float: left;
-    line-height: 0.85;
-    margin-right: 12px;
-    font-weight: 900;
-    color: {{ article['section_color'] }};
-    font-family: 'Cinzel', serif;
-  }
-
-  .pull-quote {
-    border-left: 4px solid {{ article['section_color'] }};
-    padding: 18px 24px;
-    margin: 32px 0;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 0 8px 8px 0;
-    font-style: italic;
-    font-size: 1.25rem;
-    color: #f1f5f9;
-  }
-
-  .tag-pill {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #94a3b8;
-    padding: 5px 12px;
-    border-radius: 50px;
-    font-size: 0.8rem;
-    text-decoration: none;
-    transition: all 0.2s;
-  }
-  .tag-pill:hover {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.12);
-  }
-
-  .share-btn {
-    border-radius: 50px;
-    padding: 6px 14px;
-    font-size: 0.82rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-</style>
+<!-- Schema.org JSON-LD para Artículos Financieros y FAQ (E-E-A-T & Google Rich Snippets) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "{{ article.title }}",
+  "description": "{{ article.subtitle }}",
+  "author": {
+    "@type": "Person",
+    "name": "{{ article.author }}"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Criterio Financiero",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://pulsomundial.onrender.com/static/logo.png"
+    }
+  },
+  "datePublished": "2026-10-15T09:00:00-03:00",
+  "dateModified": "2026-10-19T14:30:00-03:00"
+}
+</script>
 {% endblock %}
 
 {% block content %}
-<article class="article-header">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-10">
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="/{{ article.section }}" class="text-decoration-none text-muted">{{ article.section_name }}</a></li>
+            <li class="breadcrumb-item active text-white" aria-current="page">{{ article.title|truncate(35) }}</li>
+        </ol>
+    </nav>
 
-        <!-- Breadcrumbs -->
-        <nav aria-label="breadcrumb">
-          <ol class="breadcrumb small text-secondary mb-2">
-            <li class="breadcrumb-item"><a href="/" class="text-secondary text-decoration-none">Inicio</a></li>
-            <li class="breadcrumb-item"><a href="/{{ article['section'] }}" class="text-secondary text-decoration-none">{{ article['section_name'] }}</a></li>
-            <li class="breadcrumb-item active text-light" aria-current="page">{{ article['title'] | truncate(40) }}</li>
-          </ol>
-        </nav>
-
-        <a href="/{{ article['section'] }}" class="article-badge-section text-decoration-none">
-          {{ article['section_name'] }}
-        </a>
-
-        <h1 class="article-headline">{{ article['title'] }}</h1>
-        <p class="article-lead-subtitle">{{ article['subtitle'] }}</p>
-
-        <!-- Byline -->
-        <div class="byline-bar">
-          <div class="d-flex align-items-center gap-3">
-            <div class="author-avatar-circle">
-              {{ article['author'][:1] }}
-            </div>
-            <div>
-              <div class="text-white fw-bold">{{ article['author'] }}</div>
-              <div class="small text-secondary">Corresponsalía Central de PulsoMundial</div>
-            </div>
-          </div>
-          <div class="d-flex align-items-center gap-3">
-            <span><i class="far fa-calendar-alt me-1"></i> {{ article['date'] }}</span>
-            <span>•</span>
-            <span><i class="far fa-clock me-1"></i> {{ article['read_time'] }}</span>
-          </div>
-          <div class="d-flex gap-2">
-            <a href="#" class="btn btn-sm btn-outline-secondary share-btn"><i class="fab fa-x-twitter"></i> Compartir</a>
-            <a href="#" class="btn btn-sm btn-outline-secondary share-btn"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-            <a href="#" class="btn btn-sm btn-outline-secondary share-btn" onclick="navigator.clipboard.writeText(window.location.href); alert('Enlace copiado al portapapeles'); return false;">
-              <i class="fas fa-link"></i> Copiar
-            </a>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-</article>
-
-<div class="container">
-  <div class="row justify-content-center">
-    <div class="col-lg-10">
-      <div class="row g-5">
-
-        <!-- Article Main Content Column -->
-        <div class="col-lg-8">
-          
-          <img src="https://picsum.photos/1200/600?random={{ article['image_id'] }}" alt="{{ article['title'] }}" class="hero-article-image">
-          <div class="img-caption">
-            <i class="fas fa-camera me-1"></i> Archivo fotográfico internacional para PulsoMundial. Cobertura del evento en directo.
-          </div>
-
-          <div class="article-body-text">
-            {% for para in article['content'] %}
-              <p>{{ para }}</p>
-              {% if loop.index == 2 %}
-              <div class="pull-quote">
-                "Los acontecimientos de las últimas horas marcan un punto de inflexión cuyas repercusiones se extenderán durante los próximos meses en los mercados y en la geopolítica."
-              </div>
-              {% endif %}
-            {% endfor %}
-          </div>
-
-          <!-- Tags -->
-          <div class="d-flex align-items-center flex-wrap gap-2 my-4 pt-3 border-top border-secondary">
-            <span class="text-secondary small fw-bold me-2"><i class="fas fa-tags me-1"></i> Etiquetas:</span>
-            {% for tag in article['tags'] %}
-            <span class="tag-pill">#{{ tag }}</span>
-            {% endfor %}
-          </div>
-
-          <!-- Author Bio box -->
-          <div class="p-4 my-5 rounded-3" style="background: var(--bg-card); border: 1px solid var(--border-color);">
-            <div class="d-flex gap-3 align-items-center">
-              <div class="author-avatar-circle" style="width: 56px; height: 56px; font-size: 1.4rem;">
-                {{ article['author'][:1] }}
-              </div>
-              <div>
-                <h6 class="text-white fw-bold mb-1">Escrito por {{ article['author'] }}</h6>
-                <p class="text-secondary small mb-0">
-                  Periodista senior e investigador para PulsoMundial con base internacional. Especializado en análisis de impacto y coberturas en tiempo real.
-                </p>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-          
-          <!-- Mas en esta seccion -->
-          <div class="card p-3 mb-4" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px;">
-            <div class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom border-secondary">
-              <h5 class="fw-bold mb-0 text-uppercase fs-6 text-light">
-                <i class="fas fa-bookmark me-2" style="color: {{ article['section_color'] }};"></i> Más en {{ article['section_name'] }}
-              </h5>
-            </div>
-            <div class="sidebar-trend-list">
-              {% for art in section_list %}
-              {% if art['slug'] != article['slug'] %}
-              <div class="sidebar-trend-item">
-                <div>
-                  <a href="/articulo/{{ art['slug'] }}" class="trend-title">
-                    {{ art['title'] }}
-                  </a>
-                  <div class="text-secondary small mt-1" style="font-size: 0.75rem;">
-                    {{ art['date'] }} · {{ art['read_time'] }}
-                  </div>
+    <div class="row g-4">
+        <!-- Columna de Contenido Principal (8 columnas) -->
+        <article class="col-lg-8">
+            <header class="mb-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge-cat badge-{{ article.section }}">{{ article.section_name }}</span>
+                    <span class="trust-badge"><i class="fa-solid fa-clock me-1 text-primary"></i> {{ article.read_time }} de lectura</span>
+                    <span class="trust-badge"><i class="fa-solid fa-shield-halved text-success me-1"></i> Verificado E-E-A-T</span>
                 </div>
-              </div>
-              {% endif %}
-              {% endfor %}
-            </div>
-          </div>
 
-          <!-- Real-time telemetría badge -->
-          <div class="card p-4" style="background: linear-gradient(135deg, #101426, #161c38); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px;">
-            <div class="d-flex align-items-center gap-2 mb-2 text-info small fw-bold">
-              <span class="pulse-dot"></span> AUDITORÍA EN TIEMPO REAL
-            </div>
-            <h6 class="text-white fw-bold mb-2">Lectores de esta Nota</h6>
-            <p class="text-secondary small mb-3">
-              Esta visualización ha sido computada en el panel central de analítica de tráfico de PulsoMundial.
-            </p>
-            <a href="/analytics" class="btn btn-outline-info btn-sm fw-bold w-100 py-2">
-              <i class="fas fa-chart-line me-1"></i> Ver Estadísticas del Sitio
-            </a>
-          </div>
+                <h1 class="display-6 fw-bold text-white mb-3">{{ article.title }}</h1>
+                <p class="fs-5 text-muted mb-4 lead">{{ article.subtitle }}</p>
 
-        </div>
-
-      </div>
-
-      <!-- Related Articles Row -->
-      {% if related %}
-      <div class="my-5 pt-4 border-top border-secondary">
-        <h4 class="text-white fw-bold mb-4 text-uppercase fs-5">
-          <i class="fas fa-layer-group me-2" style="color: {{ article['section_color'] }};"></i> Artículos Relacionados
-        </h4>
-        <div class="row g-4">
-          {% for r in related %}
-          <div class="col-md-4">
-            <div class="article-card">
-              <div class="img-wrapper" style="height: 180px;">
-                <img src="https://picsum.photos/500/300?random={{ r['image_id'] }}" alt="{{ r['title'] }}" style="height: 100%;">
-                <span class="card-badge" style="background-color: {{ r['section_color'] }}; color: #fff;">
-                  {{ r['section_name'] }}
-                </span>
-              </div>
-              <div class="card-body-custom">
-                <a href="/articulo/{{ r['slug'] }}" class="card-title-custom">
-                  {{ r['title'] }}
-                </a>
-                <p class="card-subtitle-custom">
-                  {{ r['subtitle'] | truncate(90) }}
-                </p>
-                <div class="card-meta-custom mt-auto">
-                  <span>{{ r['author'] }}</span>
-                  <span>{{ r['read_time'] }}</span>
+                <!-- Byline de Autor con Credenciales Financieras -->
+                <div class="d-flex align-items-center gap-3 p-3 card-custom border-secondary bg-dark">
+                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5" style="width: 48px; height: 48px;">
+                        {{ article.author[0] }}
+                    </div>
+                    <div>
+                        <div class="text-white fw-bold">{{ article.author }}</div>
+                        <div class="text-muted small">Especialista en Mercado de Capitales & Planificación Fiscal</div>
+                    </div>
+                    <div class="ms-auto text-end d-none d-sm-block">
+                        <div class="text-muted small">Actualizado:</div>
+                        <div class="text-white small fw-semibold">Octubre 2026</div>
+                    </div>
                 </div>
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
+            </header>
 
+            <!-- Resumen Ejecutivo / Key Takeaways -->
+            <div class="card-custom p-4 mb-4 border-start border-4 border-success bg-dark">
+                <h5 class="text-white fw-bold mb-3"><i class="fa-solid fa-bolt text-warning me-2"></i> Puntos Clave de este Análisis:</h5>
+                <ul class="text-muted small mb-0 d-flex flex-column gap-2">
+                    <li><strong class="text-light">Objetivo:</strong> Maximizar el rendimiento del capital invertido protegiéndolo de la devaluación y la inflación local.</li>
+                    <li><strong class="text-light">Perfil Recomendado:</strong> Apto para inversores conservadores, moderados y dinámicos según su horizonte temporal.</li>
+                    <li><strong class="text-light">Seguridad:</strong> Todas las entidades mencionadas operan bajo supervisión directa de la CNV o el BCRA.</li>
+                </ul>
+            </div>
+
+            <!-- Cuerpo del Artículo -->
+            <div class="article-body text-light fs-6" style="line-height: 1.85;">
+                {% for para in article.content %}
+                    <p class="mb-4 text-light text-opacity-75">{{ para }}</p>
+                    
+                    <!-- Inyección de Anuncio AdSense Estratégico tras el Párrafo 2 (Máximo RPM) -->
+                    {% if loop.index == 2 %}
+                    <div class="ad-container my-4" style="min-height: 250px;">
+                        <div class="ad-label">Publicidad — Espacio Patrocinado</div>
+                        <div class="ad-mock-content">
+                            <i class="fa-solid fa-rectangle-ad me-1 text-success"></i>
+                            <strong>Google AdSense In-Article Native Display (336x280)</strong><br>
+                            <small class="text-muted">Anuncio de alta afinidad contextual (Apertura de cuentas de inversión y brokers)</small>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Inyección de Cuadro Resumen a mitad de artículo -->
+                    {% if loop.index == 4 %}
+                    <div class="card-custom p-4 my-4 border-start border-4 border-primary">
+                        <h5 class="text-white fw-bold mb-2"><i class="fa-solid fa-calculator text-primary me-2"></i> Simulá tu Rendimiento</h5>
+                        <p class="small text-muted mb-3">Utilizá nuestras herramientas matemáticas gratuitas para calcular el interés compuesto y las tasas vigentes:</p>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a href="/calculadoras/interes-compuesto" class="btn btn-sm btn-outline-success">Calculadora Interés Compuesto</a>
+                            <a href="/calculadoras/rendimiento-billeteras" class="btn btn-sm btn-outline-warning">Rendimiento Billeteras</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <!-- Preguntas Frecuentes (FAQ Accordion con Schema JSON) -->
+            <div class="card-custom p-4 my-4">
+                <h4 class="text-white fw-bold mb-3"><i class="fa-solid fa-circle-question text-info me-2"></i> Preguntas Frecuentes</h4>
+                <div class="accordion accordion-flush" id="faqAccordion">
+                    <div class="accordion-item bg-transparent border-secondary">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed bg-transparent text-white fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                ¿Qué monto mínimo se requiere para comenzar?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted small">
+                                En la mayoría de los brokers y billeteras de Argentina podés comenzar desde montos muy bajos (a partir de $1.000 pesos o el equivalente a 1 acción o fracción de CEDEAR).
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item bg-transparent border-secondary">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed bg-transparent text-white fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                ¿Cómo tributan estos instrumentos ante AFIP/ARCA?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted small">
+                                La compraventa de acciones locales y bonos soberanos suele estar exenta de Ganancias para personas humanas. Los dividendos de CEDEARs tienen retención en origen y tributan Ganancias en escala local. Consulte siempre a su contador matriculado.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Etiquetas / Tags -->
+            <div class="d-flex align-items-center gap-2 flex-wrap my-4">
+                <span class="text-muted small fw-bold">Temas relacionados:</span>
+                {% for tag in article.tags %}
+                <span class="badge bg-dark border border-secondary text-muted px-3 py-2">#{{ tag }}</span>
+                {% endfor %}
+            </div>
+
+            <!-- Descargo de Responsabilidad E-E-A-T -->
+            <div class="disclaimer-box my-4">
+                <strong>Aviso de Independencia:</strong> Este artículo ha sido redactado por analistas independientes siguiendo nuestro código de ética editorial. Los enlaces a plataformas pueden incluir códigos de referencia o afiliación que ayudan a sostener nuestro portal sin costo adicional para el usuario. Ningún broker influye en nuestras calificaciones.
+            </div>
+        </article>
+
+        <!-- Sidebar Lateral (4 columnas) -->
+        <aside class="col-lg-4">
+            <!-- Banner AdSense Sticky Half-Page (300x600) -->
+            <div class="ad-container mb-4" style="min-height: 400px;">
+                <div class="ad-label">Publicidad — Espacio Patrocinado</div>
+                <div class="ad-mock-content">
+                    <i class="fa-solid fa-rectangle-ad me-1 text-primary"></i>
+                    <strong>Google AdSense Sticky Half-Page (300x600)</strong><br>
+                    <small class="text-muted">Formato de máxima visibilidad y engagement durante la lectura prolongada</small>
+                </div>
+            </div>
+
+            <!-- Artículos Relacionados -->
+            <div class="card-custom p-4 mb-4">
+                <h5 class="text-white fw-bold mb-3"><i class="fa-solid fa-bookmark text-success me-2"></i> Artículos Relacionados</h5>
+                <div class="d-flex flex-column gap-3">
+                    {% for rel in related_articles %}
+                    <div class="border-bottom border-secondary border-opacity-25 pb-2">
+                        <span class="badge-cat badge-{{ rel.section }} mb-1" style="font-size: 0.65rem;">{{ rel.section_name }}</span>
+                        <h6 class="mb-1" style="font-size: 0.88rem;">
+                            <a href="/articulo/{{ rel.slug }}" class="text-white text-decoration-none hover-emerald">
+                                {{ rel.title }}
+                            </a>
+                        </h6>
+                        <span class="text-muted" style="font-size: 0.72rem;">{{ rel.read_time }} de lectura</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </aside>
     </div>
-  </div>
 </div>
 {% endblock %}
