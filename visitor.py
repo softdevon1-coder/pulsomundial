@@ -16,10 +16,42 @@ import logging
 import sys
 import os
 import math
+import subprocess
 from typing import Optional, List, Tuple
 from urllib.parse import urljoin, urlparse
 
 import config
+
+# ── Rotación de IP vía ADB (Motorola moto g52 por USB) ──────────────────────
+ADB_PATH = os.path.join(os.path.dirname(__file__), "platform-tools", "adb.exe")
+USE_MOBILE_IP = os.environ.get("USE_MOBILE_USB", "0") == "1"
+# Cada cuántas visitas rotar la IP del celular (0 = desactivado)
+IP_ROTATE_EVERY = int(os.environ.get("IP_ROTATE_EVERY", "0"))
+
+
+def _adb(*args, timeout=10) -> str:
+    """Ejecuta un comando ADB y retorna la salida."""
+    try:
+        result = subprocess.run(
+            [ADB_PATH] + list(args),
+            capture_output=True, text=True, timeout=timeout
+        )
+        return result.stdout.strip()
+    except Exception as e:
+        return f"ERROR: {e}"
+
+
+def rotate_mobile_ip(wait_reconnect: float = 8.0) -> str:
+    """
+    Activa modo avión y lo desactiva para forzar nueva IP CGNAT del celular.
+    Retorna la nueva IP pública o un mensaje de error.
+    """
+    _adb("shell", "cmd connectivity airplane-mode enable")
+    time.sleep(4)
+    _adb("shell", "cmd connectivity airplane-mode disable")
+    time.sleep(wait_reconnect)
+    new_ip = _adb("shell", "curl -s https://api.ipify.org", timeout=15)
+    return new_ip if new_ip and not new_ip.startswith("ERROR") else "IP_DESCONOCIDA"
 
 TARGET_URL = os.environ.get("TARGET_URL", config.TARGET_URL).rstrip("/")
 
@@ -519,12 +551,14 @@ async def playwright_worker(worker_id: int, stats: dict, lock: asyncio.Lock, dea
             "--use-gl=angle",
         ],
     )
+    visit_count = 0
     try:
         while time.monotonic() < deadline:
             client_ip = generate_random_ip()
             profile = random.choice(DEVICE_PROFILES)
             profile_id = random.randint(1, TOTAL_PROFILE_POOL)
             success = await run_playwright_visit(browser, client_ip, profile, profile_id)
+            visit_count += 1
 
             async with lock:
                 if success:
@@ -542,6 +576,18 @@ async def playwright_worker(worker_id: int, stats: dict, lock: asyncio.Lock, dea
                     f"🚀 {rate:.2f} vis/s | ⏱ {elapsed / 3600:.1f}h | ⏰ Circadiano: {circadian:.2f}x"
                 )
 
+            # ── Rotación de IP vía ADB (solo worker 0 para no colapsar el celular)
+            if (
+                worker_id == 0
+                and IP_ROTATE_EVERY > 0
+                and visit_count % IP_ROTATE_EVERY == 0
+            ):
+                log.info(f"📱 [ADB] Rotando IP del celular tras {visit_count} visitas...")
+                new_ip = await asyncio.get_event_loop().run_in_executor(
+                    None, lambda: rotate_mobile_ip(wait_reconnect=12.0)
+                )
+                log.info(f"📱 [ADB] Nueva IP celular: {new_ip}")
+
             # Pausa natural modulada por el ritmo circadiano de la audiencia
             base_pause = random.uniform(1.8, 4.2)
             circadian = get_circadian_factor()
@@ -557,8 +603,10 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
     import json
 
     connector = aiohttp.TCPConnector(limit=50, ssl=False)
+    visit_count = 0
     async with aiohttp.ClientSession(connector=connector, timeout=aiohttp.ClientTimeout(total=45)) as session:
         while time.monotonic() < deadline:
+            visit_count += 1
             client_ip = generate_random_ip()
             profile = random.choice(DEVICE_PROFILES)
             entry_section = random.choices(SECTIONS, weights=SECTION_WEIGHTS, k=1)[0]
@@ -671,6 +719,19 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
             # Pausa natural modulada por el ritmo circadiano
             base_pause = random.uniform(0.6, 1.8)
             circadian = get_circadian_factor()
+
+            # ── Rotación de IP vía ADB (solo worker 0)
+            if (
+                worker_id == 0
+                and IP_ROTATE_EVERY > 0
+                and visit_count % IP_ROTATE_EVERY == 0
+            ):
+                log.info(f"📱 [ADB] Rotando IP del celular tras {visit_count} visitas...")
+                new_ip = await asyncio.get_event_loop().run_in_executor(
+                    None, lambda: rotate_mobile_ip(wait_reconnect=12.0)
+                )
+                log.info(f"📱 [ADB] Nueva IP celular: {new_ip}")
+
             await asyncio.sleep(base_pause / circadian)
 
 
