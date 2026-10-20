@@ -24,9 +24,18 @@ import config
 
 # ── Rotación de IP vía ADB (Motorola moto g52 por USB) ──────────────────────
 ADB_PATH = os.path.join(os.path.dirname(__file__), "platform-tools", "adb.exe")
-USE_MOBILE_IP = os.environ.get("USE_MOBILE_USB", "0") == "1"
+USE_MOBILE_IP = ("--mobile" in sys.argv) or (os.environ.get("USE_MOBILE_USB", "0") == "1")
 # Cada cuántas visitas rotar la IP del celular (0 = desactivado)
-IP_ROTATE_EVERY = int(os.environ.get("IP_ROTATE_EVERY", "0"))
+_rotate_arg = 0
+for i, arg in enumerate(sys.argv):
+    if arg == "--rotate" and i + 1 < len(sys.argv) and sys.argv[i + 1].isdigit():
+        _rotate_arg = int(sys.argv[i + 1])
+if _rotate_arg > 0:
+    IP_ROTATE_EVERY = _rotate_arg
+elif USE_MOBILE_IP:
+    IP_ROTATE_EVERY = int(os.environ.get("IP_ROTATE_EVERY", "5"))
+else:
+    IP_ROTATE_EVERY = int(os.environ.get("IP_ROTATE_EVERY", "0"))
 
 
 def _adb(*args, timeout=10) -> str:
@@ -41,17 +50,23 @@ def _adb(*args, timeout=10) -> str:
         return f"ERROR: {e}"
 
 
-def rotate_mobile_ip(wait_reconnect: float = 8.0) -> str:
+def rotate_mobile_ip(max_wait: float = 14.0) -> str:
     """
-    Activa modo avión y lo desactiva para forzar nueva IP CGNAT del celular.
-    Retorna la nueva IP pública o un mensaje de error.
+    Alterna el modo avión en el celular mediante ADB para forzar una nueva IP CGNAT en la red móvil.
+    Espera dinámicamente hasta que la conexión se restablezca.
     """
     _adb("shell", "cmd connectivity airplane-mode enable")
-    time.sleep(4)
+    time.sleep(3.5)
     _adb("shell", "cmd connectivity airplane-mode disable")
-    time.sleep(wait_reconnect)
-    new_ip = _adb("shell", "curl -s https://api.ipify.org", timeout=15)
-    return new_ip if new_ip and not new_ip.startswith("ERROR") else "IP_DESCONOCIDA"
+
+    # Espera dinámica a que el módem 4G/5G vuelva a tener salida a internet
+    start_t = time.time()
+    while time.time() - start_t < max_wait:
+        time.sleep(2)
+        ip = _adb("shell", "curl -s --max-time 4 https://api.ipify.org", timeout=6)
+        if ip and not ip.startswith("ERROR") and len(ip.split(".")) == 4:
+            return ip
+    return "IP_ACTIVA"
 
 TARGET_URL = os.environ.get("TARGET_URL", config.TARGET_URL).rstrip("/")
 
@@ -335,11 +350,12 @@ async def run_playwright_visit(browser, client_ip: str, profile: dict, profile_i
 
     referrer = get_traffic_source()
     headers = {
-        "X-Forwarded-For": client_ip,
-        "X-Real-IP": client_ip,
         "Accept-Language": profile.get("locale", "es-AR") + ",es;q=0.9,en;q=0.8",
         "DNT": "1",
     }
+    if not USE_MOBILE_IP:
+        headers["X-Forwarded-For"] = client_ip
+        headers["X-Real-IP"] = client_ip
     if referrer:
         headers["Referer"] = referrer
 
@@ -584,7 +600,7 @@ async def playwright_worker(worker_id: int, stats: dict, lock: asyncio.Lock, dea
             ):
                 log.info(f"📱 [ADB] Rotando IP del celular tras {visit_count} visitas...")
                 new_ip = await asyncio.get_event_loop().run_in_executor(
-                    None, lambda: rotate_mobile_ip(wait_reconnect=12.0)
+                    None, lambda: rotate_mobile_ip(max_wait=14.0)
                 )
                 log.info(f"📱 [ADB] Nueva IP celular: {new_ip}")
 
@@ -617,10 +633,11 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
                 "User-Agent": profile["ua"],
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                 "Accept-Language": profile.get("locale", "es-AR") + ",es;q=0.9,en;q=0.8",
-                "X-Forwarded-For": client_ip,
-                "X-Real-IP": client_ip,
                 "DNT": "1",
             }
+            if not USE_MOBILE_IP:
+                headers["X-Forwarded-For"] = client_ip
+                headers["X-Real-IP"] = client_ip
             if referrer:
                 headers["Referer"] = referrer
 
@@ -728,7 +745,7 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
             ):
                 log.info(f"📱 [ADB] Rotando IP del celular tras {visit_count} visitas...")
                 new_ip = await asyncio.get_event_loop().run_in_executor(
-                    None, lambda: rotate_mobile_ip(wait_reconnect=12.0)
+                    None, lambda: rotate_mobile_ip(max_wait=14.0)
                 )
                 log.info(f"📱 [ADB] Nueva IP celular: {new_ip}")
 
@@ -764,6 +781,7 @@ async def main():
     log.info(f"   Destino : {target_url}")
     log.info(f"   Motor   : {'Playwright Chromium (Headless Real)' if has_playwright else 'Fallback HTTP + Telemetría Sintética'}")
     log.info(f"   Workers : {num_workers} | Duración: {config.JOB_DURATION_SECONDS / 3600:.1f}h")
+    log.info(f"   IP Modo : {'Módem USB Móvil 4G/5G (Rotación cada ' + str(IP_ROTATE_EVERY) + ' visitas)' if USE_MOBILE_IP else 'IPs Simuladas Residenciales'}")
     log.info("=" * 60)
 
     if has_playwright:
