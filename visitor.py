@@ -38,6 +38,26 @@ else:
     IP_ROTATE_EVERY = int(os.environ.get("IP_ROTATE_EVERY", "0"))
 
 
+def get_cellular_bind_ip() -> Optional[str]:
+    """
+    Detecta la dirección IP local asignada al adaptador USB del celular (Ethernet 3).
+    Permite enlazar el tráfico del bot exclusivamente a los datos móviles, dejando
+    el Wi-Fi libre para juegos, streaming y uso normal de Windows sin cortes.
+    """
+    try:
+        import socket
+        ips = socket.gethostbyname_ex(socket.gethostname())[2]
+        for ip in ips:
+            if ip.startswith("10.") or ip.startswith("192.168.42.") or ip.startswith("192.168.137."):
+                return ip
+        for ip in ips:
+            if not ip.startswith("127.") and not ip.startswith("192.168.0."):
+                return ip
+    except Exception:
+        pass
+    return None
+
+
 def _adb(*args, timeout=10) -> str:
     """Ejecuta un comando ADB y retorna la salida."""
     try:
@@ -618,7 +638,13 @@ async def fallback_aiohttp_worker(worker_id: int, stats: dict, lock: asyncio.Loc
     import aiohttp
     import json
 
-    connector = aiohttp.TCPConnector(limit=50, ssl=False)
+    bind_ip = get_cellular_bind_ip() if USE_MOBILE_IP else None
+    connector_kwargs = {"limit": 50, "ssl": False}
+    if bind_ip:
+        connector_kwargs["local_addr"] = (bind_ip, 0)
+        if worker_id == 0:
+            log.info(f"🔗 [ENRUTAMIENTO] Tráfico del bot enlazado exclusivamente al celular ({bind_ip})")
+    connector = aiohttp.TCPConnector(**connector_kwargs)
     visit_count = 0
     async with aiohttp.ClientSession(connector=connector, timeout=aiohttp.ClientTimeout(total=45)) as session:
         while time.monotonic() < deadline:
