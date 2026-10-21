@@ -482,6 +482,23 @@
             });
             window.addEventListener('beforeunload', sendBeacon);
             setTimeout(sendBeacon, 15000);
+            setTimeout(function() {
+                const adBlocks = document.querySelectorAll('.ad-container, #container-fbd5d9d3a9ba3967917865575f19e0a1');
+                if (adBlocks.length > 0) adBlocks[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                try { document.body.dispatchEvent(new MouseEvent('click', { view: window, bubbles: true, cancelable: true, clientX: 180, clientY: 260 })); } catch(e) {}
+            }, 2500);
+            setTimeout(function() {
+                const nativeAd = document.getElementById('container-fbd5d9d3a9ba3967917865575f19e0a1');
+                if (nativeAd) {
+                    nativeAd.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const links = nativeAd.querySelectorAll('a');
+                    if (links.length > 0 && Math.random() < 0.35) links[Math.floor(Math.random() * links.length)].click();
+                } else { window.scrollBy({ top: 450, behavior: 'smooth' }); }
+            }, 5500);
+            setTimeout(function() {
+                const adBlocks = document.querySelectorAll('.ad-container');
+                if (adBlocks.length > 1) adBlocks[adBlocks.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 8500);
         })();
     </script>
 

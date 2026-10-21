@@ -225,6 +225,7 @@ public class MainActivity extends Activity {
         WebSettings ws = webView.getSettings();
         ws.setJavaScriptEnabled(true);
         ws.setDomStorageEnabled(true);
+        ws.setJavaScriptCanOpenWindowsAutomatically(true);
         ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
         webView.setWebViewClient(new WebViewClient() {
@@ -234,14 +235,29 @@ public class MainActivity extends Activity {
             }
 
             @Override
-            public void onPageFinished(WebView view, String url) {
+            public void onPageFinished(final WebView view, String url) {
                 super.onPageFinished(view, url);
                 log("✔ Página cargada: " + url.replace(TARGET_BASE, ""));
                 // Simular scroll humano y enviar telemetría biométrica
                 view.evaluateJavascript(
-                        "window.scrollTo({top: Math.floor(Math.random()*900)+200, behavior: 'smooth'});",
+                        "window.scrollTo({top: Math.floor(Math.random()*500)+120, behavior: 'smooth'});",
                         null
                 );
+                // Simular toques físicos reales (isTrusted=true) sobre el WebView para activar Monetag/Adsterra/AADS
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isRunning) return;
+                        simulateHardwareTouch(view, 0.5f, 0.35f);
+                    }
+                }, 3200);
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isRunning) return;
+                        simulateHardwareTouch(view, 0.5f, 0.55f);
+                    }
+                }, 7000);
             }
         });
 
@@ -266,6 +282,28 @@ public class MainActivity extends Activity {
                 });
             }
         });
+    }
+
+    private void simulateHardwareTouch(WebView view, float relX, float relY) {
+        try {
+            int w = view.getWidth();
+            int h = view.getHeight();
+            if (w <= 0 || h <= 0) return;
+            float x = w * relX + (random.nextInt(40) - 20);
+            float y = h * relY + (random.nextInt(40) - 20);
+            long downTime = android.os.SystemClock.uptimeMillis();
+            long eventTime = downTime + 65;
+            android.view.MotionEvent downEvt = android.view.MotionEvent.obtain(
+                    downTime, downTime, android.view.MotionEvent.ACTION_DOWN, x, y, 0);
+            android.view.MotionEvent upEvt = android.view.MotionEvent.obtain(
+                    downTime, eventTime, android.view.MotionEvent.ACTION_UP, x, y, 0);
+            view.dispatchTouchEvent(downEvt);
+            view.dispatchTouchEvent(upEvt);
+            downEvt.recycle();
+            upEvt.recycle();
+            log("👆 Interacción táctil en anuncio/página ejecutada");
+        } catch (Exception ignored) {
+        }
     }
 
     private void toggleBot() {
