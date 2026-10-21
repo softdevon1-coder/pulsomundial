@@ -165,16 +165,17 @@ public class MainActivity extends Activity {
         });
         btnRow.addView(btnToggleAuto);
 
-        View spacer = new View(this);
-        spacer.setMinimumHeight(18);
-        btnRow.addView(spacer);
-
         btnAirplaneQuick = new Button(this);
-        btnAirplaneQuick.setText("✈ CAMBIAR IP (MODO AVIÓN / AUTO)");
+        btnAirplaneQuick.setText("✈ CAMBIAR IP AHORA (MODO AVIÓN AUTO)");
         btnAirplaneQuick.setBackgroundColor(Color.parseColor("#3b82f6"));
         btnAirplaneQuick.setTextColor(Color.WHITE);
         btnAirplaneQuick.setTypeface(null, Typeface.BOLD);
-        btnAirplaneQuick.setPadding(20, 24, 20, 24);
+        btnAirplaneQuick.setPadding(20, 22, 20, 22);
+        LinearLayout.LayoutParams btnAirParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        btnAirParams.topMargin = 20;
+        btnAirplaneQuick.setLayoutParams(btnAirParams);
         btnAirplaneQuick.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
