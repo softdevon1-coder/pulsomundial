@@ -1,0 +1,53 @@
+name: 📱 Build Android APK (CF Bot 4G)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'android-app/**'
+      - '.github/workflows/build_apk.yml'
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: 🤖 Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 🐘 Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.5'
+
+      - name: 🔨 Build Debug APK
+        working-directory: ./android-app
+        run: gradle assembleDebug --no-daemon
+
+      - name: 📦 Copy APK to webapp static folder and commit
+        run: |
+          mkdir -p webapp/static
+          cp android-app/app/build/outputs/apk/debug/app-debug.apk webapp/static/CFBot4G.apk
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add webapp/static/CFBot4G.apk
+          git diff --staged --quiet || git commit -m "build: Add compiled Android APK CFBot4G.apk to static downloads"
+          git push origin main
+
+      - name: 📤 Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CFBot4G-Android-APK
+          path: android-app/app/build/outputs/apk/debug/app-debug.apk

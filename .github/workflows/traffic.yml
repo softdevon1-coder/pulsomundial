@@ -1,21 +1,14 @@
 name: 🤖 Web Traffic Bot
 
 on:
-  schedule:
-    #  Corre 4 veces por día (cada 6 horas).
-    #  Cada run dura 5.5h → cubre las 24hs con overlap.
-    - cron: '0 0 * * *'    # 00:00 UTC
-    - cron: '0 6 * * *'    # 06:00 UTC
-    - cron: '0 12 * * *'   # 12:00 UTC
-    - cron: '0 18 * * *'   # 18:00 UTC
-
-  # También permite ejecutarlo manualmente desde la UI de GitHub
+  # Desactivado el schedule automático para no consumir los 5GB de Render Free
+  # Sólo se ejecuta si el usuario lo lanza manualmente desde GitHub
   workflow_dispatch:
     inputs:
       workers:
-        description: 'Workers por job (default: 25)'
+        description: 'Workers por job (default: 1)'
         required: false
-        default: '25'
+        default: '1'
 
 # Cancela runs anteriores si se lanza uno nuevo manualmente
 concurrency:

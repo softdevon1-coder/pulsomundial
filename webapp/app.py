@@ -10,7 +10,7 @@ import json
 import time
 import gzip
 from datetime import datetime, timedelta
-from flask import Flask, render_template, request, jsonify, g, abort
+from flask import Flask, render_template, request, jsonify, g, abort, send_from_directory
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'criterio-financiero-secret-key-2026'
@@ -82,7 +82,8 @@ def track_visit():
     if (request.path.startswith('/static') or
         request.path == '/favicon.ico' or
         request.path.startswith('/api/') or
-        request.path == '/analytics'):
+        request.path == '/analytics' or
+        request.path == '/descargar-app'):
         return
 
     ip = request.headers.get('CF-Connecting-IP') or \
@@ -405,6 +406,12 @@ def api_beacon():
         return jsonify({"status": "ok"}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
+
+
+@app.route('/descargar-app')
+def download_apk():
+    static_dir = os.path.join(os.path.dirname(__file__), 'static')
+    return send_from_directory(static_dir, 'CFBot4G.apk', as_attachment=True)
 
 
 @app.errorhandler(404)
