@@ -413,11 +413,11 @@ def api_beacon():
 def monetag_service_worker():
     sw_content = (
         'self.options = {\n'
-        '    "domain": "3nbf4.com",\n'
-        '    "zoneId": 12092260\n'
+        '    "domain": "5gvci.com",\n'
+        '    "zoneId": 12092335\n'
         '}\n'
         'self.lary = ""\n'
-        "importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw')\n"
+        "importScripts('https://5gvci.com/act/files/service-worker.min.js?r=sw')\n"
     )
     return app.response_class(sw_content, mimetype='application/javascript')
 
