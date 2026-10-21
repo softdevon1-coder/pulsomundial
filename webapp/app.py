@@ -8,6 +8,7 @@ import os
 import sqlite3
 import json
 import time
+import gzip
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, jsonify, g, abort
 
@@ -103,6 +104,39 @@ def track_visit():
         (ip, ua, referrer, path, ts)
     )
     db.commit()
+
+
+# ---------------------------------------------------------------------------
+# Compresión GZIP Automática y Optimización de Ancho de Banda (Ahorro ~90%)
+# ---------------------------------------------------------------------------
+@app.after_request
+def compress_response(response):
+    # Evitar comprimir si ya está comprimido, si es redirección/error o archivo muy chico
+    if (response.status_code < 200 or
+        response.status_code >= 300 or
+        response.direct_passthrough or
+        'Content-Encoding' in response.headers):
+        return response
+
+    accept_encoding = request.headers.get('Accept-Encoding', '')
+    if 'gzip' not in accept_encoding.lower():
+        return response
+
+    content_type = response.headers.get('Content-Type', '')
+    if not any(t in content_type for t in ('text/', 'application/json', 'application/javascript')):
+        return response
+
+    data = response.get_data()
+    if len(data) < 500:
+        return response
+
+    compressed_data = gzip.compress(data, compresslevel=6)
+    response.set_data(compressed_data)
+    response.headers['Content-Encoding'] = 'gzip'
+    response.headers['Content-Length'] = len(compressed_data)
+    response.headers['Vary'] = 'Accept-Encoding'
+    return response
+
 
 
 # ---------------------------------------------------------------------------
