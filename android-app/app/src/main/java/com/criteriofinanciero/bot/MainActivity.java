@@ -91,6 +91,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -285,29 +286,31 @@ public class MainActivity extends Activity {
         }
     }
 
+    private boolean rotateViaLocalDaemon() {
+        try {
+            java.net.Socket socket = new java.net.Socket("127.0.0.1", 38291);
+            socket.setSoTimeout(12000);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            String resp = reader.readLine();
+            socket.close();
+            return resp != null && resp.contains("OK");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private void triggerIpRotation() {
-        log("Intentando rotar IP móvil...");
+        log("Activando y desactivando Modo Avión 100% automático...");
         new Thread(new Runnable() {
             @Override
             public void run() {
-                boolean success = false;
-                try {
-                    // Intento 1: Comando directo si se concedió permiso WRITE_SECURE_SETTINGS vía ADB una vez
-                    Process p1 = Runtime.getRuntime().exec(new String[]{"sh", "-c", "cmd connectivity airplane-mode enable"});
-                    int code = p1.waitFor();
-                    if (code == 0) {
-                        log("Modo avión activado automáticamente. Esperando 4 seg...");
-                        Thread.sleep(4000);
-                        Runtime.getRuntime().exec(new String[]{"sh", "-c", "cmd connectivity airplane-mode disable"}).waitFor();
-                        log("Modo avión desactivado. Esperando reconexión 4G...");
-                        Thread.sleep(5000);
-                        success = true;
-                    }
-                } catch (Exception ignored) {
-                }
-
-                if (!success) {
-                    log("Abriendo panel rápido de Modo Avión (tocá Activar/Desactivar)...");
+                boolean success = rotateViaLocalDaemon();
+                if (success) {
+                    log("✈ Modo Avión ON -> OFF completado solo. Reconectando 4G...");
+                    try { Thread.sleep(5000); } catch (Exception ignored) {}
+                    checkPublicIp(true);
+                } else {
+                    log("Abriendo panel rápido de Modo Avión...");
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -320,8 +323,6 @@ public class MainActivity extends Activity {
                             }
                         }
                     });
-                } else {
-                    checkPublicIp(true);
                 }
             }
         }).start();
@@ -425,35 +426,20 @@ public class MainActivity extends Activity {
     }
 
     private void rotateAndContinue() {
+        log("Fin de lectura. Rotando IP automáticamente (Modo Avión ON -> OFF)...");
         new Thread(new Runnable() {
             @Override
             public void run() {
-                boolean autoRotated = false;
-                try {
-                    // Intenta rotar modo avión automáticamente si tiene permiso concedido
-                    Process p = Runtime.getRuntime().exec(new String[]{"sh", "-c", "cmd connectivity airplane-mode enable"});
-                    if (p.waitFor() == 0) {
-                        log("Rotando IP automáticamente (Modo Avión ON)...");
-                        Thread.sleep(3800);
-                        Runtime.getRuntime().exec(new String[]{"sh", "-c", "cmd connectivity airplane-mode disable"}).waitFor();
-                        log("Modo Avión OFF. Reconectando 4G...");
-                        Thread.sleep(6000);
-                        autoRotated = true;
-                    }
-                } catch (Exception ignored) {
+                boolean autoRotated = rotateViaLocalDaemon();
+                if (autoRotated) {
+                    log("✈ Modo Avión desactivado solo. Esperando señal 4G...");
+                    try { Thread.sleep(5500); } catch (Exception ignored) {}
                 }
-
-                final boolean rotated = autoRotated;
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
                         if (!isRunning) return;
-                        if (rotated) {
-                            runNextCycle();
-                        } else {
-                            log("Ciclo completado. Tocá '✈ CAMBIAR IP' o esperando nueva visita...");
-                            runNextCycle();
-                        }
+                        runNextCycle();
                     }
                 });
             }
