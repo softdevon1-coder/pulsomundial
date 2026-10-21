@@ -287,14 +287,51 @@ public class MainActivity extends Activity {
     }
 
     private boolean rotateViaLocalDaemon() {
+        java.net.Socket socket = null;
+        com.tananaev.adblib.AdbConnection connection = null;
         try {
-            java.net.Socket socket = new java.net.Socket("127.0.0.1", 38291);
-            socket.setSoTimeout(12000);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            String resp = reader.readLine();
+            socket = new java.net.Socket("127.0.0.1", 5555);
+            com.tananaev.adblib.AdbBase64 base64 = new com.tananaev.adblib.AdbBase64() {
+                @Override
+                public String encodeToString(byte[] data) {
+                    return android.util.Base64.encodeToString(data, android.util.Base64.NO_WRAP);
+                }
+            };
+
+            java.io.File privFile = new java.io.File(getFilesDir(), "adbkey");
+            java.io.File pubFile = new java.io.File(getFilesDir(), "adbkey.pub");
+            com.tananaev.adblib.AdbCrypto crypto;
+            if (privFile.exists() && pubFile.exists()) {
+                crypto = com.tananaev.adblib.AdbCrypto.loadAdbKeyPair(base64, privFile, pubFile);
+            } else {
+                crypto = com.tananaev.adblib.AdbCrypto.generateAdbKeyPair(base64);
+                crypto.saveAdbKeyPair(privFile, pubFile);
+            }
+
+            connection = com.tananaev.adblib.AdbConnection.create(socket, crypto);
+            log("Conectando a ADB interno (si sale cartel en pantalla, tildá 'Permitir siempre' y Aceptar)...");
+            connection.connect();
+
+            com.tananaev.adblib.AdbStream stream = connection.open("shell:cmd connectivity airplane-mode enable; sleep 4; cmd connectivity airplane-mode disable; echo DONE");
+            try {
+                while (!stream.isClosed()) {
+                    byte[] bytes = stream.read();
+                    if (bytes != null) {
+                        String out = new String(bytes);
+                        if (out.contains("DONE")) {
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+            connection.close();
             socket.close();
-            return resp != null && resp.contains("OK");
+            return true;
         } catch (Exception e) {
+            log("Aviso ADB interno: " + e.getMessage());
+            try { if (connection != null) connection.close(); } catch (Exception ignored) {}
+            try { if (socket != null) socket.close(); } catch (Exception ignored) {}
             return false;
         }
     }
