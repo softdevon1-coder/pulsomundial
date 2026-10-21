@@ -293,14 +293,12 @@
         </div>
     </nav>
 
-    <!-- 3. Contenedor de Anuncio Superior (Leaderboard Desktop / Banner Mobile) -->
+    <!-- 3. Contenedor de Anuncio Superior (AADS Adaptive Unit #2459381) -->
     <div class="container mt-3">
-        <div class="ad-container" style="min-height: 90px;">
-            <div class="ad-label">Publicidad — Espacio Patrocinado</div>
-            <div class="ad-mock-content">
-                <i class="fa-solid fa-rectangle-ad me-1 text-primary"></i>
-                <strong>Google AdSense Leaderboard (728x90 / 320x50 Responsive)</strong><br>
-                <small class="text-muted">Optimizado para Core Web Vitals (0% CLS con contenedor pre-reservado)</small>
+        <div class="ad-container" style="min-height: 90px; padding: 8px;">
+            <div class="ad-label mb-1">Publicidad — Espacio Patrocinado</div>
+            <div id="frame" style="width: 100%; margin: auto; position: relative; z-index: 99998;">
+                <iframe data-aa='2459381' src='//ad.a-ads.com/2459381/?size=Adaptive' style='border:0; padding:0; width:100%; height:90px; overflow:hidden; display:block; margin:auto'></iframe>
             </div>
         </div>
     </div>
@@ -309,6 +307,16 @@
     <main class="flex-grow-1">
         {% block content %}{% endblock %}
     </main>
+
+    <!-- 4b. Contenedor de Anuncio Inferior (AADS Adaptive Unit #2459381) -->
+    <div class="container my-3">
+        <div class="ad-container" style="min-height: 90px; padding: 8px;">
+            <div class="ad-label mb-1">Publicidad — Espacio Patrocinado</div>
+            <div style="width: 100%; margin: auto; position: relative; z-index: 99998;">
+                <iframe data-aa='2459381' src='//ad.a-ads.com/2459381/?size=Adaptive' style='border:0; padding:0; width:100%; height:90px; overflow:hidden; display:block; margin:auto'></iframe>
+            </div>
+        </div>
+    </div>
 
     <!-- 5. Footer con E-E-A-T, Disclaimer y Cumplimiento Legal -->
     <footer class="footer-custom">
