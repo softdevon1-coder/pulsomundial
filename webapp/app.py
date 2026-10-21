@@ -81,6 +81,7 @@ def track_visit():
     # para que solo se registren páginas y artículos leídos por los usuarios.
     if (request.path.startswith('/static') or
         request.path == '/favicon.ico' or
+        request.path == '/sw.js' or
         request.path.startswith('/api/') or
         request.path == '/analytics' or
         request.path == '/descargar-app'):
@@ -406,6 +407,19 @@ def api_beacon():
         return jsonify({"status": "ok"}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
+
+
+@app.route('/sw.js')
+def monetag_service_worker():
+    sw_content = (
+        'self.options = {\n'
+        '    "domain": "3nbf4.com",\n'
+        '    "zoneId": 12092260\n'
+        '}\n'
+        'self.lary = ""\n'
+        "importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw')\n"
+    )
+    return app.response_class(sw_content, mimetype='application/javascript')
 
 
 @app.route('/descargar-app')
