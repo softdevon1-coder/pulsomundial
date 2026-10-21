@@ -75,13 +75,19 @@
                 </ul>
             </div>
 
-            <!-- Cuerpo del Artículo con Tipografía Clara y Altísimo Contraste -->
+            <!-- Cuerpo del Artículo con Tipografía Clara, Subtítulos Estructurados y Altísimo Contraste -->
             <div class="article-body fs-6" style="line-height: 1.85; color: #f1f5f9;">
                 {% for para in article.content %}
-                    <p class="mb-4" style="color: #f1f5f9; font-size: 1.05rem;">{{ para }}</p>
+                    {% if para.startswith('## ') %}
+                        <h2 class="h4 fw-bold text-white mt-5 mb-3 pb-2 border-bottom border-secondary border-opacity-50" style="letter-spacing: -0.3px;">
+                            <i class="fa-solid fa-angle-right text-success me-2"></i>{{ para[3:] }}
+                        </h2>
+                    {% else %}
+                        <p class="mb-4" style="color: #f1f5f9; font-size: 1.06rem; line-height: 1.85;">{{ para }}</p>
+                    {% endif %}
                     
-                    <!-- Inyección de Anuncio AdSense Estratégico tras el Párrafo 2 (Máximo RPM) -->
-                    {% if loop.index == 2 %}
+                    <!-- Inyección de Anuncio AdSense Estratégico tras el Bloque 3 (Máximo RPM) -->
+                    {% if loop.index == 3 %}
                     <div class="ad-container my-4" style="min-height: 250px;">
                         <div class="ad-label">Publicidad — Espacio Patrocinado</div>
                         <div class="ad-mock-content">
@@ -93,13 +99,14 @@
                     {% endif %}
 
                     <!-- Inyección de Cuadro Resumen a mitad de artículo -->
-                    {% if loop.index == 4 %}
+                    {% if loop.index == 8 %}
                     <div class="card-custom p-4 my-4 border-start border-4 border-primary">
-                        <h5 class="text-white fw-bold mb-2"><i class="fa-solid fa-calculator text-primary me-2"></i> Simulá tu Rendimiento</h5>
-                        <p class="mb-3" style="color: #e2e8f0;">Utilizá nuestras herramientas matemáticas gratuitas para calcular el interés compuesto y las tasas vigentes:</p>
+                        <h5 class="text-white fw-bold mb-2"><i class="fa-solid fa-calculator text-primary me-2"></i> Simulá tu Rendimiento en Tiempo Real</h5>
+                        <p class="mb-3" style="color: #e2e8f0;">Utilizá nuestras herramientas matemáticas gratuitas para calcular el interés compuesto, la brecha cambiaria y las tasas vigentes:</p>
                         <div class="d-flex gap-2 flex-wrap">
                             <a href="/calculadoras/interes-compuesto" class="btn btn-sm btn-outline-success text-white fw-semibold">Calculadora Interés Compuesto</a>
                             <a href="/calculadoras/rendimiento-billeteras" class="btn btn-sm btn-outline-warning text-white fw-semibold">Rendimiento Billeteras</a>
+                            <a href="/calculadoras/conversor-dolar" class="btn btn-sm btn-outline-info text-white fw-semibold">Conversor Dólar & Brecha</a>
                         </div>
                     </div>
                     {% endif %}
