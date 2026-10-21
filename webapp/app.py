@@ -135,6 +135,8 @@ def compress_response(response):
     response.headers['Content-Encoding'] = 'gzip'
     response.headers['Content-Length'] = len(compressed_data)
     response.headers['Vary'] = 'Accept-Encoding'
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
     return response
 
 
