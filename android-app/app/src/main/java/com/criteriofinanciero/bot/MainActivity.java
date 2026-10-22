@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -277,6 +278,20 @@ public class MainActivity extends Activity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 return false;
+            }
+
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                if (request != null && request.getUrl() != null) {
+                    String u = request.getUrl().toString().toLowerCase();
+                    if (u.contains(".mp4") || u.contains(".webm") || u.contains(".m4v") ||
+                        u.contains(".avi") || u.contains(".flv") || u.contains(".m3u8") ||
+                        u.contains(".ts") || u.contains(".mov") || u.contains(".ogv") ||
+                        u.contains("googlevideo.com") || u.contains("/videoplayback")) {
+                        return new WebResourceResponse("text/plain", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
+                    }
+                }
+                return super.shouldInterceptRequest(view, request);
             }
 
             @Override
@@ -576,28 +591,66 @@ public class MainActivity extends Activity {
 
         webView.loadUrl(fullUrl);
 
+        // A los 13s: scroll intermedio adicional en la primera página
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!isRunning) return;
+                webView.evaluateJavascript("window.scrollBy({top: Math.floor(Math.random()*400)+200, behavior: 'smooth'});", null);
+            }
+        }, 13000);
+
+        // A los 18s: toque táctil en la primera página
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!isRunning) return;
+                simulateHardwareTouch(webView, 0.48f, 0.42f);
+            }
+        }, 18000);
+
+        // A los 24s: pasar al segundo artículo o seguir explorando
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
                 if (base.contains("criteriofinanciero")) {
                     String secondPath = PATHS[8 + random.nextInt(PATHS.length - 8)];
-                    log("↳ Leyendo guía interna: " + secondPath);
+                    log("↳ Leyendo artículo interno: " + secondPath + " (~26s más)");
                     webView.loadUrl(base + secondPath);
                 } else {
-                    log("↳ Leyendo contenido interno de la página...");
-                    webView.evaluateJavascript("window.scrollBy({top: 400, behavior: 'smooth'});", null);
+                    log("↳ Leyendo contenido interno de la página (~26s más)...");
+                    webView.evaluateJavascript("window.scrollBy({top: Math.floor(Math.random()*500)+300, behavior: 'smooth'});", null);
                 }
             }
-        }, 12000);
+        }, 24000);
 
+        // A los 36s: scroll adicional en el segundo artículo
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!isRunning) return;
+                webView.evaluateJavascript("window.scrollBy({top: Math.floor(Math.random()*350)+150, behavior: 'smooth'});", null);
+            }
+        }, 36000);
+
+        // A los 42s: toque táctil orgánico en el segundo artículo
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!isRunning) return;
+                simulateHardwareTouch(webView, 0.52f, 0.60f);
+            }
+        }, 42000);
+
+        // A los 50s: fin de permanencia completa (50 segundos en total) y rotación de IP
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
                 rotateAndContinue();
             }
-        }, 26000);
+        }, 50000);
     }
 
     private void rotateAndContinue() {
