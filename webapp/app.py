@@ -428,6 +428,12 @@ def download_apk():
     return send_from_directory(static_dir, 'CFBot4G.apk', as_attachment=True)
 
 
+@app.route('/descargar-app-wifi')
+def download_wifi_apk():
+    static_dir = os.path.join(os.path.dirname(__file__), 'static')
+    return send_from_directory(static_dir, 'CFBotWiFi.apk', as_attachment=True)
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('base.html'), 404

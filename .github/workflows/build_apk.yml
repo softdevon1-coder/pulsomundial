@@ -1,4 +1,4 @@
-name: 📱 Build Android APK (CF Bot 4G)
+name: 📱 Build Android APKs (CF Bot 4G & CF Bot WiFi)
 
 on:
   push:
@@ -29,22 +29,29 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: 🔨 Build Debug APK
+      - name: 🔨 Build Debug APKs (4G & WiFi)
         working-directory: ./android-app
         run: gradle assembleDebug --no-daemon
 
-      - name: 📦 Copy APK to webapp static folder and commit
+      - name: 📦 Copy APKs to webapp static folder and commit
         run: |
           mkdir -p webapp/static
           cp android-app/app/build/outputs/apk/debug/app-debug.apk webapp/static/CFBot4G.apk
+          cp android-app/app-wifi/build/outputs/apk/debug/app-wifi-debug.apk webapp/static/CFBotWiFi.apk
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add webapp/static/CFBot4G.apk
-          git diff --staged --quiet || git commit -m "build: Add compiled Android APK CFBot4G.apk to static downloads"
+          git add webapp/static/
+          git diff --staged --quiet || git commit -m "build: Add compiled APKs CFBot4G.apk and CFBotWiFi.apk"
           git push origin main
 
-      - name: 📤 Upload APK Artifact
+      - name: 📤 Upload 4G APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: CFBot4G-Android-APK
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: 📤 Upload WiFi APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CFBotWiFi-Android-APK
+          path: android-app/app-wifi/build/outputs/apk/debug/app-wifi-debug.apk
