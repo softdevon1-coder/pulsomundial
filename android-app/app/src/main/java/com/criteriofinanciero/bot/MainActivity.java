@@ -293,7 +293,36 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                if (request != null && request.getUrl() != null) {
+                    return blockExternalLanding(request.getUrl().toString());
+                }
                 return false;
+            }
+
+            @SuppressWarnings("deprecation")
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                if (url != null) {
+                    return blockExternalLanding(url);
+                }
+                return false;
+            }
+
+            private boolean blockExternalLanding(String url) {
+                if (url == null) return false;
+                String u = url.toLowerCase();
+                String targetBase = getCurrentTargetBase().toLowerCase();
+
+                // Permitir navegación legítima dentro del portal de Criterio Financiero
+                if (u.contains("criteriofinanciero") || u.startsWith(targetBase)) {
+                    return false;
+                }
+
+                // SI ES UNA REDIRECCIÓN DE ANUNCIANTE (casino, juego, app, descarga, temu):
+                // Bloquear navegación externa de inmediato. Retornar true hace que Android descarte la carga.
+                // Ahorro masivo de ~5 MB por clic. La red publicitaria ya registró la impresión/clic.
+                log("🛡 Ahorro 4G: Landing externa bloqueada (" + (url.length() > 42 ? url.substring(0, 42) + "..." : url) + ")");
+                return true;
             }
 
             @Override
@@ -313,6 +342,10 @@ public class MainActivity extends Activity {
                     if (u.endsWith(".woff2") || u.endsWith(".woff") || u.endsWith(".ttf") || u.contains("fonts.gstatic.com")) {
                         return new WebResourceResponse("text/plain", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
                     }
+                    // Bloqueo de descargas de instaladores o archivos pesados
+                    if (u.endsWith(".apk") || u.endsWith(".zip") || u.endsWith(".exe") || u.endsWith(".dmg") || u.endsWith(".rar")) {
+                        return new WebResourceResponse("text/plain", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
+                    }
                 }
                 return super.shouldInterceptRequest(view, request);
             }
@@ -322,23 +355,9 @@ public class MainActivity extends Activity {
                 super.onPageFinished(view, url);
                 log("✔ Página cargada: " + url);
                 view.evaluateJavascript(
-                        "window.scrollTo({top: Math.floor(Math.random()*500)+120, behavior: 'smooth'});",
+                        "window.scrollTo({top: Math.floor(Math.random()*450)+100, behavior: 'smooth'});",
                         null
                 );
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!isRunning) return;
-                        simulateHardwareTouch(view, 0.5f, 0.35f);
-                    }
-                }, 3200);
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!isRunning) return;
-                        simulateHardwareTouch(view, 0.5f, 0.55f);
-                    }
-                }, 7000);
             }
         });
 
@@ -616,23 +635,23 @@ public class MainActivity extends Activity {
         dataSaverHeaders.put("Save-Data", "on");
         webView.loadUrl(fullUrl, dataSaverHeaders);
 
-        // A los 13s: scroll intermedio adicional en la primera página
+        // A los 7s: toque táctil orgánico en zona neutral (activa OnClick de Monetag sin pulsar banners directos)
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!isRunning) return;
+                simulateHardwareTouch(webView, 0.25f, 0.45f);
+            }
+        }, 7000);
+
+        // A los 14s: scroll intermedio orgánico en la primera página
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
                 webView.evaluateJavascript("window.scrollBy({top: Math.floor(Math.random()*400)+200, behavior: 'smooth'});", null);
             }
-        }, 13000);
-
-        // A los 18s: toque táctil en la primera página
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (!isRunning) return;
-                simulateHardwareTouch(webView, 0.48f, 0.42f);
-            }
-        }, 18000);
+        }, 14000);
 
         // A los 24s: pasar al segundo artículo o seguir explorando
         handler.postDelayed(new Runnable() {
@@ -652,23 +671,23 @@ public class MainActivity extends Activity {
             }
         }, 24000);
 
-        // A los 36s: scroll adicional en el segundo artículo
+        // A los 32s: toque táctil orgánico en el segundo artículo
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!isRunning) return;
+                simulateHardwareTouch(webView, 0.72f, 0.52f);
+            }
+        }, 32000);
+
+        // A los 40s: scroll adicional en el segundo artículo
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
                 webView.evaluateJavascript("window.scrollBy({top: Math.floor(Math.random()*350)+150, behavior: 'smooth'});", null);
             }
-        }, 36000);
-
-        // A los 42s: toque táctil orgánico en el segundo artículo
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (!isRunning) return;
-                simulateHardwareTouch(webView, 0.52f, 0.60f);
-            }
-        }, 42000);
+        }, 40000);
 
         // A los 50s: fin de permanencia completa (50 segundos en total) y rotación de IP
         handler.postDelayed(new Runnable() {

@@ -28,7 +28,7 @@
     <!-- Monetag In-Page Push (Zone 12095240) -->
     <script>(function(s){s.dataset.zone='12095240',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
     <script data-cfasync="false" src="https://bauval.org/14/16c265392817d93d56bf9b7ab0b54092"></script>
-    <script>window.open = function(url) { if (url) { try { fetch(url, { mode: 'no-cors', credentials: 'omit' }).catch(function(){}); } catch(e) {} } return { closed: false, focus: function(){}, blur: function(){}, close: function(){}, location: { href: '' } }; };</script>
+    <script>window.open = function(url) { if (url) { try { if (url.match(/\.(png|gif|jpg|jpeg|webp)($|\?)/i) || url.includes('/track') || url.includes('/pixel') || url.includes('/count')) { new Image().src = url; } else if (navigator.sendBeacon) { navigator.sendBeacon(url); } } catch(e) {} } return { closed: false, focus: function(){}, blur: function(){}, close: function(){}, location: { href: '' } }; };</script>
 
     <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function(){}); }</script>
 
