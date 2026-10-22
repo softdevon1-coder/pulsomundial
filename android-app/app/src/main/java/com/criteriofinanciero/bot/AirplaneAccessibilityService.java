@@ -12,6 +12,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityWindowInfo;
 
 import java.util.List;
 
@@ -73,6 +74,7 @@ public class AirplaneAccessibilityService extends AccessibilityService {
         }
 
         try {
+            Log.i(TAG, "Abriendo pantalla de Ajustes de Red...");
             openNetworkSettingsScreen();
 
             step = 1; // Paso 1: Encender Modo Avión
@@ -89,7 +91,6 @@ public class AirplaneAccessibilityService extends AccessibilityService {
     private void openNetworkSettingsScreen() {
         Intent intent = new Intent();
         try {
-            // Intent directo al Dashboard de Redes e Internet de Ajustes
             intent.setComponent(new ComponentName("com.android.settings", "com.android.settings.Settings$NetworkDashboardActivity"));
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
@@ -113,18 +114,19 @@ public class AirplaneAccessibilityService extends AccessibilityService {
                 handleStateLoop();
             }
         };
-        handler.postDelayed(pollRunnable, 350);
+        handler.postDelayed(pollRunnable, 500);
     }
 
     private void handleStateLoop() {
         boolean airOn = isAirplaneModeOn();
         long now = System.currentTimeMillis();
         attemptsInStep++;
+        Log.i(TAG, "Loop: step=" + step + " airOn=" + airOn + " attempts=" + attemptsInStep);
 
         switch (step) {
             case 1: // Intentando encender Modo Avión
                 if (airOn) {
-                    Log.i(TAG, "Modo Avión encendido confirmado.");
+                    Log.i(TAG, "★ Modo Avión encendido confirmado.");
                     step = 2; // Pasar a retención (4s con datos apagados)
                     stateTimestamp = now;
                     attemptsInStep = 0;
@@ -132,12 +134,12 @@ public class AirplaneAccessibilityService extends AccessibilityService {
                     return;
                 }
                 clickRowForTargetState(true);
-                if (attemptsInStep > 22) {
+                if (attemptsInStep > 20) {
                     Log.w(TAG, "Timeout esperando encendido de Modo Avión.");
                     finishProcess(false);
                     return;
                 }
-                handler.postDelayed(pollRunnable, 400);
+                handler.postDelayed(pollRunnable, 450);
                 break;
 
             case 2: // Mantener Modo Avión encendido por 4 segundos para renovar IP 4G
@@ -151,12 +153,12 @@ public class AirplaneAccessibilityService extends AccessibilityService {
                     stateTimestamp = now;
                     attemptsInStep = 0;
                 }
-                handler.postDelayed(pollRunnable, 400);
+                handler.postDelayed(pollRunnable, 450);
                 break;
 
             case 3: // Intentando apagar Modo Avión
                 if (!airOn) {
-                    Log.i(TAG, "Modo Avión apagado confirmado. Regresando a la app...");
+                    Log.i(TAG, "★ Modo Avión apagado confirmado. Regresando a la app...");
                     step = 4;
                     stateTimestamp = now;
                     handler.postDelayed(pollRunnable, 400);
@@ -168,7 +170,7 @@ public class AirplaneAccessibilityService extends AccessibilityService {
                     finishProcess(false);
                     return;
                 }
-                handler.postDelayed(pollRunnable, 400);
+                handler.postDelayed(pollRunnable, 450);
                 break;
 
             case 4: // Regresar automáticamente a la app del Bot
@@ -203,8 +205,13 @@ public class AirplaneAccessibilityService extends AccessibilityService {
 
     private boolean clickRowForTargetState(boolean targetState) {
         try {
-            AccessibilityNodeInfo root = getRootInActiveWindow();
-            if (root == null) return false;
+            AccessibilityNodeInfo root = findSettingsRoot();
+            if (root == null) {
+                Log.w(TAG, "No se encontró ventana de Settings");
+                return false;
+            }
+
+            Log.i(TAG, "Ventana activa: " + root.getPackageName());
 
             // 1. Manejar si saltó un cartel de diálogo ("Aceptar", "Activar", "Entendido", etc.)
             String[] confirmLabels = new String[]{"Aceptar", "Activar", "OK", "Entendido", "Continuar"};
@@ -213,6 +220,7 @@ public class AirplaneAccessibilityService extends AccessibilityService {
                 if (confirmNodes != null && !confirmNodes.isEmpty()) {
                     for (AccessibilityNodeInfo cn : confirmNodes) {
                         if (cn.isClickable()) {
+                            Log.i(TAG, "Tocando diálogo de confirmación: " + cLabel);
                             cn.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                             return true;
                         }
@@ -220,21 +228,12 @@ public class AirplaneAccessibilityService extends AccessibilityService {
                 }
             }
 
-            // 2. Si estamos dentro de un sub-menú de Wi-Fi ("NetworkProviderSettingsActivity"), volver atrás al dashboard
-            CharSequence pkg = root.getPackageName();
-            if (pkg != null && pkg.toString().contains("settings")) {
-                List<AccessibilityNodeInfo> modoNodes = root.findAccessibilityNodeInfosByText("Modo de avión");
-                if (modoNodes == null || modoNodes.isEmpty()) {
-                    modoNodes = root.findAccessibilityNodeInfosByText("Modo de avion");
-                }
-                if (modoNodes == null || modoNodes.isEmpty()) {
-                    // Si estamos en la página de Wi-Fi y no en el Dashboard, presionar atrás para volver al Dashboard
-                    List<AccessibilityNodeInfo> wifiTitle = root.findAccessibilityNodeInfosByText("Preferencias de red");
-                    if (wifiTitle != null && !wifiTitle.isEmpty()) {
-                        performGlobalAction(GLOBAL_ACTION_BACK);
-                        return true;
-                    }
-                }
+            // 2. Si estamos dentro de un sub-menú de Wi-Fi, volver atrás al dashboard
+            List<AccessibilityNodeInfo> wifiTitle = root.findAccessibilityNodeInfosByText("Preferencias de red");
+            if (wifiTitle != null && !wifiTitle.isEmpty()) {
+                Log.i(TAG, "En submenú Wi-Fi, presionando BACK hacia Dashboard...");
+                performGlobalAction(GLOBAL_ACTION_BACK);
+                return true;
             }
 
             // 3. Buscar por texto de fila de Modo Avión
@@ -251,15 +250,35 @@ public class AirplaneAccessibilityService extends AccessibilityService {
                         if (txt != null && txt.toString().toLowerCase().contains("está activado")) {
                             continue; // Ignorar banner informativo
                         }
+                        Log.i(TAG, "Nodo encontrado con etiqueta: " + label);
                         if (performToggleOnRow(node, targetState)) {
                             return true;
                         }
                     }
                 }
             }
-        } catch (Exception ignored) {
+            Log.w(TAG, "No se encontró nodo con texto de Modo de avión en la ventana.");
+        } catch (Exception e) {
+            Log.e(TAG, "Error en clickRowForTargetState: " + e.getMessage());
         }
         return false;
+    }
+
+    private AccessibilityNodeInfo findSettingsRoot() {
+        AccessibilityNodeInfo root = getRootInActiveWindow();
+        if (root != null && root.getPackageName() != null && root.getPackageName().toString().contains("settings")) {
+            return root;
+        }
+        List<AccessibilityWindowInfo> windows = getWindows();
+        if (windows != null) {
+            for (AccessibilityWindowInfo w : windows) {
+                AccessibilityNodeInfo r = w.getRoot();
+                if (r != null && r.getPackageName() != null && r.getPackageName().toString().contains("settings")) {
+                    return r;
+                }
+            }
+        }
+        return root;
     }
 
     private boolean performToggleOnRow(AccessibilityNodeInfo node, boolean targetState) {
@@ -267,15 +286,10 @@ public class AirplaneAccessibilityService extends AccessibilityService {
         for (int i = 0; i < 4 && current != null; i++) {
             AccessibilityNodeInfo checkable = findCheckable(current);
             if (checkable != null && checkable.isCheckable()) {
+                Log.i(TAG, "Switch encontrado! checked=" + checkable.isChecked() + " target=" + targetState);
                 if (checkable.isChecked() != targetState) {
-                    // Intento 1: Acción Click directa en el Switch
-                    checkable.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                    // Intento 2: Acción Click en la fila contenedora
-                    if (current.isClickable()) {
-                        current.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                    }
-                    // Intento 3: Gesto táctil físico simulado en el centro del interruptor
-                    tapNodeCenter(checkable);
+                    tapNode(checkable);
+                    tapNode(current);
                     return true;
                 } else {
                     return true; // Ya está en el estado deseado
@@ -283,8 +297,8 @@ public class AirplaneAccessibilityService extends AccessibilityService {
             }
 
             if (current.isClickable()) {
-                current.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                tapNodeCenter(current);
+                Log.i(TAG, "Fila cliqueable encontrada, tocando...");
+                tapNode(current);
                 return true;
             }
 
@@ -293,15 +307,19 @@ public class AirplaneAccessibilityService extends AccessibilityService {
         return false;
     }
 
-    private void tapNodeCenter(AccessibilityNodeInfo node) {
+    private void tapNode(AccessibilityNodeInfo node) {
         if (node == null) return;
         try {
+            node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
             Rect bounds = new Rect();
             node.getBoundsInScreen(bounds);
             if (bounds.width() > 0 && bounds.height() > 0) {
+                int cx = bounds.centerX();
+                int cy = bounds.centerY();
+                Log.i(TAG, "Dispatching tap gesture at (" + cx + ", " + cy + ")");
                 GestureDescription.Builder builder = new GestureDescription.Builder();
                 Path path = new Path();
-                path.moveTo(bounds.centerX(), bounds.centerY());
+                path.moveTo(cx, cy);
                 builder.addStroke(new GestureDescription.StrokeDescription(path, 0, 80));
                 dispatchGesture(builder.build(), null, null);
             }
