@@ -378,7 +378,22 @@ public class MainActivity extends Activity {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            AirplaneAccessibilityService.instance.toggleAirplaneModeStandalone();
+                            AirplaneAccessibilityService.instance.toggleAirplaneModeStandalone(new AirplaneAccessibilityService.OnToggleCompleteListener() {
+                                @Override
+                                public void onComplete(boolean success) {
+                                    if (success) {
+                                        log("✔ Modo Avión completado (ON -> OFF). Reconectando 4G...");
+                                    } else {
+                                        log("⚠ Modo Avión finalizado. Verificando señal 4G...");
+                                    }
+                                    handler.postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            checkPublicIp(true);
+                                        }
+                                    }, 4000);
+                                }
+                            });
                         }
                     });
                 } else {
@@ -512,7 +527,22 @@ public class MainActivity extends Activity {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            AirplaneAccessibilityService.instance.toggleAirplaneModeStandalone();
+                            AirplaneAccessibilityService.instance.toggleAirplaneModeStandalone(new AirplaneAccessibilityService.OnToggleCompleteListener() {
+                                @Override
+                                public void onComplete(boolean success) {
+                                    if (success) {
+                                        log("✔ Modo Avión completado (ON -> OFF). Reconectando 4G...");
+                                    } else {
+                                        log("⚠ Modo Avión finalizado. Verificando señal 4G...");
+                                    }
+                                    handler.postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            checkPublicIp(true);
+                                        }
+                                    }, 4000);
+                                }
+                            });
                         }
                     });
                 } else {
