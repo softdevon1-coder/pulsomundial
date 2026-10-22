@@ -2,7 +2,6 @@ package com.criteriofinanciero.bot;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -17,7 +16,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -33,9 +31,7 @@ import java.util.Random;
 
 public class MainActivity extends Activity {
 
-    private static final String DEFAULT_TARGET_URL = "https://criteriofinanciero.onrender.com";
-    private static final String PREFS_NAME = "CFBotPrefs";
-    private static final String KEY_CUSTOM_URL = "custom_target_url";
+    private static final String TARGET_BASE = "https://criteriofinanciero.onrender.com";
 
     private static final String[] PATHS = new String[]{
             "/",
@@ -73,12 +69,10 @@ public class MainActivity extends Activity {
     private TextView tvIp;
     private TextView tvVisitsCount;
     private TextView tvLog;
-    private EditText etTargetUrl;
     private ScrollView scrollLog;
     private WebView webView;
     private Button btnToggleAuto;
     private Button btnAirplaneQuick;
-    private Button btnPermisoSinPc;
 
     private boolean isRunning = false;
     private int visitCount = 0;
@@ -94,75 +88,51 @@ public class MainActivity extends Activity {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Color.parseColor("#070d19"));
-        root.setPadding(32, 36, 32, 24);
+        root.setPadding(36, 48, 36, 36);
 
         // Header
         TextView title = new TextView(this);
-        title.setText("CF Bot 4G — Tráfico & Rotación IP");
+        title.setText("Criterio Financiero — Bot Mobile");
         title.setTextColor(Color.WHITE);
-        title.setTextSize(18f);
+        title.setTextSize(20f);
         title.setTypeface(null, Typeface.BOLD);
         root.addView(title);
 
-        // Selector de URL Destino Personalizable
-        TextView urlLabel = new TextView(this);
-        urlLabel.setText("URL de la Página Web Destino (Editable):");
-        urlLabel.setTextColor(Color.parseColor("#34d399"));
-        urlLabel.setTextSize(12f);
-        urlLabel.setPadding(0, 10, 0, 4);
-        root.addView(urlLabel);
-
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        String savedUrl = prefs.getString(KEY_CUSTOM_URL, DEFAULT_TARGET_URL);
-
-        etTargetUrl = new EditText(this);
-        etTargetUrl.setText(savedUrl);
-        etTargetUrl.setTextColor(Color.WHITE);
-        etTargetUrl.setHintTextColor(Color.parseColor("#64748b"));
-        etTargetUrl.setHint("https://tupaginaweb.com");
-        etTargetUrl.setTextSize(13.5f);
-        etTargetUrl.setSingleLine(true);
-        GradientDrawable inputBg = new GradientDrawable();
-        inputBg.setColor(Color.parseColor("#0f1a2e"));
-        inputBg.setCornerRadius(14f);
-        inputBg.setStroke(2, Color.parseColor("#10b981"));
-        etTargetUrl.setBackground(inputBg);
-        etTargetUrl.setPadding(24, 16, 24, 16);
-        root.addView(etTargetUrl);
+        TextView subtitle = new TextView(this);
+        subtitle.setText("Generador de Tráfico 4G Real & Rotación de IP");
+        subtitle.setTextColor(Color.parseColor("#10b981"));
+        subtitle.setTextSize(13f);
+        subtitle.setPadding(0, 4, 0, 24);
+        root.addView(subtitle);
 
         // Card de Métricas
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
         GradientDrawable cardBg = new GradientDrawable();
         cardBg.setColor(Color.parseColor("#0f1a2e"));
-        cardBg.setCornerRadius(20f);
+        cardBg.setCornerRadius(24f);
         cardBg.setStroke(2, Color.parseColor("#1f3358"));
         card.setBackground(cardBg);
-        card.setPadding(28, 20, 28, 20);
-        LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-        cardParams.topMargin = 14;
-        card.setLayoutParams(cardParams);
+        card.setPadding(32, 28, 32, 28);
 
         tvStatus = new TextView(this);
         tvStatus.setText("ESTADO: DETENIDO");
         tvStatus.setTextColor(Color.parseColor("#fde047"));
-        tvStatus.setTextSize(13f);
+        tvStatus.setTextSize(14f);
         tvStatus.setTypeface(null, Typeface.BOLD);
         card.addView(tvStatus);
 
         tvIp = new TextView(this);
         tvIp.setText("IP Pública 4G actual: Consultando...");
         tvIp.setTextColor(Color.parseColor("#f1f5f9"));
-        tvIp.setTextSize(14f);
-        tvIp.setPadding(0, 6, 0, 4);
+        tvIp.setTextSize(15f);
+        tvIp.setPadding(0, 12, 0, 6);
         card.addView(tvIp);
 
         tvVisitsCount = new TextView(this);
         tvVisitsCount.setText("Visitas enviadas en esta sesión: 0");
         tvVisitsCount.setTextColor(Color.parseColor("#34d399"));
-        tvVisitsCount.setTextSize(14f);
+        tvVisitsCount.setTextSize(15f);
         tvVisitsCount.setTypeface(null, Typeface.BOLD);
         card.addView(tvVisitsCount);
 
@@ -171,18 +141,17 @@ public class MainActivity extends Activity {
         // Botones de Control
         LinearLayout btnRow = new LinearLayout(this);
         btnRow.setOrientation(LinearLayout.VERTICAL);
-        btnRow.setPadding(0, 16, 0, 10);
+        btnRow.setPadding(0, 24, 0, 16);
 
         btnToggleAuto = new Button(this);
         btnToggleAuto.setText("▶ INICIAR BOT AUTOMÁTICO");
         btnToggleAuto.setBackgroundColor(Color.parseColor("#10b981"));
         btnToggleAuto.setTextColor(Color.WHITE);
         btnToggleAuto.setTypeface(null, Typeface.BOLD);
-        btnToggleAuto.setPadding(16, 20, 16, 20);
+        btnToggleAuto.setPadding(20, 28, 20, 28);
         btnToggleAuto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveCurrentTargetUrl();
                 toggleBot();
             }
         });
@@ -193,11 +162,11 @@ public class MainActivity extends Activity {
         btnAirplaneQuick.setBackgroundColor(Color.parseColor("#3b82f6"));
         btnAirplaneQuick.setTextColor(Color.WHITE);
         btnAirplaneQuick.setTypeface(null, Typeface.BOLD);
-        btnAirplaneQuick.setPadding(16, 18, 16, 18);
+        btnAirplaneQuick.setPadding(20, 22, 20, 22);
         LinearLayout.LayoutParams btnAirParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
-        btnAirParams.topMargin = 12;
+        btnAirParams.topMargin = 20;
         btnAirplaneQuick.setLayoutParams(btnAirParams);
         btnAirplaneQuick.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -207,61 +176,36 @@ public class MainActivity extends Activity {
         });
         btnRow.addView(btnAirplaneQuick);
 
-        btnPermisoSinPc = new Button(this);
-        btnPermisoSinPc.setText("⚙ PERMISO PERMANENTE SIN PC (ACCESIBILIDAD)");
-        btnPermisoSinPc.setBackgroundColor(Color.parseColor("#475569"));
-        btnPermisoSinPc.setTextColor(Color.WHITE);
-        btnPermisoSinPc.setTextSize(11.5f);
-        btnPermisoSinPc.setTypeface(null, Typeface.BOLD);
-        btnPermisoSinPc.setPadding(14, 14, 14, 14);
-        LinearLayout.LayoutParams btnPermParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-        btnPermParams.topMargin = 10;
-        btnPermisoSinPc.setLayoutParams(btnPermParams);
-        btnPermisoSinPc.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                log("Abriendo Accesibilidad: activá 'CF Bot 4G — Auto Modo Avión' para que funcione siempre sin PC aunque reinicies el celular.");
-                try {
-                    Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-                    startActivity(intent);
-                } catch (Exception ignored) {
-                }
-            }
-        });
-        btnRow.addView(btnPermisoSinPc);
-
         root.addView(btnRow);
 
         // Consola de Log
         TextView logHeader = new TextView(this);
         logHeader.setText("Registro de Actividad en Vivo:");
         logHeader.setTextColor(Color.parseColor("#cbd5e1"));
-        logHeader.setTextSize(11.5f);
-        logHeader.setPadding(0, 4, 0, 4);
+        logHeader.setTextSize(12f);
+        logHeader.setPadding(0, 8, 0, 8);
         root.addView(logHeader);
 
         scrollLog = new ScrollView(this);
         LinearLayout.LayoutParams scrollParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 260);
+                LinearLayout.LayoutParams.MATCH_PARENT, 360);
         scrollLog.setLayoutParams(scrollParams);
         scrollLog.setBackgroundColor(Color.parseColor("#030710"));
-        scrollLog.setPadding(16, 12, 16, 12);
+        scrollLog.setPadding(20, 16, 20, 16);
 
         tvLog = new TextView(this);
         tvLog.setTextColor(Color.parseColor("#e2e8f0"));
-        tvLog.setTextSize(11f);
+        tvLog.setTextSize(11.5f);
         tvLog.setTypeface(Typeface.MONOSPACE);
         scrollLog.addView(tvLog);
         root.addView(scrollLog);
 
         // Visor Web en Vivo
         TextView webHeader = new TextView(this);
-        webHeader.setText("Visor de Navegación Orgánica:");
+        webHeader.setText("Visor de Navegación Orgánica (Criterio Financiero):");
         webHeader.setTextColor(Color.parseColor("#cbd5e1"));
-        webHeader.setTextSize(11.5f);
-        webHeader.setPadding(0, 10, 0, 6);
+        webHeader.setTextSize(12f);
+        webHeader.setPadding(0, 16, 0, 8);
         root.addView(webHeader);
 
         webView = new WebView(this);
@@ -285,7 +229,7 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(final WebView view, String url) {
                 super.onPageFinished(view, url);
-                log("✔ Página cargada: " + url);
+                log("✔ Página cargada: " + url.replace(TARGET_BASE, ""));
                 view.evaluateJavascript(
                         "window.scrollTo({top: Math.floor(Math.random()*500)+120, behavior: 'smooth'});",
                         null
@@ -310,41 +254,8 @@ public class MainActivity extends Activity {
         root.addView(webView);
         setContentView(root);
 
-        log("App iniciada. Destino actual: " + getCurrentTargetBase());
-        updatePermisoButtonState();
+        log("App iniciada. Destino: " + TARGET_BASE);
         checkPublicIp(false);
-    }
-
-    private String getCurrentTargetBase() {
-        String raw = etTargetUrl != null ? etTargetUrl.getText().toString().trim() : DEFAULT_TARGET_URL;
-        if (raw.isEmpty()) {
-            raw = DEFAULT_TARGET_URL;
-        }
-        if (!raw.startsWith("http://") && !raw.startsWith("https://")) {
-            raw = "https://" + raw;
-        }
-        while (raw.endsWith("/") && raw.length() > 8) {
-            raw = raw.substring(0, raw.length() - 1);
-        }
-        return raw;
-    }
-
-    private void saveCurrentTargetUrl() {
-        String clean = getCurrentTargetBase();
-        etTargetUrl.setText(clean);
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        prefs.edit().putString(KEY_CUSTOM_URL, clean).apply();
-    }
-
-    private void updatePermisoButtonState() {
-        if (btnPermisoSinPc == null) return;
-        if (AirplaneAccessibilityService.isReady()) {
-            btnPermisoSinPc.setText("✔ MODO AVIÓN PERMANENTE SIN PC: ACTIVO");
-            btnPermisoSinPc.setBackgroundColor(Color.parseColor("#059669"));
-        } else {
-            btnPermisoSinPc.setText("⚙ ACTIVAR MODO AVIÓN PERMANENTE (SIN PC AL REINICIAR)");
-            btnPermisoSinPc.setBackgroundColor(Color.parseColor("#475569"));
-        }
     }
 
     private void log(final String msg) {
@@ -392,7 +303,7 @@ public class MainActivity extends Activity {
             btnToggleAuto.setBackgroundColor(Color.parseColor("#ef4444"));
             tvStatus.setText("ESTADO: EJECUTANDO VISITAS...");
             tvStatus.setTextColor(Color.parseColor("#34d399"));
-            log("Bot iniciado hacia: " + getCurrentTargetBase());
+            log("Bot iniciado. Ejecutando ciclo de visitas...");
             runNextCycle();
         } else {
             btnToggleAuto.setText("▶ INICIAR BOT AUTOMÁTICO");
@@ -459,11 +370,11 @@ public class MainActivity extends Activity {
             public void run() {
                 boolean success = rotateViaLocalDaemon();
                 if (success) {
-                    log("✈ Modo Avión ON -> OFF completado solo (ADB). Reconectando 4G...");
+                    log("✈ Modo Avión ON -> OFF completado solo. Reconectando 4G...");
                     try { Thread.sleep(5000); } catch (Exception ignored) {}
                     checkPublicIp(true);
                 } else if (AirplaneAccessibilityService.isReady()) {
-                    log("✈ Rotando Modo Avión vía Accesibilidad Permanente (Sin PC)...");
+                    log("✈ Rotando Modo Avión vía Permiso Permanente (Sin PC)...");
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -471,7 +382,7 @@ public class MainActivity extends Activity {
                         }
                     });
                 } else {
-                    log("Abriendo panel de Modo Avión (activá Accesibilidad para hacerlo 100% sin PC tras reiniciar)...");
+                    log("Abriendo panel rápido de Modo Avión...");
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -492,7 +403,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        updatePermisoButtonState();
         checkPublicIp(isRunning);
     }
 
@@ -553,43 +463,25 @@ public class MainActivity extends Activity {
         String ua = USER_AGENTS[random.nextInt(USER_AGENTS.length)];
         webView.getSettings().setUserAgentString(ua);
 
-        final String targetBase = getCurrentTargetBase();
-        final boolean isCriterioSite = targetBase.contains("criteriofinanciero.onrender.com");
-
-        String fullUrl;
-        if (isCriterioSite) {
-            String path = PATHS[random.nextInt(PATHS.length)];
-            fullUrl = targetBase + path;
-        } else {
-            fullUrl = targetBase;
-        }
+        String path = PATHS[random.nextInt(PATHS.length)];
+        String fullUrl = TARGET_BASE + path;
 
         visitCount++;
         tvVisitsCount.setText("Visitas enviadas en esta sesión: " + visitCount);
-        log("Visita #" + visitCount + " (IP " + lastIp + ") -> " + fullUrl);
+        log("Visitas #" + visitCount + " (IP " + lastIp + ") -> " + path);
 
         webView.loadUrl(fullUrl);
 
-        // Navegar a una segunda página interna a los 12 segundos
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
-                if (isCriterioSite) {
-                    String secondPath = PATHS[8 + random.nextInt(PATHS.length - 8)];
-                    log("↳ Leyendo guía interna: " + secondPath);
-                    webView.loadUrl(targetBase + secondPath);
-                } else {
-                    log("↳ Navegando a sección interna de: " + targetBase);
-                    webView.evaluateJavascript(
-                            "(function(){ var links = Array.from(document.querySelectorAll('a[href]')).filter(function(a){ return a.href.indexOf(location.hostname) !== -1 && a.href !== location.href; }); if(links.length > 0){ links[Math.floor(Math.random()*links.length)].click(); } else { window.scrollTo({top: document.body.scrollHeight/2, behavior:'smooth'}); } })();",
-                            null
-                    );
-                }
+                String secondPath = PATHS[8 + random.nextInt(PATHS.length - 8)];
+                log("↳ Leyendo guía interna: " + secondPath);
+                webView.loadUrl(TARGET_BASE + secondPath);
             }
         }, 12000);
 
-        // Programar rotación automática de IP y siguiente visita a los 26 segundos
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -616,7 +508,7 @@ public class MainActivity extends Activity {
                         }
                     });
                 } else if (AirplaneAccessibilityService.isReady()) {
-                    log("✈ Rotando Modo Avión vía Accesibilidad Permanente (Sin PC)...");
+                    log("✈ Rotando Modo Avión vía Permiso Permanente (Sin PC)...");
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
