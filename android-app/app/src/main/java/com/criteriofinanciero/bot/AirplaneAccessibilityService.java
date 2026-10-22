@@ -69,8 +69,13 @@ public class AirplaneAccessibilityService extends AccessibilityService {
         }
 
         try {
-            // Abrir pantalla directa de Modo Avión del sistema
-            Intent intent = new Intent(Settings.ACTION_AIRPLANE_MODE_SETTINGS);
+            // Abrir pantalla de Redes e Internet donde está el interruptor de Modo de Avión
+            Intent intent;
+            try {
+                intent = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
+            } catch (Exception ignored) {
+                intent = new Intent(Settings.ACTION_AIRPLANE_MODE_SETTINGS);
+            }
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
 
@@ -104,14 +109,14 @@ public class AirplaneAccessibilityService extends AccessibilityService {
             case 1: // Intentando encender Modo Avión
                 if (airOn) {
                     Log.i(TAG, "Modo Avión encendido confirmado.");
-                    step = 2; // Pasar a retención (esperar 4s con datos apagados)
+                    step = 2; // Pasar a retención (4s con datos apagados)
                     stateTimestamp = now;
                     attemptsInStep = 0;
                     handler.postDelayed(pollRunnable, 500);
                     return;
                 }
-                clickSwitchMatchingState(true);
-                if (attemptsInStep > 22) { // 8-9 segundos timeout
+                clickRowForTargetState(true);
+                if (attemptsInStep > 20) {
                     Log.w(TAG, "Timeout esperando encendido de Modo Avión.");
                     finishProcess(false);
                     return;
@@ -121,7 +126,7 @@ public class AirplaneAccessibilityService extends AccessibilityService {
 
             case 2: // Mantener Modo Avión encendido por 4 segundos para renovar IP 4G
                 if (!airOn) {
-                    clickSwitchMatchingState(true);
+                    clickRowForTargetState(true);
                 }
                 long elapsed = now - stateTimestamp;
                 if (elapsed >= 4000) {
@@ -141,8 +146,8 @@ public class AirplaneAccessibilityService extends AccessibilityService {
                     handler.postDelayed(pollRunnable, 400);
                     return;
                 }
-                clickSwitchMatchingState(false);
-                if (attemptsInStep > 25) { // Timeout
+                clickRowForTargetState(false);
+                if (attemptsInStep > 22) {
                     Log.w(TAG, "Timeout esperando apagado de Modo Avión.");
                     finishProcess(false);
                     return;
@@ -157,7 +162,7 @@ public class AirplaneAccessibilityService extends AccessibilityService {
                     public void run() {
                         finishProcess(true);
                     }
-                }, 700);
+                }, 600);
                 break;
         }
     }
@@ -174,7 +179,7 @@ public class AirplaneAccessibilityService extends AccessibilityService {
         }
     }
 
-    private boolean clickSwitchMatchingState(boolean targetState) {
+    private boolean clickRowForTargetState(boolean targetState) {
         try {
             AccessibilityNodeInfo root = getRootInActiveWindow();
             if (root == null) return false;
@@ -193,35 +198,23 @@ public class AirplaneAccessibilityService extends AccessibilityService {
                 }
             }
 
-            // 1. Buscar primero por texto de etiqueta de Modo Avión
-            String[] labels = new String[]{"Modo avión", "Modo Avión", "Modo avion", "Airplane mode", "Avión"};
+            // Buscar por texto exacto de etiqueta de Modo Avión (en Motorola es "Modo de avión")
+            String[] labels = new String[]{
+                    "Modo de avión", "Modo de avion",
+                    "Modo avión", "Modo avion",
+                    "Airplane mode"
+            };
             for (String label : labels) {
                 List<AccessibilityNodeInfo> nodes = root.findAccessibilityNodeInfosByText(label);
                 if (nodes != null && !nodes.isEmpty()) {
                     for (AccessibilityNodeInfo node : nodes) {
+                        // Descartar si es un banner que dice "El modo de avión está activado"
+                        CharSequence txt = node.getText();
+                        if (txt != null && txt.toString().toLowerCase().contains("está activado")) {
+                            continue;
+                        }
                         if (toggleSwitchNearNode(node, targetState)) {
                             return true;
-                        }
-                    }
-                }
-            }
-
-            // 2. Buscar por ID estándar de switch en ajustes de Android
-            String[] switchIds = new String[]{
-                    "android:id/switch_widget",
-                    "com.android.settings:id/switch_widget",
-                    "android:id/switch1"
-            };
-            for (String sId : switchIds) {
-                List<AccessibilityNodeInfo> switches = root.findAccessibilityNodeInfosByViewId(sId);
-                if (switches != null && !switches.isEmpty()) {
-                    for (AccessibilityNodeInfo sw : switches) {
-                        if (sw.isCheckable()) {
-                            if (sw.isChecked() != targetState) {
-                                return sw.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                            }
-                        } else if (sw.isClickable()) {
-                            return sw.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                         }
                     }
                 }
@@ -235,21 +228,21 @@ public class AirplaneAccessibilityService extends AccessibilityService {
         AccessibilityNodeInfo current = node;
         for (int i = 0; i < 4 && current != null; i++) {
             AccessibilityNodeInfo checkable = findCheckable(current);
-            if (checkable != null) {
-                if (checkable.isCheckable()) {
-                    if (checkable.isChecked() != targetState) {
-                        boolean ok = checkable.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                        if (!ok && current.isClickable()) {
-                            ok = current.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                        }
-                        return ok;
+            if (checkable != null && checkable.isCheckable()) {
+                if (checkable.isChecked() != targetState) {
+                    // Clickear la fila cliqueable que contiene el switch
+                    if (current.isClickable()) {
+                        return current.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                     }
-                    return true;
-                } else if (checkable.isClickable()) {
-                    return checkable.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                    if (checkable.isClickable()) {
+                        return checkable.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                    }
+                } else {
+                    return true; // Ya está en el estado deseado
                 }
             }
             if (current.isClickable()) {
+                // Si la fila es cliqueable y no encontramos el widget switch directamente
                 return current.performAction(AccessibilityNodeInfo.ACTION_CLICK);
             }
             current = current.getParent();
