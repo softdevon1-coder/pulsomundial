@@ -1,7 +1,11 @@
 package com.criteriofinanciero.bot;
 
 import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.GestureDescription;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.graphics.Path;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
@@ -69,15 +73,7 @@ public class AirplaneAccessibilityService extends AccessibilityService {
         }
 
         try {
-            // Abrir pantalla de Redes e Internet donde está el interruptor de Modo de Avión
-            Intent intent;
-            try {
-                intent = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
-            } catch (Exception ignored) {
-                intent = new Intent(Settings.ACTION_AIRPLANE_MODE_SETTINGS);
-            }
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
+            openNetworkSettingsScreen();
 
             step = 1; // Paso 1: Encender Modo Avión
             stateTimestamp = System.currentTimeMillis();
@@ -87,6 +83,26 @@ public class AirplaneAccessibilityService extends AccessibilityService {
         } catch (Exception e) {
             Log.e(TAG, "Error iniciando toggle: " + e.getMessage());
             if (listener != null) listener.onComplete(false);
+        }
+    }
+
+    private void openNetworkSettingsScreen() {
+        Intent intent = new Intent();
+        try {
+            // Intent directo al Dashboard de Redes e Internet de Ajustes
+            intent.setComponent(new ComponentName("com.android.settings", "com.android.settings.Settings$NetworkDashboardActivity"));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        } catch (Exception e) {
+            try {
+                Intent fallBack = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
+                fallBack.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(fallBack);
+            } catch (Exception ignored) {
+                Intent fallBack2 = new Intent(Settings.ACTION_AIRPLANE_MODE_SETTINGS);
+                fallBack2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(fallBack2);
+            }
         }
     }
 
@@ -116,7 +132,7 @@ public class AirplaneAccessibilityService extends AccessibilityService {
                     return;
                 }
                 clickRowForTargetState(true);
-                if (attemptsInStep > 20) {
+                if (attemptsInStep > 22) {
                     Log.w(TAG, "Timeout esperando encendido de Modo Avión.");
                     finishProcess(false);
                     return;
@@ -184,7 +200,7 @@ public class AirplaneAccessibilityService extends AccessibilityService {
             AccessibilityNodeInfo root = getRootInActiveWindow();
             if (root == null) return false;
 
-            // Manejar si saltó un cartel de diálogo ("Aceptar", "Activar", "Entendido", etc.)
+            // 1. Manejar si saltó un cartel de diálogo ("Aceptar", "Activar", "Entendido", etc.)
             String[] confirmLabels = new String[]{"Aceptar", "Activar", "OK", "Entendido", "Continuar"};
             for (String cLabel : confirmLabels) {
                 List<AccessibilityNodeInfo> confirmNodes = root.findAccessibilityNodeInfosByText(cLabel);
@@ -198,7 +214,24 @@ public class AirplaneAccessibilityService extends AccessibilityService {
                 }
             }
 
-            // Buscar por texto exacto de etiqueta de Modo Avión (en Motorola es "Modo de avión")
+            // 2. Si estamos dentro de un sub-menú de Wi-Fi ("NetworkProviderSettingsActivity"), volver atrás al dashboard
+            CharSequence pkg = root.getPackageName();
+            if (pkg != null && pkg.toString().contains("settings")) {
+                List<AccessibilityNodeInfo> modoNodes = root.findAccessibilityNodeInfosByText("Modo de avión");
+                if (modoNodes == null || modoNodes.isEmpty()) {
+                    modoNodes = root.findAccessibilityNodeInfosByText("Modo de avion");
+                }
+                if (modoNodes == null || modoNodes.isEmpty()) {
+                    // Si estamos en la página de Wi-Fi y no en el Dashboard, presionar atrás para volver al Dashboard
+                    List<AccessibilityNodeInfo> wifiTitle = root.findAccessibilityNodeInfosByText("Preferencias de red");
+                    if (wifiTitle != null && !wifiTitle.isEmpty()) {
+                        performGlobalAction(GLOBAL_ACTION_BACK);
+                        return true;
+                    }
+                }
+            }
+
+            // 3. Buscar por texto de fila de Modo Avión
             String[] labels = new String[]{
                     "Modo de avión", "Modo de avion",
                     "Modo avión", "Modo avion",
@@ -208,12 +241,11 @@ public class AirplaneAccessibilityService extends AccessibilityService {
                 List<AccessibilityNodeInfo> nodes = root.findAccessibilityNodeInfosByText(label);
                 if (nodes != null && !nodes.isEmpty()) {
                     for (AccessibilityNodeInfo node : nodes) {
-                        // Descartar si es un banner que dice "El modo de avión está activado"
                         CharSequence txt = node.getText();
                         if (txt != null && txt.toString().toLowerCase().contains("está activado")) {
-                            continue;
+                            continue; // Ignorar banner informativo
                         }
-                        if (toggleSwitchNearNode(node, targetState)) {
+                        if (performToggleOnRow(node, targetState)) {
                             return true;
                         }
                     }
@@ -224,30 +256,51 @@ public class AirplaneAccessibilityService extends AccessibilityService {
         return false;
     }
 
-    private boolean toggleSwitchNearNode(AccessibilityNodeInfo node, boolean targetState) {
+    private boolean performToggleOnRow(AccessibilityNodeInfo node, boolean targetState) {
         AccessibilityNodeInfo current = node;
         for (int i = 0; i < 4 && current != null; i++) {
             AccessibilityNodeInfo checkable = findCheckable(current);
             if (checkable != null && checkable.isCheckable()) {
                 if (checkable.isChecked() != targetState) {
-                    // Clickear la fila cliqueable que contiene el switch
+                    // Intento 1: Acción Click directa en el Switch
+                    checkable.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                    // Intento 2: Acción Click en la fila contenedora
                     if (current.isClickable()) {
-                        return current.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                        current.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                     }
-                    if (checkable.isClickable()) {
-                        return checkable.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                    }
+                    // Intento 3: Gesto táctil físico simulado en el centro del interruptor
+                    tapNodeCenter(checkable);
+                    return true;
                 } else {
                     return true; // Ya está en el estado deseado
                 }
             }
+
             if (current.isClickable()) {
-                // Si la fila es cliqueable y no encontramos el widget switch directamente
-                return current.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                current.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                tapNodeCenter(current);
+                return true;
             }
+
             current = current.getParent();
         }
         return false;
+    }
+
+    private void tapNodeCenter(AccessibilityNodeInfo node) {
+        if (node == null) return;
+        try {
+            Rect bounds = new Rect();
+            node.getBoundsInScreen(bounds);
+            if (bounds.width() > 0 && bounds.height() > 0) {
+                GestureDescription.Builder builder = new GestureDescription.Builder();
+                Path path = new Path();
+                path.moveTo(bounds.centerX(), bounds.centerY());
+                builder.addStroke(new GestureDescription.StrokeDescription(path, 0, 80));
+                dispatchGesture(builder.build(), null, null);
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     private AccessibilityNodeInfo findCheckable(AccessibilityNodeInfo root) {
