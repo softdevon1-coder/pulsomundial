@@ -30,7 +30,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 
 public class MainActivity extends Activity {
@@ -284,7 +286,9 @@ public class MainActivity extends Activity {
         ws.setJavaScriptEnabled(true);
         ws.setDomStorageEnabled(true);
         ws.setJavaScriptCanOpenWindowsAutomatically(true);
-        ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        ws.setDatabaseEnabled(true);
+        ws.setMediaPlaybackRequiresUserGesture(true); // Bloqueo estricto de autoplay de videos y audios pesados
+        ws.setCacheMode(WebSettings.LOAD_DEFAULT); // Cache inteligente: no re-descarga CSS ni logos en cada visita
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -296,10 +300,17 @@ public class MainActivity extends Activity {
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 if (request != null && request.getUrl() != null) {
                     String u = request.getUrl().toString().toLowerCase();
+                    // Bloqueo de streaming de video y audio en publicidad
                     if (u.contains(".mp4") || u.contains(".webm") || u.contains(".m4v") ||
                         u.contains(".avi") || u.contains(".flv") || u.contains(".m3u8") ||
                         u.contains(".ts") || u.contains(".mov") || u.contains(".ogv") ||
-                        u.contains("googlevideo.com") || u.contains("/videoplayback")) {
+                        u.contains(".mp3") || u.contains(".wav") || u.contains(".ogg") ||
+                        u.contains("googlevideo.com") || u.contains("/videoplayback") ||
+                        u.contains("youtube.com/embed") || u.contains("vimeo.com")) {
+                        return new WebResourceResponse("text/plain", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
+                    }
+                    // Bloqueo de tipografias web externas pesadas (usar fuentes del sistema)
+                    if (u.endsWith(".woff2") || u.endsWith(".woff") || u.endsWith(".ttf") || u.contains("fonts.gstatic.com")) {
                         return new WebResourceResponse("text/plain", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
                     }
                 }
@@ -588,7 +599,7 @@ public class MainActivity extends Activity {
         if (!isRunning) return;
 
         CookieManager.getInstance().removeAllCookies(null);
-        webView.clearCache(true);
+        // Preservar cache de estilos y logos locales para ahorrar datos
 
         String ua = USER_AGENTS[random.nextInt(USER_AGENTS.length)];
         webView.getSettings().setUserAgentString(ua);
@@ -601,7 +612,9 @@ public class MainActivity extends Activity {
         tvVisitsCount.setText("Visitas enviadas en esta sesión: " + visitCount);
         log("Visita #" + visitCount + " (IP " + lastIp + ") -> " + fullUrl);
 
-        webView.loadUrl(fullUrl);
+        Map<String, String> dataSaverHeaders = new HashMap<>();
+        dataSaverHeaders.put("Save-Data", "on");
+        webView.loadUrl(fullUrl, dataSaverHeaders);
 
         // A los 13s: scroll intermedio adicional en la primera página
         handler.postDelayed(new Runnable() {
@@ -629,7 +642,9 @@ public class MainActivity extends Activity {
                 if (base.contains("criteriofinanciero")) {
                     String secondPath = PATHS[8 + random.nextInt(PATHS.length - 8)];
                     log("↳ Leyendo artículo interno: " + secondPath + " (~26s más)");
-                    webView.loadUrl(base + secondPath);
+                    Map<String, String> dataSaverHeaders2 = new HashMap<>();
+                    dataSaverHeaders2.put("Save-Data", "on");
+                    webView.loadUrl(base + secondPath, dataSaverHeaders2);
                 } else {
                     log("↳ Leyendo contenido interno de la página (~26s más)...");
                     webView.evaluateJavascript("window.scrollBy({top: Math.floor(Math.random()*500)+300, behavior: 'smooth'});", null);
