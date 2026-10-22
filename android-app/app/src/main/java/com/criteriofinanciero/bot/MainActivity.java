@@ -2,6 +2,7 @@ package com.criteriofinanciero.bot;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.WebResourceRequest;
@@ -16,6 +18,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -31,108 +34,132 @@ import java.util.Random;
 
 public class MainActivity extends Activity {
 
-    private static final String TARGET_BASE = "https://criteriofinanciero.onrender.com";
+    private static final String DEFAULT_TARGET_URL = "https://criteriofinanciero.onrender.com";
+    private static final String PREFS_NAME = "CFBotPrefs";
+    private static final String KEY_CUSTOM_URL = "custom_target_url";
 
     private static final String[] PATHS = new String[]{
             "/",
-            "/guias",
-            "/comparativas",
-            "/mercados",
-            "/calculadoras",
-            "/calculadoras/interes-compuesto",
-            "/calculadoras/rendimiento-billeteras",
-            "/calculadoras/conversor-dolar",
-            "/articulo/como-invertir-en-cedears-argentina-guia-paso-a-paso",
-            "/articulo/como-comprar-dolar-mep-home-banking-sin-limites",
-            "/articulo/billeteras-virtuales-que-mas-pagan-argentina-comparativa",
-            "/articulo/mejores-brokers-argentina-comparativa-comisiones",
-            "/articulo/que-son-las-lecaps-y-como-invertir-tasa-fija",
-            "/articulo/impuesto-bienes-personales-ganancias-inversiones-argentina",
-            "/articulo/obligaciones-negociables-on-como-cobrar-renta-en-dolares",
-            "/articulo/fondos-comunes-de-inversion-fci-money-market-vs-t1",
-            "/articulo/lemon-cash-vs-belo-vs-buenbit-mejor-tarjeta-cripto",
-            "/articulo/cauciones-bursatiles-el-plazo-fijo-de-la-bolsa",
-            "/articulo/bonos-soberanos-al30-y-gd30-analisis-riesgo-pais",
-            "/articulo/como-armar-cartera-de-retiro-dividendos-sp500"
+            "/mundo",
+            "/economia",
+            "/tecnologia",
+            "/deportes",
+            "/salud",
+            "/ciencia",
+            "/analytics",
+            "/articulo/inteligencia-artificial-transforma-empleo-2026",
+            "/articulo/mercados-financieros-bitcoin-record-octubre-2026",
+            "/articulo/transicion-energetica-record-solar-2026",
+            "/articulo/argentina-crecimiento-economico-proyecciones-2026",
+            "/articulo/telescopio-espacial-descubrimiento-exoplaneta-vida",
+            "/articulo/avances-medicina-genetica-terapias-arn-2026",
+            "/articulo/computacion-cuantica-primeros-procesadores-comerciales",
+            "/articulo/champions-league-2026-fase-grupos-resultados"
     };
 
     private static final String[] USER_AGENTS = new String[]{
-            "Mozilla/5.0 (Linux; Android 14; SM-S928B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6613.127 Mobile Safari/537.36",
-            "Mozilla/5.0 (Linux; Android 13; SM-A546E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.6533.103 Mobile Safari/537.36",
-            "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.70 Mobile Safari/537.36",
-            "Mozilla/5.0 (Linux; Android 13; motorola edge 40) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.6478.122 Mobile Safari/537.36",
-            "Mozilla/5.0 (Linux; Android 14; Redmi Note 13 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6613.88 Mobile Safari/537.36",
-            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Mobile/15E148 Safari/604.1"
+            "Mozilla/5.0 (Linux; Android 13; SM-S908B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36",
+            "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+            "Mozilla/5.0 (Linux; Android 12; moto g52) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36",
+            "Mozilla/5.0 (Linux; Android 13; Xiaomi 13 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
+            "Mozilla/5.0 (Linux; Android 14; SM-A546B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36"
     };
+
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Random random = new Random();
 
     private TextView tvStatus;
     private TextView tvIp;
     private TextView tvVisitsCount;
     private TextView tvLog;
+    private EditText etTargetUrl;
     private ScrollView scrollLog;
     private WebView webView;
     private Button btnToggleAuto;
     private Button btnAirplaneQuick;
+    private Button btnPermisoSinPc;
 
     private boolean isRunning = false;
     private int visitCount = 0;
-    private String lastIp = "Detectando...";
-    private final Handler handler = new Handler(Looper.getMainLooper());
-    private final Random random = new Random();
+    private String lastIp = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Color.parseColor("#070d19"));
-        root.setPadding(36, 48, 36, 36);
+        root.setPadding(32, 36, 32, 24);
 
         // Header
         TextView title = new TextView(this);
-        title.setText("Criterio Financiero — Bot Mobile");
+        title.setText("CF Bot 4G — Tráfico & Rotación IP");
         title.setTextColor(Color.WHITE);
-        title.setTextSize(20f);
+        title.setTextSize(18f);
         title.setTypeface(null, Typeface.BOLD);
         root.addView(title);
 
-        TextView subtitle = new TextView(this);
-        subtitle.setText("Generador de Tráfico 4G Real & Rotación de IP");
-        subtitle.setTextColor(Color.parseColor("#10b981"));
-        subtitle.setTextSize(13f);
-        subtitle.setPadding(0, 4, 0, 24);
-        root.addView(subtitle);
+        // Selector de URL Destino Personalizable
+        TextView urlLabel = new TextView(this);
+        urlLabel.setText("URL de la Página Web Destino (Editable):");
+        urlLabel.setTextColor(Color.parseColor("#34d399"));
+        urlLabel.setTextSize(12f);
+        urlLabel.setPadding(0, 10, 0, 4);
+        root.addView(urlLabel);
+
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String savedUrl = prefs.getString(KEY_CUSTOM_URL, DEFAULT_TARGET_URL);
+
+        etTargetUrl = new EditText(this);
+        etTargetUrl.setText(savedUrl);
+        etTargetUrl.setTextColor(Color.WHITE);
+        etTargetUrl.setHintTextColor(Color.parseColor("#64748b"));
+        etTargetUrl.setHint("https://tupaginaweb.com");
+        etTargetUrl.setTextSize(13.5f);
+        etTargetUrl.setSingleLine(true);
+        GradientDrawable inputBg = new GradientDrawable();
+        inputBg.setColor(Color.parseColor("#0f1a2e"));
+        inputBg.setCornerRadius(14f);
+        inputBg.setStroke(2, Color.parseColor("#10b981"));
+        etTargetUrl.setBackground(inputBg);
+        etTargetUrl.setPadding(24, 16, 24, 16);
+        root.addView(etTargetUrl);
 
         // Card de Métricas
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
         GradientDrawable cardBg = new GradientDrawable();
         cardBg.setColor(Color.parseColor("#0f1a2e"));
-        cardBg.setCornerRadius(24f);
+        cardBg.setCornerRadius(20f);
         cardBg.setStroke(2, Color.parseColor("#1f3358"));
         card.setBackground(cardBg);
-        card.setPadding(32, 28, 32, 28);
+        card.setPadding(28, 20, 28, 20);
+        LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        cardParams.topMargin = 14;
+        card.setLayoutParams(cardParams);
 
         tvStatus = new TextView(this);
         tvStatus.setText("ESTADO: DETENIDO");
         tvStatus.setTextColor(Color.parseColor("#fde047"));
-        tvStatus.setTextSize(14f);
+        tvStatus.setTextSize(13f);
         tvStatus.setTypeface(null, Typeface.BOLD);
         card.addView(tvStatus);
 
         tvIp = new TextView(this);
         tvIp.setText("IP Pública 4G actual: Consultando...");
         tvIp.setTextColor(Color.parseColor("#f1f5f9"));
-        tvIp.setTextSize(15f);
-        tvIp.setPadding(0, 12, 0, 6);
+        tvIp.setTextSize(14f);
+        tvIp.setPadding(0, 6, 0, 4);
         card.addView(tvIp);
 
         tvVisitsCount = new TextView(this);
         tvVisitsCount.setText("Visitas enviadas en esta sesión: 0");
         tvVisitsCount.setTextColor(Color.parseColor("#34d399"));
-        tvVisitsCount.setTextSize(15f);
+        tvVisitsCount.setTextSize(14f);
         tvVisitsCount.setTypeface(null, Typeface.BOLD);
         card.addView(tvVisitsCount);
 
@@ -141,17 +168,18 @@ public class MainActivity extends Activity {
         // Botones de Control
         LinearLayout btnRow = new LinearLayout(this);
         btnRow.setOrientation(LinearLayout.VERTICAL);
-        btnRow.setPadding(0, 24, 0, 16);
+        btnRow.setPadding(0, 16, 0, 10);
 
         btnToggleAuto = new Button(this);
         btnToggleAuto.setText("▶ INICIAR BOT AUTOMÁTICO");
         btnToggleAuto.setBackgroundColor(Color.parseColor("#10b981"));
         btnToggleAuto.setTextColor(Color.WHITE);
         btnToggleAuto.setTypeface(null, Typeface.BOLD);
-        btnToggleAuto.setPadding(20, 28, 20, 28);
+        btnToggleAuto.setPadding(16, 20, 16, 20);
         btnToggleAuto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                saveCurrentTargetUrl();
                 toggleBot();
             }
         });
@@ -162,11 +190,11 @@ public class MainActivity extends Activity {
         btnAirplaneQuick.setBackgroundColor(Color.parseColor("#3b82f6"));
         btnAirplaneQuick.setTextColor(Color.WHITE);
         btnAirplaneQuick.setTypeface(null, Typeface.BOLD);
-        btnAirplaneQuick.setPadding(20, 22, 20, 22);
+        btnAirplaneQuick.setPadding(16, 18, 16, 18);
         LinearLayout.LayoutParams btnAirParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
-        btnAirParams.topMargin = 20;
+        btnAirParams.topMargin = 12;
         btnAirplaneQuick.setLayoutParams(btnAirParams);
         btnAirplaneQuick.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -176,36 +204,61 @@ public class MainActivity extends Activity {
         });
         btnRow.addView(btnAirplaneQuick);
 
+        btnPermisoSinPc = new Button(this);
+        btnPermisoSinPc.setText("⚙ PERMISO PERMANENTE SIN PC (ACCESIBILIDAD)");
+        btnPermisoSinPc.setBackgroundColor(Color.parseColor("#475569"));
+        btnPermisoSinPc.setTextColor(Color.WHITE);
+        btnPermisoSinPc.setTextSize(11.5f);
+        btnPermisoSinPc.setTypeface(null, Typeface.BOLD);
+        btnPermisoSinPc.setPadding(14, 14, 14, 14);
+        LinearLayout.LayoutParams btnPermParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        btnPermParams.topMargin = 10;
+        btnPermisoSinPc.setLayoutParams(btnPermParams);
+        btnPermisoSinPc.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                log("Abriendo Accesibilidad: activá 'CF Bot 4G — Auto Modo Avión' para que funcione siempre sin PC.");
+                try {
+                    Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                    startActivity(intent);
+                } catch (Exception ignored) {
+                }
+            }
+        });
+        btnRow.addView(btnPermisoSinPc);
+
         root.addView(btnRow);
 
         // Consola de Log
         TextView logHeader = new TextView(this);
         logHeader.setText("Registro de Actividad en Vivo:");
         logHeader.setTextColor(Color.parseColor("#cbd5e1"));
-        logHeader.setTextSize(12f);
-        logHeader.setPadding(0, 8, 0, 8);
+        logHeader.setTextSize(11.5f);
+        logHeader.setPadding(0, 4, 0, 4);
         root.addView(logHeader);
 
         scrollLog = new ScrollView(this);
         LinearLayout.LayoutParams scrollParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 360);
+                LinearLayout.LayoutParams.MATCH_PARENT, 260);
         scrollLog.setLayoutParams(scrollParams);
         scrollLog.setBackgroundColor(Color.parseColor("#030710"));
-        scrollLog.setPadding(20, 16, 20, 16);
+        scrollLog.setPadding(16, 12, 16, 12);
 
         tvLog = new TextView(this);
         tvLog.setTextColor(Color.parseColor("#e2e8f0"));
-        tvLog.setTextSize(11.5f);
+        tvLog.setTextSize(11f);
         tvLog.setTypeface(Typeface.MONOSPACE);
         scrollLog.addView(tvLog);
         root.addView(scrollLog);
 
         // Visor Web en Vivo
         TextView webHeader = new TextView(this);
-        webHeader.setText("Visor de Navegación Orgánica (Criterio Financiero):");
+        webHeader.setText("Visor de Navegación Orgánica:");
         webHeader.setTextColor(Color.parseColor("#cbd5e1"));
-        webHeader.setTextSize(12f);
-        webHeader.setPadding(0, 16, 0, 8);
+        webHeader.setTextSize(11.5f);
+        webHeader.setPadding(0, 10, 0, 6);
         root.addView(webHeader);
 
         webView = new WebView(this);
@@ -229,7 +282,7 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(final WebView view, String url) {
                 super.onPageFinished(view, url);
-                log("✔ Página cargada: " + url.replace(TARGET_BASE, ""));
+                log("✔ Página cargada: " + url);
                 view.evaluateJavascript(
                         "window.scrollTo({top: Math.floor(Math.random()*500)+120, behavior: 'smooth'});",
                         null
@@ -254,12 +307,45 @@ public class MainActivity extends Activity {
         root.addView(webView);
         setContentView(root);
 
-        log("App iniciada. Destino: " + TARGET_BASE);
+        log("App iniciada. Destino actual: " + getCurrentTargetBase());
+        updatePermisoButtonState();
         checkPublicIp(false);
     }
 
+    private String getCurrentTargetBase() {
+        String raw = etTargetUrl != null ? etTargetUrl.getText().toString().trim() : DEFAULT_TARGET_URL;
+        if (raw.isEmpty()) {
+            raw = DEFAULT_TARGET_URL;
+        }
+        if (!raw.startsWith("http://") && !raw.startsWith("https://")) {
+            raw = "https://" + raw;
+        }
+        while (raw.endsWith("/") && raw.length() > 8) {
+            raw = raw.substring(0, raw.length() - 1);
+        }
+        return raw;
+    }
+
+    private void saveCurrentTargetUrl() {
+        String clean = getCurrentTargetBase();
+        if (etTargetUrl != null) etTargetUrl.setText(clean);
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        prefs.edit().putString(KEY_CUSTOM_URL, clean).apply();
+    }
+
+    private void updatePermisoButtonState() {
+        if (btnPermisoSinPc == null) return;
+        if (AirplaneAccessibilityService.isReady()) {
+            btnPermisoSinPc.setText("✔ MODO AVIÓN PERMANENTE SIN PC: ACTIVO");
+            btnPermisoSinPc.setBackgroundColor(Color.parseColor("#059669"));
+        } else {
+            btnPermisoSinPc.setText("⚙ ACTIVAR MODO AVIÓN PERMANENTE (SIN PC AL REINICIAR)");
+            btnPermisoSinPc.setBackgroundColor(Color.parseColor("#475569"));
+        }
+    }
+
     private void log(final String msg) {
-        android.util.Log.i("CFBot", msg);
+        Log.i("CFBot", msg);
         handler.post(new Runnable() {
             @Override
             public void run() {
@@ -304,7 +390,7 @@ public class MainActivity extends Activity {
             btnToggleAuto.setBackgroundColor(Color.parseColor("#ef4444"));
             tvStatus.setText("ESTADO: EJECUTANDO VISITAS...");
             tvStatus.setTextColor(Color.parseColor("#34d399"));
-            log("Bot iniciado. Ejecutando ciclo de visitas...");
+            log("Bot iniciado hacia: " + getCurrentTargetBase());
             runNextCycle();
         } else {
             btnToggleAuto.setText("▶ INICIAR BOT AUTOMÁTICO");
@@ -371,7 +457,7 @@ public class MainActivity extends Activity {
             public void run() {
                 boolean success = rotateViaLocalDaemon();
                 if (success) {
-                    log("✈ Modo Avión ON -> OFF completado solo. Reconectando 4G...");
+                    log("✈ Modo Avión ON -> OFF completado solo (ADB). Reconectando 4G...");
                     try { Thread.sleep(5000); } catch (Exception ignored) {}
                     checkPublicIp(true);
                 } else if (AirplaneAccessibilityService.isReady()) {
@@ -381,8 +467,8 @@ public class MainActivity extends Activity {
                         public void run() {
                             AirplaneAccessibilityService.instance.toggleAirplaneModeStandalone(new AirplaneAccessibilityService.OnToggleCompleteListener() {
                                 @Override
-                                public void onComplete(boolean success) {
-                                    if (success) {
+                                public void onComplete(boolean ok) {
+                                    if (ok) {
                                         log("✔ Modo Avión completado (ON -> OFF). Reconectando 4G...");
                                     } else {
                                         log("⚠ Modo Avión finalizado. Verificando señal 4G...");
@@ -403,10 +489,10 @@ public class MainActivity extends Activity {
                         @Override
                         public void run() {
                             try {
-                                Intent intent = new Intent(Settings.ACTION_AIRPLANE_MODE_SETTINGS);
+                                Intent intent = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
                                 startActivity(intent);
                             } catch (Exception e) {
-                                Intent intent = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
+                                Intent intent = new Intent(Settings.ACTION_AIRPLANE_MODE_SETTINGS);
                                 startActivity(intent);
                             }
                         }
@@ -419,6 +505,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        updatePermisoButtonState();
         checkPublicIp(isRunning);
     }
 
@@ -479,12 +566,13 @@ public class MainActivity extends Activity {
         String ua = USER_AGENTS[random.nextInt(USER_AGENTS.length)];
         webView.getSettings().setUserAgentString(ua);
 
+        final String base = getCurrentTargetBase();
         String path = PATHS[random.nextInt(PATHS.length)];
-        String fullUrl = TARGET_BASE + path;
+        String fullUrl = base.contains("criteriofinanciero") ? (base + path) : base;
 
         visitCount++;
         tvVisitsCount.setText("Visitas enviadas en esta sesión: " + visitCount);
-        log("Visitas #" + visitCount + " (IP " + lastIp + ") -> " + path);
+        log("Visita #" + visitCount + " (IP " + lastIp + ") -> " + fullUrl);
 
         webView.loadUrl(fullUrl);
 
@@ -492,9 +580,14 @@ public class MainActivity extends Activity {
             @Override
             public void run() {
                 if (!isRunning) return;
-                String secondPath = PATHS[8 + random.nextInt(PATHS.length - 8)];
-                log("↳ Leyendo guía interna: " + secondPath);
-                webView.loadUrl(TARGET_BASE + secondPath);
+                if (base.contains("criteriofinanciero")) {
+                    String secondPath = PATHS[8 + random.nextInt(PATHS.length - 8)];
+                    log("↳ Leyendo guía interna: " + secondPath);
+                    webView.loadUrl(base + secondPath);
+                } else {
+                    log("↳ Leyendo contenido interno de la página...");
+                    webView.evaluateJavascript("window.scrollBy({top: 400, behavior: 'smooth'});", null);
+                }
             }
         }, 12000);
 
@@ -514,7 +607,7 @@ public class MainActivity extends Activity {
             public void run() {
                 boolean autoRotated = rotateViaLocalDaemon();
                 if (autoRotated) {
-                    log("✈ Modo Avión desactivado solo. Esperando señal 4G...");
+                    log("✈ Modo Avión desactivado solo (ADB). Esperando señal 4G...");
                     try { Thread.sleep(5500); } catch (Exception ignored) {}
                     handler.post(new Runnable() {
                         @Override
@@ -530,8 +623,8 @@ public class MainActivity extends Activity {
                         public void run() {
                             AirplaneAccessibilityService.instance.toggleAirplaneModeStandalone(new AirplaneAccessibilityService.OnToggleCompleteListener() {
                                 @Override
-                                public void onComplete(boolean success) {
-                                    if (success) {
+                                public void onComplete(boolean ok) {
+                                    if (ok) {
                                         log("✔ Modo Avión completado (ON -> OFF). Reconectando 4G...");
                                     } else {
                                         log("⚠ Modo Avión finalizado. Verificando señal 4G...");
@@ -539,9 +632,10 @@ public class MainActivity extends Activity {
                                     handler.postDelayed(new Runnable() {
                                         @Override
                                         public void run() {
-                                            checkPublicIp(true);
+                                            if (!isRunning) return;
+                                            runNextCycle();
                                         }
-                                    }, 4000);
+                                    }, 4500);
                                 }
                             });
                         }
