@@ -94,6 +94,7 @@ public class MainActivity extends Activity {
     };
 
     private static final String[] MODEM_BRANDS = new String[]{
+            "Movistar HGU (Smart WiFi / Askey / MitraStar)",
             "Huawei (HG8245 / ONT Fibra)",
             "ZTE (F660 / F670 / F680)",
             "Sagemcom (Fast 3890 / 5655)",

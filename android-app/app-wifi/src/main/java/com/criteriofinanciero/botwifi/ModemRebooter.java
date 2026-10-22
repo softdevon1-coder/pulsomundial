@@ -90,7 +90,16 @@ public class ModemRebooter {
 
         boolean success = false;
 
-        if (brand.contains("Huawei")) {
+        if (brand.contains("Movistar")) {
+            // Movistar HGU (Askey RTF8115VW / MitraStar GPT-2541GNAC)
+            success = sendHttpRequest(base + "/cgi-bin/te_reboot.cgi", "POST", null, basicAuth, cb);
+            if (!success) {
+                success = sendHttpRequest(base + "/reboot.cgi", "POST", "reboot=1", basicAuth, cb);
+            }
+            if (!success) {
+                success = sendHttpRequest(base + "/cgi-bin/reboot.cgi", "POST", null, basicAuth, cb);
+            }
+        } else if (brand.contains("Huawei")) {
             // Huawei ONT / HG8245 reboot endpoints
             success = sendHttpRequest(base + "/api/system/reboot", "POST", "<request><Control>1</Control></request>", basicAuth, cb);
             if (!success) {
