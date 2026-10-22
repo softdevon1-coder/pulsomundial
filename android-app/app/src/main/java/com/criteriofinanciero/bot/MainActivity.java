@@ -259,6 +259,7 @@ public class MainActivity extends Activity {
     }
 
     private void log(final String msg) {
+        android.util.Log.i("CFBot", msg);
         handler.post(new Runnable() {
             @Override
             public void run() {

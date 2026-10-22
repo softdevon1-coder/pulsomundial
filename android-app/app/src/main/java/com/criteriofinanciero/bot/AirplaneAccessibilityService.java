@@ -172,7 +172,13 @@ public class AirplaneAccessibilityService extends AccessibilityService {
                 break;
 
             case 4: // Regresar automáticamente a la app del Bot
-                performGlobalAction(GLOBAL_ACTION_BACK);
+                try {
+                    Intent bringBack = new Intent(this, MainActivity.class);
+                    bringBack.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(bringBack);
+                } catch (Exception e) {
+                    performGlobalAction(GLOBAL_ACTION_BACK);
+                }
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
