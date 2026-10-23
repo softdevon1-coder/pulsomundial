@@ -331,7 +331,7 @@ public class MainActivity extends Activity {
                     String u = request.getUrl().toString().toLowerCase();
                     // 1. Bloqueo de creatividades GIF pesadas (ahorro de ~200 KB por banner)
                     // Responde con un GIF transparente 1x1 (43 bytes) para mantener intacta la impresion y el iframe
-                    if (u.endsWith(".gif") || u.contains(".gif?")) {
+                    if (u.contains(".gif")) {
                         byte[] transparent1x1Gif = new byte[]{
                             0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, (byte)0x80, 0x00, 0x00,
                             (byte)0xff, (byte)0xff, (byte)0xff, 0x00, 0x00, 0x00, 0x21, (byte)0xf9, 0x04, 0x01,
@@ -646,50 +646,50 @@ public class MainActivity extends Activity {
         dataSaverHeaders.put("Save-Data", "on");
         webView.loadUrl(fullUrl, dataSaverHeaders);
 
-        // A los 6s: scroll suave en el contenido del artículo
+        // A los 5s: scroll suave en el contenido del artículo
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
                 webView.evaluateJavascript("window.scrollBy({top: Math.floor(Math.random()*400)+200, behavior: 'smooth'});", null);
             }
-        }, 6000);
+        }, 5000);
 
-        // A los 11s: toque táctil orgánico en zona neutral (activa OnClick de Monetag sin tocar banners directos)
+        // A los 9s: toque táctil orgánico en zona neutral (activa OnClick de Monetag sin tocar banners directos)
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
                 simulateHardwareTouch(webView, 0.35f, 0.45f);
             }
-        }, 11000);
+        }, 9000);
 
-        // A los 16s: scroll adicional hacia el desarrollo del artículo
+        // A los 14s: scroll adicional hacia el desarrollo del artículo
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
                 webView.evaluateJavascript("window.scrollBy({top: Math.floor(Math.random()*350)+200, behavior: 'smooth'});", null);
             }
-        }, 16000);
+        }, 14000);
 
-        // A los 20s: segundo toque táctil orgánico en zona neutral
+        // A los 18s: segundo toque táctil orgánico en zona neutral
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
                 simulateHardwareTouch(webView, 0.65f, 0.55f);
             }
-        }, 20000);
+        }, 18000);
 
-        // A los 23.5s: fin de permanencia y rotación de IP para sostener el ritmo de 120 visitas/hora
+        // A los 20.5s: fin de permanencia y rotación de IP (garantiza 120-125 visitas por hora exactas)
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
                 rotateAndContinue();
             }
-        }, 23500);
+        }, 20500);
     }
 
     private void rotateAndContinue() {
@@ -727,7 +727,7 @@ public class MainActivity extends Activity {
                                             if (!isRunning) return;
                                             runNextCycle();
                                         }
-                                    }, 4500);
+                                    }, 3200);
                                 }
                             });
                         }

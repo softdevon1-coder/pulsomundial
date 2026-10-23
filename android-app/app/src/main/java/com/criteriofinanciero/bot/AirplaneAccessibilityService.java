@@ -142,8 +142,8 @@ public class AirplaneAccessibilityService extends AccessibilityService {
 
             case 2: // Paso 2: Mantener encendido por 4 segundos para renovar IP 4G
                 long elapsed = now - stateTimestamp;
-                if (elapsed >= 4000) {
-                    Log.i(TAG, "4s cumplidos en Modo Avión. Procediendo a apagar para obtener nueva IP...");
+                if (elapsed >= 2500) {
+                    Log.i(TAG, "2.5s cumplidos en Modo Avión. Procediendo a apagar para obtener nueva IP...");
                     step = 3; // Pasar a apagar
                     stateTimestamp = now;
                     attemptsInStep = 0;
