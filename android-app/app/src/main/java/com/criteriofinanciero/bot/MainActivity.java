@@ -635,6 +635,8 @@ public class MainActivity extends Activity {
         dataSaverHeaders.put("Save-Data", "on");
         webView.loadUrl(fullUrl, dataSaverHeaders);
 
+        final boolean exploreSecondArticle = (random.nextInt(100) < 25); // Modelo Híbrido: 25% multi-página, 75% lectura profunda de 1 artículo
+
         // A los 7s: toque táctil orgánico en zona neutral (activa OnClick de Monetag sin pulsar banners directos)
         handler.postDelayed(new Runnable() {
             @Override
@@ -644,7 +646,7 @@ public class MainActivity extends Activity {
             }
         }, 7000);
 
-        // A los 14s: scroll intermedio orgánico en la primera página
+        // A los 14s: scroll intermedio orgánico en el artículo
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -653,50 +655,50 @@ public class MainActivity extends Activity {
             }
         }, 14000);
 
-        // A los 24s: pasar al segundo artículo o seguir explorando
+        // A los 24s: decisión orgánica (25% segundo artículo, 75% lectura profunda del actual para ahorro de datos)
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
-                if (base.contains("criteriofinanciero")) {
+                if (exploreSecondArticle && base.contains("criteriofinanciero")) {
                     String secondPath = PATHS[8 + random.nextInt(PATHS.length - 8)];
-                    log("↳ Leyendo artículo interno: " + secondPath + " (~26s más)");
+                    log("↳ Modo multi-página (25%): Explorando " + secondPath + " (~26s más)");
                     Map<String, String> dataSaverHeaders2 = new HashMap<>();
                     dataSaverHeaders2.put("Save-Data", "on");
                     webView.loadUrl(base + secondPath, dataSaverHeaders2);
                 } else {
-                    log("↳ Leyendo contenido interno de la página (~26s más)...");
-                    webView.evaluateJavascript("window.scrollBy({top: Math.floor(Math.random()*500)+300, behavior: 'smooth'});", null);
+                    log("↳ Modo lectura profunda (75%): Leyendo desarrollo de la nota...");
+                    webView.evaluateJavascript("window.scrollBy({top: Math.floor(Math.random()*450)+250, behavior: 'smooth'});", null);
                 }
             }
         }, 24000);
 
-        // A los 32s: toque táctil orgánico en el segundo artículo
+        // A los 33s: toque táctil orgánico en zona neutral
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
                 simulateHardwareTouch(webView, 0.72f, 0.52f);
             }
-        }, 32000);
+        }, 33000);
 
-        // A los 40s: scroll adicional en el segundo artículo
+        // A los 42s: scroll hacia la sección inferior / conclusiones del artículo
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
-                webView.evaluateJavascript("window.scrollBy({top: Math.floor(Math.random()*350)+150, behavior: 'smooth'});", null);
+                webView.evaluateJavascript("window.scrollBy({top: Math.floor(Math.random()*400)+200, behavior: 'smooth'});", null);
             }
-        }, 40000);
+        }, 42000);
 
-        // A los 50s: fin de permanencia completa (50 segundos en total) y rotación de IP
+        // A los 52s: fin de permanencia completa (52 segundos en total) y rotación de IP
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
                 rotateAndContinue();
             }
-        }, 50000);
+        }, 52000);
     }
 
     private void rotateAndContinue() {
