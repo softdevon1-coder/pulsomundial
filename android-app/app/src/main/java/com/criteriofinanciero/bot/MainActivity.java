@@ -73,12 +73,12 @@ public class MainActivity extends Activity {
     };
 
     private static final String[] USER_AGENTS = new String[]{
-            "Mozilla/5.0 (Linux; Android 13; SM-S908B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36",
-            "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+            "Mozilla/5.0 (Linux; Android 13; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36",
+            "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36",
             "Mozilla/5.0 (Linux; Android 12; moto g52) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36",
-            "Mozilla/5.0 (Linux; Android 13; Xiaomi 13 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36",
-            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
-            "Mozilla/5.0 (Linux; Android 14; SM-A546B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36"
+            "Mozilla/5.0 (Linux; Android 13; motorola edge 40) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36",
+            "Mozilla/5.0 (Linux; Android 14; SM-A546E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36",
+            "Mozilla/5.0 (Linux; Android 13; 2210132G) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36"
     };
 
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -329,7 +329,18 @@ public class MainActivity extends Activity {
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 if (request != null && request.getUrl() != null) {
                     String u = request.getUrl().toString().toLowerCase();
-                    // Bloqueo de streaming de video y audio en publicidad
+                    // 1. Bloqueo de creatividades GIF pesadas (ahorro de ~200 KB por banner)
+                    // Responde con un GIF transparente 1x1 (43 bytes) para mantener intacta la impresion y el iframe
+                    if (u.endsWith(".gif") || u.contains(".gif?")) {
+                        byte[] transparent1x1Gif = new byte[]{
+                            0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, (byte)0x80, 0x00, 0x00,
+                            (byte)0xff, (byte)0xff, (byte)0xff, 0x00, 0x00, 0x00, 0x21, (byte)0xf9, 0x04, 0x01,
+                            0x00, 0x00, 0x00, 0x00, 0x2c, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00,
+                            0x02, 0x02, 0x44, 0x01, 0x00, 0x3b
+                        };
+                        return new WebResourceResponse("image/gif", "binary", new java.io.ByteArrayInputStream(transparent1x1Gif));
+                    }
+                    // 2. Bloqueo de streaming de video y audio en publicidad
                     if (u.contains(".mp4") || u.contains(".webm") || u.contains(".m4v") ||
                         u.contains(".avi") || u.contains(".flv") || u.contains(".m3u8") ||
                         u.contains(".ts") || u.contains(".mov") || u.contains(".ogv") ||
@@ -338,11 +349,11 @@ public class MainActivity extends Activity {
                         u.contains("youtube.com/embed") || u.contains("vimeo.com")) {
                         return new WebResourceResponse("text/plain", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
                     }
-                    // Bloqueo de tipografias web externas pesadas (usar fuentes del sistema)
+                    // 3. Bloqueo de tipografias web externas pesadas (usar fuentes del sistema)
                     if (u.endsWith(".woff2") || u.endsWith(".woff") || u.endsWith(".ttf") || u.contains("fonts.gstatic.com")) {
                         return new WebResourceResponse("text/plain", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
                     }
-                    // Bloqueo de descargas de instaladores o archivos pesados
+                    // 4. Bloqueo de descargas de instaladores o archivos pesados
                     if (u.endsWith(".apk") || u.endsWith(".zip") || u.endsWith(".exe") || u.endsWith(".dmg") || u.endsWith(".rar")) {
                         return new WebResourceResponse("text/plain", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
                     }
@@ -635,70 +646,50 @@ public class MainActivity extends Activity {
         dataSaverHeaders.put("Save-Data", "on");
         webView.loadUrl(fullUrl, dataSaverHeaders);
 
-        final boolean exploreSecondArticle = (random.nextInt(100) < 25); // Modelo Híbrido: 25% multi-página, 75% lectura profunda de 1 artículo
-
-        // A los 7s: toque táctil orgánico en zona neutral (activa OnClick de Monetag sin pulsar banners directos)
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (!isRunning) return;
-                simulateHardwareTouch(webView, 0.25f, 0.45f);
-            }
-        }, 7000);
-
-        // A los 14s: scroll intermedio orgánico en el artículo
+        // A los 6s: scroll suave en el contenido del artículo
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
                 webView.evaluateJavascript("window.scrollBy({top: Math.floor(Math.random()*400)+200, behavior: 'smooth'});", null);
             }
-        }, 14000);
+        }, 6000);
 
-        // A los 24s: decisión orgánica (25% segundo artículo, 75% lectura profunda del actual para ahorro de datos)
+        // A los 11s: toque táctil orgánico en zona neutral (activa OnClick de Monetag sin tocar banners directos)
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
-                if (exploreSecondArticle && base.contains("criteriofinanciero")) {
-                    String secondPath = PATHS[8 + random.nextInt(PATHS.length - 8)];
-                    log("↳ Modo multi-página (25%): Explorando " + secondPath + " (~26s más)");
-                    Map<String, String> dataSaverHeaders2 = new HashMap<>();
-                    dataSaverHeaders2.put("Save-Data", "on");
-                    webView.loadUrl(base + secondPath, dataSaverHeaders2);
-                } else {
-                    log("↳ Modo lectura profunda (75%): Leyendo desarrollo de la nota...");
-                    webView.evaluateJavascript("window.scrollBy({top: Math.floor(Math.random()*450)+250, behavior: 'smooth'});", null);
-                }
+                simulateHardwareTouch(webView, 0.35f, 0.45f);
             }
-        }, 24000);
+        }, 11000);
 
-        // A los 33s: toque táctil orgánico en zona neutral
+        // A los 16s: scroll adicional hacia el desarrollo del artículo
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
-                simulateHardwareTouch(webView, 0.72f, 0.52f);
+                webView.evaluateJavascript("window.scrollBy({top: Math.floor(Math.random()*350)+200, behavior: 'smooth'});", null);
             }
-        }, 33000);
+        }, 16000);
 
-        // A los 42s: scroll hacia la sección inferior / conclusiones del artículo
+        // A los 20s: segundo toque táctil orgánico en zona neutral
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
-                webView.evaluateJavascript("window.scrollBy({top: Math.floor(Math.random()*400)+200, behavior: 'smooth'});", null);
+                simulateHardwareTouch(webView, 0.65f, 0.55f);
             }
-        }, 42000);
+        }, 20000);
 
-        // A los 52s: fin de permanencia completa (52 segundos en total) y rotación de IP
+        // A los 23.5s: fin de permanencia y rotación de IP para sostener el ritmo de 120 visitas/hora
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isRunning) return;
                 rotateAndContinue();
             }
-        }, 52000);
+        }, 23500);
     }
 
     private void rotateAndContinue() {
