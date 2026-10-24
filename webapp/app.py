@@ -411,6 +411,17 @@ def api_beacon():
         return jsonify({"status": "error", "message": str(e)}), 400
 
 
+@app.route('/api/ip')
+def api_get_ip():
+    ip = request.headers.get('CF-Connecting-IP') or \
+         request.headers.get('X-Real-IP') or \
+         request.headers.get('X-Forwarded-For') or \
+         request.remote_addr
+    if ip and ',' in ip:
+        ip = ip.split(',')[0].strip()
+    return ip or '127.0.0.1', 200, {'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store'}
+
+
 @app.route('/sw.js')
 def monetag_service_worker():
     sw_content = (
