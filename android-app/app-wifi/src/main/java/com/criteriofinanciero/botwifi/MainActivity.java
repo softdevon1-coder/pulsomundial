@@ -367,7 +367,8 @@ public class MainActivity extends Activity {
         ws.setJavaScriptEnabled(true);
         ws.setDomStorageEnabled(true);
         ws.setJavaScriptCanOpenWindowsAutomatically(true);
-        ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        ws.setCacheMode(WebSettings.LOAD_DEFAULT);
+        ws.setUserAgentString("Mozilla/5.0 (Linux; Android 12; moto g52) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36"); // Device UA estable para preservar cache
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -416,6 +417,22 @@ public class MainActivity extends Activity {
                     }
                     if (u.endsWith(".apk") || u.endsWith(".zip") || u.endsWith(".exe") || u.endsWith(".dmg") || u.endsWith(".rar")) {
                         return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(new byte[0]));
+                    }
+                    // 5. Bloqueo de Bootstrap CSS y JS en el bot (ahorro masivo de ~300 KB por visita)
+                    if (u.contains("bootstrap")) {
+                        if (u.contains(".css")) {
+                            return new WebResourceResponse("text/css", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
+                        } else {
+                            return new WebResourceResponse("application/javascript", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
+                        }
+                    }
+                    // 6. Bloqueo de fuentes externas y estilos no esenciales
+                    if (u.contains("fonts.googleapis.com") || u.contains("fonts.gstatic.com")) {
+                        return new WebResourceResponse("text/css", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
+                    }
+                    // 7. Bloqueo de scripts de Monetag (106 KB que generan $0)
+                    if (u.contains("quge5.com") || u.contains("monetag") || u.contains("alwingulla.com")) {
+                        return new WebResourceResponse("application/javascript", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
                     }
                 }
                 return super.shouldInterceptRequest(view, request);
@@ -539,8 +556,7 @@ public class MainActivity extends Activity {
         CookieManager.getInstance().removeAllCookies(null);
         webView.clearCache(true);
 
-        String ua = USER_AGENTS[random.nextInt(USER_AGENTS.length)];
-        webView.getSettings().setUserAgentString(ua);
+        // User-Agent estable mantenido para preservar cache HTTP y ahorrar datos
 
         final String base = getCurrentTargetBase();
         String path = PATHS[random.nextInt(PATHS.length)];

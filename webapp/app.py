@@ -137,8 +137,10 @@ def compress_response(response):
     response.headers['Content-Encoding'] = 'gzip'
     response.headers['Content-Length'] = len(compressed_data)
     response.headers['Vary'] = 'Accept-Encoding'
-    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
-    response.headers['Pragma'] = 'no-cache'
+    if request.path.startswith('/static/'):
+        response.headers['Cache-Control'] = 'public, max-age=604800, immutable'
+    else:
+        response.headers['Cache-Control'] = 'public, max-age=1800'
     return response
 
 
