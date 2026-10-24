@@ -41,35 +41,15 @@ public class MainActivity extends Activity {
     private static final String PREFS_NAME = "CFBotPrefs";
     private static final String KEY_CUSTOM_URL = "custom_target_url";
 
-    private static final String[] PATHS = new String[]{
+        private static final String[] PATHS = new String[]{
+            "/",
             "/",
             "/guias",
             "/comparativas",
-            "/mercados",
-            "/calculadoras/interes-compuesto",
-            "/calculadoras/rendimiento-billeteras",
-            "/calculadoras/conversor-dolar",
-            "/sobre-nosotros",
             "/articulo/como-invertir-en-cedears-argentina-guia-paso-a-paso",
-            "/articulo/mejores-brokers-argentina-comparativa-comisiones",
             "/articulo/que-billetera-virtual-paga-mas-tasa-argentina",
             "/articulo/como-comprar-dolar-mep-home-banking-sin-cepo",
-            "/articulo/dolar-cripto-como-comprar-usdt-pesos-argentinos",
-            "/articulo/fondos-comunes-inversion-fci-guia-completa",
-            "/articulo/resena-completa-balanz-capital-opiniones-comisiones",
-            "/articulo/invertironline-iol-analisis-cuenta-remunerada-costos",
-            "/articulo/como-salir-de-deudas-tarjeta-credito-metodo-bola-nieve",
-            "/articulo/staking-criptomonedas-rendimientos-en-dolares-pasivos",
-            "/articulo/bienes-personales-inversiones-exentas-argentina-2026",
-            "/articulo/lemon-cash-vs-belo-vs-buenbit-mejor-tarjeta-cripto",
-            "/articulo/bonos-soberanos-al30-gd30-como-operar-calcular-tir",
-            "/articulo/obligaciones-negociables-como-cobrar-renta-en-dolares",
-            "/articulo/calculadora-inflacion-perdida-poder-adquisitivo",
-            "/articulo/plazo-fijo-tradicional-vs-plazo-fijo-uva-cual-conviene-2026",
-            "/articulo/como-enviar-dolares-exterior-argentina-metodos-legales",
-            "/articulo/cuenta-bancaria-en-usa-desde-argentina-abrir-online",
-            "/articulo/brecha-cambiaria-explicada-oficial-mep-ccl-blue",
-            "/articulo/7-errores-mas-comunes-al-empezar-a-invertir-evitarlos"
+            "/articulo/mejores-brokers-argentina-comparativa-comisiones"
     };
 
     private static final String[] USER_AGENTS = new String[]{
