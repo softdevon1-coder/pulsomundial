@@ -87,6 +87,7 @@ public class MainActivity extends Activity {
     private Button btnPermisoSinPc;
 
     private boolean isRunning = false;
+    private boolean isVisiting = false;
     private int visitCount = 0;
     private String lastIp = "";
 
@@ -481,6 +482,7 @@ public class MainActivity extends Activity {
             tvStatus.setText("ESTADO: PAUSADO");
             tvStatus.setTextColor(Color.parseColor("#fde047"));
             handler.removeCallbacksAndMessages(null);
+            isVisiting = false;
             log("Bot detenido por el usuario.");
         }
     }
@@ -589,7 +591,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         updatePermisoButtonState();
-        checkPublicIp(isRunning);
+        checkPublicIp(false);
     }
 
     private void checkPublicIp(final boolean launchVisitAfter) {
@@ -641,7 +643,8 @@ public class MainActivity extends Activity {
     }
 
     private void performOrganicVisit() {
-        if (!isRunning) return;
+        if (!isRunning || isVisiting) return;
+        isVisiting = true;
 
         CookieManager.getInstance().removeAllCookies(null);
         // Preservar cache de estilos y logos locales para ahorrar datos
@@ -727,6 +730,9 @@ public class MainActivity extends Activity {
                         @Override
                         public void run() {
                             if (!isRunning) return;
+                            isVisiting = false;
+
+                            if (!isRunning) return;
                             runNextCycle();
                         }
                     });
@@ -747,6 +753,9 @@ public class MainActivity extends Activity {
                                         @Override
                                         public void run() {
                                             if (!isRunning) return;
+                                            isVisiting = false;
+
+                                            if (!isRunning) return;
                                             runNextCycle();
                                         }
                                     }, 3200);
@@ -758,6 +767,9 @@ public class MainActivity extends Activity {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
+                            if (!isRunning) return;
+                            isVisiting = false;
+
                             if (!isRunning) return;
                             runNextCycle();
                         }

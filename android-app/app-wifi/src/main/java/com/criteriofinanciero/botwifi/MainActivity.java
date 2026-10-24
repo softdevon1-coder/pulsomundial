@@ -101,6 +101,7 @@ public class MainActivity extends Activity {
     private WebView webView;
 
     private boolean isRunning = false;
+    private boolean isVisiting = false;
     private int visitCount = 0;
     private String lastIp = "";
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -521,6 +522,7 @@ public class MainActivity extends Activity {
             tvStatus.setText("ESTADO: PAUSADO");
             tvStatus.setTextColor(Color.parseColor("#fde047"));
             handler.removeCallbacksAndMessages(null);
+            isVisiting = false;
             log("Bot detenido por el usuario.");
         }
     }
@@ -531,7 +533,8 @@ public class MainActivity extends Activity {
     }
 
     private void performOrganicVisit() {
-        if (!isRunning) return;
+        if (!isRunning || isVisiting) return;
+        isVisiting = true;
 
         CookieManager.getInstance().removeAllCookies(null);
         webView.clearCache(true);
