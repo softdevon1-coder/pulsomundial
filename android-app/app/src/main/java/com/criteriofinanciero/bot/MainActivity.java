@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
+import android.webkit.WebStorage;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -697,6 +698,7 @@ public class MainActivity extends Activity {
                                 log("★ Nueva IP detectada: " + ip);
                                 // Limpieza de cookies exclusivamente cuando cambia la IP
                                 CookieManager.getInstance().removeAllCookies(null);
+                                WebStorage.getInstance().deleteAllData();
                             }
                             if (launchVisitAfter && isRunning) {
                                 performOrganicVisit();

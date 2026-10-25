@@ -34,6 +34,7 @@ import android.view.View;
 import android.view.WindowManager;
 
 import android.webkit.CookieManager;
+import android.webkit.WebStorage;
 
 import android.webkit.WebResourceRequest;
 
@@ -1157,6 +1158,7 @@ public class MainActivity extends Activity {
 
 
         CookieManager.getInstance().removeAllCookies(null);
+                                WebStorage.getInstance().deleteAllData();
 
         webView.clearCache(true);
 
