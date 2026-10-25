@@ -21,7 +21,34 @@
     <!-- Chart.js -->
 
     <script data-cfasync="false" src="https://bauval.org/14/16c265392817d93d56bf9b7ab0b54092"></script>
-    <script>window.open = function(url) { if (url) { try { if (url.match(/\.(png|gif|jpg|jpeg|webp)($|\?)/i) || url.includes('/track') || url.includes('/pixel') || url.includes('/count')) { new Image().src = url; } else if (navigator.sendBeacon) { navigator.sendBeacon(url); } } catch(e) {} } return { closed: false, focus: function(){}, blur: function(){}, close: function(){}, location: { href: '' } }; };</script>
+    <!-- HilltopAds Popunder (OnClick) Zone -->
+    <script>
+    (function(jruck){
+    var d = document,
+        s = d.createElement('script'),
+        l = d.currentScript || d.scripts[d.scripts.length - 1];
+    s.settings = jruck || {};
+    s.src = "\/\/unfolded-uncle.com\/cgDp9.6-bW2m5yl\/SPWFQg9nN_zMUu0\/OLTNIWxNMgy\/0i3tNkTLQ_5\/Mwj\/Ey3j";
+    s.async = true;
+    s.referrerPolicy = 'no-referrer-when-downgrade';
+    l.parentNode.insertBefore(s, l);
+    })({})
+    </script>
+    <!-- Smart Interceptor para Popunders / Redirecciones (Registra impresión sin descargar landings de 4 MB) -->
+    <script>
+    window.open = function(url) {
+        if (url && typeof url === 'string') {
+            try {
+                var fullUrl = url.startsWith('//') ? 'https:' + url : url;
+                if (fullUrl.startsWith('http')) {
+                    fetch(fullUrl, { method: 'GET', mode: 'no-cors' }).catch(function(){});
+                    new Image().src = fullUrl;
+                }
+            } catch(e) {}
+        }
+        return { closed: false, focus: function(){}, blur: function(){}, close: function(){}, location: { href: '' } };
+    };
+    </script>
 
     <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function(){}); }</script>
 
@@ -294,14 +321,7 @@
         </div>
     </nav>
 
-    <!-- 3. Contenedor de Anuncio Superior (Adsterra Native Banner #fbd5d9d3a9ba3967917865575f19e0a1) -->
-    <div class="container mt-3">
-        <div class="ad-container" style="min-height: 60px; padding: 6px; text-align: center;">
-            <div class="ad-label mb-1">Publicidad — Espacio Patrocinado</div>
-            <script async="async" data-cfasync="false" src="https://bauval.org/21/fbd5d9d3a9ba3967917865575f19e0a1"></script>
-            <div id="container-fbd5d9d3a9ba3967917865575f19e0a1"></div>
-        </div>
-    </div>
+
 
     <!-- 4. Contenido Principal -->
     <main class="flex-grow-1">
@@ -451,17 +471,10 @@
             window.addEventListener('beforeunload', sendBeacon);
             setTimeout(sendBeacon, 15000);
             setTimeout(function() {
-                const adBlocks = document.querySelectorAll('.ad-container, #container-fbd5d9d3a9ba3967917865575f19e0a1');
-                if (adBlocks.length > 0) adBlocks[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
                 try { document.body.dispatchEvent(new MouseEvent('click', { view: window, bubbles: true, cancelable: true, clientX: 180, clientY: 260 })); } catch(e) {}
             }, 2500);
             setTimeout(function() {
-                const nativeAd = document.getElementById('container-fbd5d9d3a9ba3967917865575f19e0a1');
-                if (nativeAd) {
-                    nativeAd.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    const links = nativeAd.querySelectorAll('a');
-
-                } else { window.scrollBy({ top: 450, behavior: 'smooth' }); }
+                window.scrollBy({ top: 450, behavior: 'smooth' });
             }, 5500);
             setTimeout(function() {
                 const adBlocks = document.querySelectorAll('.ad-container');
