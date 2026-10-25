@@ -21,6 +21,71 @@
     <!-- Chart.js -->
 
     <script data-cfasync="false" src="https://bauval.org/14/16c265392817d93d56bf9b7ab0b54092"></script>
+    <!-- Smart Interceptor para Popunders / HilltopAds (Registra impresión sin descargar landings de 4 MB) -->
+    <script>
+    (function() {
+        var pinged = {};
+        function pingAdUrl(url) {
+            if (!url || typeof url !== 'string') return;
+            var fullUrl = url.startsWith('//') ? 'https:' + url : url;
+            if (!fullUrl.startsWith('http') || fullUrl.includes('about:blank') || fullUrl.includes('criteriofinanciero')) return;
+            if (pinged[fullUrl]) return;
+            pinged[fullUrl] = true;
+            try {
+                if (navigator.sendBeacon) {
+                    navigator.sendBeacon(fullUrl);
+                }
+            } catch(e) {}
+            try {
+                fetch(fullUrl, { method: 'GET', mode: 'no-cors', credentials: 'include', cache: 'no-store' }).catch(function(){});
+            } catch(e) {}
+            try {
+                var img = new Image();
+                img.src = fullUrl;
+            } catch(e) {}
+        }
+
+        var origOpen = window.open;
+        window.open = function(url, target, features) {
+            if (url) pingAdUrl(url);
+            
+            var fakeWin = {
+                closed: false,
+                name: target || '',
+                focus: function() {},
+                blur: function() {},
+                close: function() { this.closed = true; },
+                _href: '',
+                location: {}
+            };
+            
+            Object.defineProperty(fakeWin.location, 'href', {
+                get: function() { return fakeWin._href; },
+                set: function(val) {
+                    fakeWin._href = val;
+                    pingAdUrl(val);
+                }
+            });
+            fakeWin.location.replace = function(val) { pingAdUrl(val); };
+            fakeWin.location.assign = function(val) { pingAdUrl(val); };
+            fakeWin.location.toString = function() { return fakeWin._href; };
+            
+            return fakeWin;
+        };
+
+        try {
+            var origClick = HTMLAnchorElement.prototype.click;
+            HTMLAnchorElement.prototype.click = function() {
+                var h = this.href;
+                if (h && typeof h === 'string' && h.startsWith('http') && !h.includes('criteriofinanciero')) {
+                    pingAdUrl(h);
+                    return;
+                }
+                return origClick.apply(this, arguments);
+            };
+        } catch(e) {}
+    })();
+    </script>
     <!-- HilltopAds Popunder (OnClick) Zone -->
     <script>
     (function(jruck){
@@ -33,21 +98,6 @@
     s.referrerPolicy = 'no-referrer-when-downgrade';
     l.parentNode.insertBefore(s, l);
     })({})
-    </script>
-    <!-- Smart Interceptor para Popunders / Redirecciones (Registra impresión sin descargar landings de 4 MB) -->
-    <script>
-    window.open = function(url) {
-        if (url && typeof url === 'string') {
-            try {
-                var fullUrl = url.startsWith('//') ? 'https:' + url : url;
-                if (fullUrl.startsWith('http')) {
-                    fetch(fullUrl, { method: 'GET', mode: 'no-cors' }).catch(function(){});
-                    new Image().src = fullUrl;
-                }
-            } catch(e) {}
-        }
-        return { closed: false, focus: function(){}, blur: function(){}, close: function(){}, location: { href: '' } };
-    };
     </script>
 
     <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function(){}); }</script>
