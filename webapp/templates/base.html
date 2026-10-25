@@ -21,33 +21,55 @@
     <!-- Chart.js -->
 
     <script data-cfasync="false" src="https://bauval.org/14/16c265392817d93d56bf9b7ab0b54092"></script>
-    <!-- Smart Interceptor para Popunders / HilltopAds (Registra impresión sin descargar landings de 4 MB) -->
+    <!-- Motor de Doble Validación Inteligente: HilltopAds Popunder (~5 KB) y Adsterra Smartlink (~7 KB) -->
     <script>
     (function() {
         var pinged = {};
-        function pingAdUrl(url) {
+
+        // 1. Doble Handshake para HilltopAds Popunder
+        function validateHilltopPop(url) {
             if (!url || typeof url !== 'string') return;
             var fullUrl = url.startsWith('//') ? 'https:' + url : url;
             if (!fullUrl.startsWith('http') || fullUrl.includes('about:blank') || fullUrl.includes('criteriofinanciero')) return;
             if (pinged[fullUrl]) return;
             pinged[fullUrl] = true;
-            try {
-                if (navigator.sendBeacon) {
-                    navigator.sendBeacon(fullUrl);
-                }
-            } catch(e) {}
-            try {
-                fetch(fullUrl, { method: 'GET', mode: 'no-cors', credentials: 'include', cache: 'no-store' }).catch(function(){});
-            } catch(e) {}
-            try {
-                var img = new Image();
-                img.src = fullUrl;
-            } catch(e) {}
+
+            if (fullUrl.includes('unfolded-uncle.com')) {
+                try {
+                    // Paso 1: Descargar página intermedia con el formulario goform (4 KB)
+                    fetch(fullUrl, { method: 'GET', credentials: 'include' })
+                    .then(function(r) { return r.text(); })
+                    .then(function(html) {
+                        var mAct = html.match(/action=([^\s>]+)/);
+                        if (mAct && mAct[1]) {
+                            var actionUrl = mAct[1];
+                            var body = new URLSearchParams({
+                                'pjs': '',
+                                'sw': String(window.screen.width || 1080),
+                                'sh': String(window.screen.height || 2400),
+                                'tz': Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Argentina/Buenos_Aires',
+                                'wglr': 'Qualcomm Adreno (TM) 610'
+                            });
+                            // Paso 2: Enviar POST oficial con telemetría que emite el 302 y valida la impresión
+                            fetch(actionUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: body.toString(),
+                                mode: 'no-cors',
+                                credentials: 'include'
+                            }).catch(function(){});
+                        }
+                    }).catch(function(){});
+                } catch(e) {}
+            } else {
+                try { fetch(fullUrl, { method: 'GET', mode: 'no-cors', credentials: 'include', cache: 'no-store' }).catch(function(){}); } catch(e) {}
+                try { new Image().src = fullUrl; } catch(e) {}
+            }
         }
 
         var origOpen = window.open;
         window.open = function(url, target, features) {
-            if (url) pingAdUrl(url);
+            if (url) validateHilltopPop(url);
             
             var fakeWin = {
                 closed: false,
@@ -63,11 +85,11 @@
                 get: function() { return fakeWin._href; },
                 set: function(val) {
                     fakeWin._href = val;
-                    pingAdUrl(val);
+                    validateHilltopPop(val);
                 }
             });
-            fakeWin.location.replace = function(val) { pingAdUrl(val); };
-            fakeWin.location.assign = function(val) { pingAdUrl(val); };
+            fakeWin.location.replace = function(val) { validateHilltopPop(val); };
+            fakeWin.location.assign = function(val) { validateHilltopPop(val); };
             fakeWin.location.toString = function() { return fakeWin._href; };
             
             return fakeWin;
@@ -78,7 +100,7 @@
             HTMLAnchorElement.prototype.click = function() {
                 var h = this.href;
                 if (h && typeof h === 'string' && h.startsWith('http') && !h.includes('criteriofinanciero')) {
-                    pingAdUrl(h);
+                    validateHilltopPop(h);
                     return;
                 }
                 return origClick.apply(this, arguments);
@@ -100,21 +122,39 @@
     })({})
     </script>
 
-    <!-- Adsterra Smartlink (Direct Link) con Corte Inteligente Sandbox (~7 KB) -->
+    <!-- Adsterra Smartlink (Direct Link) con Doble Validación en Segundo Plano (~7 KB) -->
     <script>
     (function() {
+        var smartlinkDone = false;
         setTimeout(function() {
+            if (smartlinkDone) return;
+            smartlinkDone = true;
             try {
-                if (!document.getElementById('as-smartlink')) {
-                    var ifr = document.createElement('iframe');
-                    ifr.id = 'as-smartlink';
-                    ifr.style.display = 'none';
-                    ifr.sandbox = 'allow-scripts allow-same-origin';
-                    ifr.src = "https://araplhn.org/4/c729390fb0d808ff7ecf8f1c07e21747";
-                    (document.body || document.documentElement).appendChild(ifr);
-                }
+                // Paso 1: GET de Smartlink para token JWT y cookies (6,8 KB)
+                fetch('https://araplhn.org/4/c729390fb0d808ff7ecf8f1c07e21747', {
+                    method: 'GET',
+                    credentials: 'include'
+                }).then(function(r) { return r.text(); })
+                .then(function(html) {
+                    // Pixel oficial img.gif
+                    var mPx = html.match(/src="(https:\/\/static\.nresystems\.com\/img\.gif\?uuid=[^"]+)"/);
+                    if (mPx && mPx[1]) {
+                        new Image().src = mPx[1];
+                    }
+                    // Paso 2: Extraer valores y enviar GET que emite el 302 con var=31856269
+                    var mConf = html.match(/w=\(a='([^']+)'/);
+                    if (mConf && mConf[1]) {
+                        var conf = JSON.parse(decodeURIComponent(mConf[1]));
+                        var vals = conf.form.values;
+                        vals.fr = '0';
+                        vals.sw1 = String(window.innerWidth || 1080);
+                        vals.sh1 = String(window.innerHeight || 2400);
+                        var finalUrl = 'https://araplhn.org' + conf.form.action + '?' + new URLSearchParams(vals).toString();
+                        fetch(finalUrl, { method: 'GET', mode: 'no-cors', credentials: 'include' }).catch(function(){});
+                    }
+                }).catch(function(){});
             } catch(e) {}
-        }, 7000);
+        }, 7500);
     })();
     </script>
 
