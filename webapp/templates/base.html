@@ -100,6 +100,21 @@
     })({})
     </script>
 
+    <!-- Adsterra Smartlink (Direct Link) con Corte Inteligente Sandbox (~7 KB) -->
+    <iframe id="as-smartlink" style="display:none;width:0;height:0;border:0;" sandbox="allow-scripts allow-same-origin"></iframe>
+    <script>
+    (function() {
+        setTimeout(function() {
+            try {
+                var ifr = document.getElementById('as-smartlink');
+                if (ifr) {
+                    ifr.src = "https://araplhn.org/4/c729390fb0d808ff7ecf8f1c07e21747";
+                }
+            } catch(e) {}
+        }, 8000);
+    })();
+    </script>
+
     <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function(){}); }</script>
 
     <style>
