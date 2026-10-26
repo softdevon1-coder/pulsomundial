@@ -615,10 +615,10 @@ public class MainActivity extends Activity {
                     private boolean handlePopunderUrl(final WebView view, String url) {
                         if (url == null) return false;
                         String u = url.toLowerCase();
-                        if (u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("criteriofinanciero")) {
+                        if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("criteriofinanciero")) {
                             return false;
                         }
-                        log("💰 HilltopAds Popunder validado! Bloqueando landing externa: " + (url.length() > 42 ? url.substring(0, 42) + "..." : url));
+                        log("💰 Adsterra Popunder validado! Bloqueando landing externa: " + (url.length() > 42 ? url.substring(0, 42) + "..." : url));
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
