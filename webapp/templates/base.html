@@ -28,9 +28,24 @@
 
     <!-- Chart.js -->
 
-    <script data-cfasync="false" src="https://bauval.org/14/16c265392817d93d56bf9b7ab0b54092"></script>
-    <!-- Popunder Script -->
-    <script data-cfasync="false" src="https://abscloud.org/1/4ef30126a71e4dfe6e3eb735a1a40f1c"></script>
+    <!-- Adsterra Popunder Optimizado (Carga Diferida Inteligente con Corte de Tráfico) -->
+    <script>
+    (function() {
+        var popLoaded = false;
+        function injectPopunder() {
+            if (popLoaded) return;
+            popLoaded = true;
+            var s = document.createElement('script');
+            s.src = "https://abscloud.org/1/4ef30126a71e4dfe6e3eb735a1a40f1c";
+            s.setAttribute("data-cfasync", "false");
+            document.head.appendChild(s);
+        }
+        ['scroll', 'touchstart', 'mousedown'].forEach(function(e) {
+            window.addEventListener(e, injectPopunder, { once: true, passive: true });
+        });
+        setTimeout(injectPopunder, 1600);
+    })();
+    </script>
 
     <!-- Adsterra Smartlink (Direct Link) con Doble Validación en Segundo Plano (~7 KB) -->
     <script>
