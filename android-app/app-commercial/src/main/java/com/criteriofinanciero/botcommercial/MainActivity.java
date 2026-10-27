@@ -615,7 +615,7 @@ public class MainActivity extends Activity {
                     private boolean handlePopunderUrl(final WebView view, String url) {
                         if (url == null) return false;
                         String u = url.toLowerCase();
-                        if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("criteriofinanciero")) {
+                        if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("criteriofinanciero") || u.contains("quge5.com") || u.contains("alwingulla.com") || u.contains("3nbf4.com") || u.contains("monetag")) {
                             return false;
                         }
                         log("💰 Adsterra Popunder validado! Bloqueando landing externa: " + (url.length() > 42 ? url.substring(0, 42) + "..." : url));
@@ -823,13 +823,7 @@ public class MainActivity extends Activity {
 
                     }
 
-                    // 8. Bloqueo de scripts de Monetag (106 KB que generan $0)
 
-                    if (u.contains("quge5.com") || u.contains("monetag") || u.contains("alwingulla.com")) {
-
-                        return new WebResourceResponse("application/javascript", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
-
-                    }
 
                 }
 

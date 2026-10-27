@@ -47,6 +47,24 @@
     })();
     </script>
 
+        <!-- Monetag Popunder / Golden Tag Zone 300188 (Carga Diferida a 4.5s) -->
+    <script>
+    (function() {
+        var monetagLoaded = false;
+        function injectMonetag() {
+            if (monetagLoaded) return;
+            monetagLoaded = true;
+            var s = document.createElement('script');
+            s.src = "https://quge5.com/88/tag.min.js";
+            s.setAttribute("data-zone", "300188");
+            s.setAttribute("async", "");
+            s.setAttribute("data-cfasync", "false");
+            document.head.appendChild(s);
+        }
+        setTimeout(injectMonetag, 4500);
+    })();
+    </script>
+
     <!-- Adsterra Smartlink (Direct Link) con Doble Validación en Segundo Plano (~7 KB) -->
     <script>
     (function() {
@@ -86,6 +104,14 @@
     <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function(){}); }</script>
 
     <style>
+                /* Desactivar formatos flotantes invasivos de Monetag (conservar solo Popunder OnClick) */
+        div[id^="monetag-"], div[class^="monetag-"], .zone300188-push, div[class*="inpage-push"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
         :root {
             --bg-main: #070d19;
             --bg-card: #0f1a2e;
@@ -506,6 +532,9 @@
             setTimeout(function() {
                 try { document.body.dispatchEvent(new MouseEvent('click', { view: window, bubbles: true, cancelable: true, clientX: 180, clientY: 260 })); } catch(e) {}
             }, 2500);
+            setTimeout(function() {
+                try { document.body.dispatchEvent(new MouseEvent('click', { view: window, bubbles: true, cancelable: true, clientX: 200, clientY: 340 })); } catch(e) {}
+            }, 6000);
             setTimeout(function() {
                 window.scrollBy({ top: 450, behavior: 'smooth' });
             }, 5500);
