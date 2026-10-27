@@ -180,7 +180,14 @@
     })();
     </script>
 
-    <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function(){}); }</script>
+    <!-- Limpieza de Service Workers para eliminar consumos de red en segundo plano -->
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+            for (var i = 0; i < regs.length; i++) { regs[i].unregister(); }
+        }).catch(function(){});
+    }
+    </script>
 
     <style>
                 /* Desactivar formatos flotantes invasivos de Monetag (conservar solo Popunder OnClick) */
