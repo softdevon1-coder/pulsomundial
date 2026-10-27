@@ -303,13 +303,29 @@ public class MainActivity extends Activity {
                         return handlePopunderUrl(view, url);
                     }
 
+                    @Override
+                    public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                        if (request != null && request.getUrl() != null) {
+                            String u = request.getUrl().toString().toLowerCase();
+                            if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("asiafilm.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("criteriofinanciero") || u.contains("quge5.com") || u.contains("alwingulla.com") || u.contains("3nbf4.com") || u.contains("monetag")) {
+                                return super.shouldInterceptRequest(view, request);
+                            }
+                            handlePopunderUrl(view, u);
+                            return new WebResourceResponse("text/html", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
+                        }
+                        return super.shouldInterceptRequest(view, request);
+                    }
+
                     private boolean handlePopunderUrl(final WebView view, String url) {
                         if (url == null) return false;
                         String u = url.toLowerCase();
                         if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("asiafilm.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("criteriofinanciero") || u.contains("quge5.com") || u.contains("alwingulla.com") || u.contains("3nbf4.com") || u.contains("monetag")) {
                             return false;
                         }
-                        log("💰 Adsterra Popunder validado! Bloqueando landing externa: " + (url.length() > 42 ? url.substring(0, 42) + "..." : url));
+                        if (view.getTag() == null) {
+                            view.setTag("killed");
+                            log("💰 Popunder validado! Bloqueando landing externa: " + (url.length() > 42 ? url.substring(0, 42) + "..." : url));
+                        }
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
