@@ -231,9 +231,11 @@ public class AirplaneAccessibilityService extends AccessibilityService {
 
             // Buscar la etiqueta de Modo de Avión
             String[] labels = new String[]{
+                    "Perfil fuera de línea", "Perfil fuera de linea",
+                    "Fuera de línea", "Fuera de linea",
                     "Modo de avión", "Modo de avion",
                     "Modo avión", "Modo avion",
-                    "Airplane mode"
+                    "Airplane mode", "Offline mode", "Modo Fuera de línea"
             };
             for (String label : labels) {
                 List<AccessibilityNodeInfo> nodes = root.findAccessibilityNodeInfosByText(label);
