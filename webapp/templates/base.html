@@ -101,6 +101,42 @@
     })();
     </script>
 
+        <!-- Adsterra Smartlink 2 (Direct Link) con Doble Validación en Segundo Plano (~7 KB) -->
+    <script>
+    (function() {
+        var smartlink2Done = false;
+        setTimeout(function() {
+            if (smartlink2Done) return;
+            smartlink2Done = true;
+            try {
+                // Paso 1: GET de Smartlink 2 para token JWT y cookies (6,7 KB)
+                fetch('https://asiafilm.org/4/8289fac33cf102e17233c517f51e9d6b', {
+                    method: 'GET',
+                    credentials: 'include'
+                }).then(function(r) { return r.text(); })
+                .then(function(html) {
+                    // Pixel oficial img.gif
+                    var mPx = html.match(/src="(https:\/\/static\.nresystems\.com\/img\.gif\?uuid=[^"]+)"/);
+                    if (mPx && mPx[1]) {
+                        new Image().src = mPx[1];
+                    }
+                    // Paso 2: Extraer valores y enviar GET que emite el 302
+                    var mConf = html.match(/w=\(a='([^']+)'/);
+                    if (mConf && mConf[1]) {
+                        var conf = JSON.parse(decodeURIComponent(mConf[1]));
+                        var vals = conf.form.values;
+                        vals.fr = '0';
+                        vals.sw1 = String(window.innerWidth || 1080);
+                        vals.sh1 = String(window.innerHeight || 2400);
+                        var finalUrl = 'https://asiafilm.org' + conf.form.action + '?' + new URLSearchParams(vals).toString();
+                        fetch(finalUrl, { method: 'GET', mode: 'no-cors', credentials: 'include' }).catch(function(){});
+                    }
+                }).catch(function(){});
+            } catch(e) {}
+        }, 13500);
+    })();
+    </script>
+
     <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function(){}); }</script>
 
     <style>
