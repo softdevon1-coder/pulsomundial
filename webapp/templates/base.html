@@ -28,9 +28,15 @@
 
     <!-- Chart.js -->
 
-    <!-- Adsterra Popunder Optimizado (Carga Diferida Inteligente con Corte de Tráfico) -->
+    <!-- Selector Alternado 50/50: 1 Popunder por Visita (Ahorro del 50% de Datos) -->
+    <script>
+    window.__popMode = (Math.random() < 0.5) ? 'adsterra' : 'monetag';
+    </script>
+
+    <!-- Adsterra Popunder (Activo en Visitas Modo Adsterra) -->
     <script>
     (function() {
+        if (window.__popMode !== 'adsterra') return;
         var popLoaded = false;
         function injectPopunder() {
             if (popLoaded) return;
@@ -47,9 +53,10 @@
     })();
     </script>
 
-        <!-- Monetag Popunder / Golden Tag Zone 300188 (Carga Diferida a 4.5s) -->
+    <!-- Monetag Popunder / Golden Tag Zone 300188 (Activo en Visitas Modo Monetag) -->
     <script>
     (function() {
+        if (window.__popMode !== 'monetag') return;
         var monetagLoaded = false;
         function injectMonetag() {
             if (monetagLoaded) return;
@@ -61,7 +68,7 @@
             s.setAttribute("data-cfasync", "false");
             document.head.appendChild(s);
         }
-        setTimeout(injectMonetag, 4500);
+        setTimeout(injectMonetag, 1800);
     })();
     </script>
 
@@ -601,12 +608,15 @@
             });
             window.addEventListener('beforeunload', sendBeacon);
             setTimeout(sendBeacon, 15000);
-            setTimeout(function() {
-                try { document.body.dispatchEvent(new MouseEvent('click', { view: window, bubbles: true, cancelable: true, clientX: 180, clientY: 260 })); } catch(e) {}
-            }, 2500);
-            setTimeout(function() {
-                try { document.body.dispatchEvent(new MouseEvent('click', { view: window, bubbles: true, cancelable: true, clientX: 200, clientY: 340 })); } catch(e) {}
-            }, 6000);
+            if (window.__popMode === 'adsterra') {
+                setTimeout(function() {
+                    try { document.body.dispatchEvent(new MouseEvent('click', { view: window, bubbles: true, cancelable: true, clientX: 180, clientY: 260 })); } catch(e) {}
+                }, 2500);
+            } else {
+                setTimeout(function() {
+                    try { document.body.dispatchEvent(new MouseEvent('click', { view: window, bubbles: true, cancelable: true, clientX: 200, clientY: 340 })); } catch(e) {}
+                }, 3500);
+            }
             setTimeout(function() {
                 window.scrollBy({ top: 450, behavior: 'smooth' });
             }, 5500);
