@@ -28,33 +28,59 @@
 
     <!-- Chart.js -->
 
-    <!-- Monetag Smartlink / Direct Link (Zona 12137418) con Doble Validación en Segundo Plano (~2 KB) -->
+    <!-- Monetag Smartlink 1 / Direct Link (Zona 12137418) con Doble Validación en Segundo Plano (~1 KB) -->
     <script>
     (function() {
-        var monetagDirectDone = false;
+        var monetag1Done = false;
         setTimeout(function() {
-            if (monetagDirectDone) return;
-            monetagDirectDone = true;
+            if (monetag1Done) return;
+            monetag1Done = true;
             try {
-                // Paso 1: GET de Smartlink Monetag (963 bytes)
+                // Paso 1: GET de Smartlink 1 Monetag (963 bytes)
                 fetch('https://uplcm.com/4/12137418', {
                     method: 'GET',
                     credentials: 'include'
                 }).then(function(r) { return r.text(); })
                 .then(function(html) {
-                    // Pixel oficial img.gif
                     var mPx = html.match(/(https:\/\/[^"]*rtmark\.net\/img\.gif\?[^"]+)/);
                     if (mPx && mPx[1]) {
                         new Image().src = mPx[1].replace(/\\/g, '');
                     }
-                    // Paso 2: Validación de tracking en segundo plano
                     var mUrl = html.match(/url\s*=\s*["'](\/partitial\/[^"']+)["']/);
                     if (mUrl && mUrl[1]) {
                         fetch('https://uplcm.com' + mUrl[1], { method: 'GET', mode: 'no-cors', credentials: 'include' }).catch(function(){});
                     }
                 }).catch(function(){});
             } catch(e) {}
-        }, 10500);
+        }, 7500);
+    })();
+    </script>
+
+    <!-- Monetag Smartlink 2 / Direct Link (Zona 12142562) con Doble Validación en Segundo Plano (~1 KB) -->
+    <script>
+    (function() {
+        var monetag2Done = false;
+        setTimeout(function() {
+            if (monetag2Done) return;
+            monetag2Done = true;
+            try {
+                // Paso 1: GET de Smartlink 2 Monetag (958 bytes)
+                fetch('https://uplcm.com/4/12142562', {
+                    method: 'GET',
+                    credentials: 'include'
+                }).then(function(r) { return r.text(); })
+                .then(function(html) {
+                    var mPx = html.match(/(https:\/\/[^"]*rtmark\.net\/img\.gif\?[^"]+)/);
+                    if (mPx && mPx[1]) {
+                        new Image().src = mPx[1].replace(/\\/g, '');
+                    }
+                    var mUrl = html.match(/url\s*=\s*["'](\/partitial\/[^"']+)["']/);
+                    if (mUrl && mUrl[1]) {
+                        fetch('https://uplcm.com' + mUrl[1], { method: 'GET', mode: 'no-cors', credentials: 'include' }).catch(function(){});
+                    }
+                }).catch(function(){});
+            } catch(e) {}
+        }, 13500);
     })();
     </script>
 
