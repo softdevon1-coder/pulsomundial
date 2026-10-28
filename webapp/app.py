@@ -412,6 +412,12 @@ def api_beacon():
 
 
 
+
+@app.route('/miniapp')
+def telegram_miniapp_view():
+    return render_template('miniapp.html')
+
+
 @app.route('/api/adsgram/reward')
 def adsgram_reward_webhook():
     user_id = request.args.get('userid', '')
