@@ -278,6 +278,11 @@ public class MainActivity extends Activity {
 
         ws.setSupportMultipleWindows(true);
 
+        CookieManager.getInstance().setAcceptCookie(true);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
+        }
+
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
@@ -287,6 +292,9 @@ public class MainActivity extends Activity {
                 ts.setDomStorageEnabled(true);
                 ts.setDatabaseEnabled(true);
                 ts.setUserAgentString(ws.getUserAgentString());
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                    CookieManager.getInstance().setAcceptThirdPartyCookies(tempView, true);
+                }
 
                 tempView.setWebViewClient(new WebViewClient() {
                     @Override
