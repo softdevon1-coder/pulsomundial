@@ -508,7 +508,20 @@
 
 
 
-    <!-- 4. Contenido Principal -->
+    <!-- 4. Contenido Principal + Bloque Nativo AdsGram Task (task-56406) -->
+    <div class="container mt-3">
+        <div class="card-custom p-3 mb-2" style="border-color: rgba(16, 185, 129, 0.45); background: rgba(15, 26, 46, 0.95);">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+                <span class="badge bg-success bg-opacity-25 text-success" style="font-size: 0.72rem; letter-spacing: 0.5px;">RECOMENDADO • BENEFICIO COMUNIDAD</span>
+            </div>
+            <adsgram-task data-block-id="task-56406" data-debug="false" class="w-100" style="--adsgram-task-font-size: 15px; --adsgram-task-icon-size: 46px; --adsgram-task-icon-title-gap: 12px; --adsgram-task-icon-border-radius: 10px; --adsgram-task-button-width: 96px; color: #f1f5f9;">
+                <span slot="reward" class="badge bg-emerald text-info" style="font-size: 0.78rem;">Acceso Plus</span>
+                <div slot="button" class="btn btn-sm btn-success fw-bold w-100">Ver</div>
+                <div slot="claim" class="btn btn-sm btn-primary fw-bold w-100">Confirmar</div>
+                <div slot="done" class="btn btn-sm btn-outline-secondary w-100">Listo</div>
+            </adsgram-task>
+        </div>
+    </div>
     <main class="flex-grow-1">
         {% block content %}{% endblock %}
     </main>
