@@ -140,7 +140,7 @@ def compress_response(response):
     if request.path.startswith('/static/'):
         response.headers['Cache-Control'] = 'public, max-age=604800, immutable'
     else:
-        response.headers['Cache-Control'] = 'public, max-age=1800'
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     return response
 
 

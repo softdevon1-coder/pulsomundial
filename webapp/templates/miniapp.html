@@ -236,12 +236,17 @@
     }
 
     // 2. BLOQUE INTERSTITIAL CPM + CPC (int-56405)
+        // Silenciar cualquier alert() o showAlert() de AdsGram cuando un bloque aún está en MODERATION/STOPPED
+    window.alert = function(msg) { console.log("Alert silenciado:", msg); };
+    window.confirm = function(msg) { return true; };
     window.adsgramIntController = null;
     window.triggerAdsgramInterstitial = function() {
         try {
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.ready();
                 window.Telegram.WebApp.expand();
+                window.Telegram.WebApp.showAlert = function(m, cb) { console.log('TG Alert silenciado:', m); if (typeof cb === 'function') cb(); };
+                window.Telegram.WebApp.showPopup = function(p, cb) { if (typeof cb === 'function') cb(); };
             }
             if (window.Adsgram) {
                 if (!window.adsgramIntController) {
