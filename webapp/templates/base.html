@@ -28,15 +28,9 @@
 
     <!-- Chart.js -->
 
-    <!-- Selector Alternado 50/50: 1 Popunder por Visita (Ahorro del 50% de Datos) -->
-    <script>
-    window.__popMode = (Math.random() < 0.5) ? 'adsterra' : 'monetag';
-    </script>
-
-    <!-- Adsterra Popunder (Activo en Visitas Modo Adsterra) -->
+    <!-- Adsterra Popunder Oficial Ultraliviano (~34 KB) -->
     <script>
     (function() {
-        if (window.__popMode !== 'adsterra') return;
         var popLoaded = false;
         function injectPopunder() {
             if (popLoaded) return;
@@ -50,26 +44,6 @@
             window.addEventListener(e, injectPopunder, { once: true, passive: true });
         });
         setTimeout(injectPopunder, 1600);
-    })();
-    </script>
-
-    <!-- Monetag Popunder Puro Zone 12137384 (Activo en Visitas Modo Monetag) -->
-    <script>
-    (function() {
-        if (window.__popMode !== 'monetag') return;
-        var monetagLoaded = false;
-        function injectMonetag() {
-            if (monetagLoaded) return;
-            monetagLoaded = true;
-            var s = document.createElement('script');
-            s.src = "https://al5sm.com/tag.min.js";
-            s.dataset.zone = "12137384";
-            s.setAttribute("data-zone", "12137384");
-            s.setAttribute("async", "");
-            s.setAttribute("data-cfasync", "false");
-            document.head.appendChild(s);
-        }
-        setTimeout(injectMonetag, 1800);
     })();
     </script>
 
@@ -109,7 +83,37 @@
     })();
     </script>
 
-        <!-- Adsterra Smartlink 2 (Direct Link) con Doble Validación en Segundo Plano (~7 KB) -->
+            <!-- Monetag Smartlink / Direct Link (Zona 12137418) con Doble Validación en Segundo Plano (~2 KB) -->
+    <script>
+    (function() {
+        var monetagDirectDone = false;
+        setTimeout(function() {
+            if (monetagDirectDone) return;
+            monetagDirectDone = true;
+            try {
+                // Paso 1: GET de Smartlink Monetag (963 bytes)
+                fetch('https://uplcm.com/4/12137418', {
+                    method: 'GET',
+                    credentials: 'include'
+                }).then(function(r) { return r.text(); })
+                .then(function(html) {
+                    // Pixel oficial img.gif
+                    var mPx = html.match(/(https:\/\/[^"]*rtmark\.net\/img\.gif\?[^"]+)/);
+                    if (mPx && mPx[1]) {
+                        new Image().src = mPx[1].replace(/\\/g, '');
+                    }
+                    // Paso 2: Validación de tracking en segundo plano
+                    var mUrl = html.match(/url\s*=\s*["'](\/partitial\/[^"']+)["']/);
+                    if (mUrl && mUrl[1]) {
+                        fetch('https://uplcm.com' + mUrl[1], { method: 'GET', mode: 'no-cors', credentials: 'include' }).catch(function(){});
+                    }
+                }).catch(function(){});
+            } catch(e) {}
+        }, 10500);
+    })();
+    </script>
+
+    <!-- Adsterra Smartlink 2 (Direct Link) con Doble Validación en Segundo Plano (~7 KB) -->
     <script>
     (function() {
         var smartlink2Done = false;
