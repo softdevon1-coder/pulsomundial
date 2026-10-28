@@ -84,7 +84,8 @@ def track_visit():
         request.path == '/sw.js' or
         request.path.startswith('/api/') or
         request.path == '/analytics' or
-        request.path == '/descargar-app'):
+        request.path == '/descargar-app' or
+        request.path == '/miniapp'):
         return
 
     ip = request.headers.get('CF-Connecting-IP') or \
@@ -140,7 +141,10 @@ def compress_response(response):
     if request.path.startswith('/static/'):
         response.headers['Cache-Control'] = 'public, max-age=604800, immutable'
     else:
-        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        if request.path == '/miniapp':
+            response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        else:
+            response.headers['Cache-Control'] = 'public, max-age=1800'
     return response
 
 
