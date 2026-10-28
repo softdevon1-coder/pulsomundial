@@ -411,6 +411,13 @@ def api_beacon():
         return jsonify({"status": "error", "message": str(e)}), 400
 
 
+
+@app.route('/api/adsgram/reward')
+def adsgram_reward_webhook():
+    user_id = request.args.get('userid', '')
+    return jsonify({"status": "ok", "userid": user_id}), 200
+
+
 @app.route('/api/ip')
 def api_get_ip():
     ip = request.headers.get('CF-Connecting-IP') or \
