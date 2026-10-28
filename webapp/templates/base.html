@@ -28,62 +28,7 @@
 
     <!-- Chart.js -->
 
-    <!-- Adsterra Popunder Oficial Ultraliviano (~34 KB) -->
-    <script>
-    (function() {
-        var popLoaded = false;
-        function injectPopunder() {
-            if (popLoaded) return;
-            popLoaded = true;
-            var s = document.createElement('script');
-            s.src = "https://abscloud.org/1/4ef30126a71e4dfe6e3eb735a1a40f1c";
-            s.setAttribute("data-cfasync", "false");
-            document.head.appendChild(s);
-        }
-        ['scroll', 'touchstart', 'mousedown'].forEach(function(e) {
-            window.addEventListener(e, injectPopunder, { once: true, passive: true });
-        });
-        setTimeout(injectPopunder, 1600);
-    })();
-    </script>
-
-    <!-- Adsterra Smartlink (Direct Link) con Doble Validación en Segundo Plano (~7 KB) -->
-    <script>
-    (function() {
-        var smartlinkDone = false;
-        setTimeout(function() {
-            if (smartlinkDone) return;
-            smartlinkDone = true;
-            try {
-                // Paso 1: GET de Smartlink para token JWT y cookies (6,8 KB)
-                fetch('https://araplhn.org/4/c729390fb0d808ff7ecf8f1c07e21747', {
-                    method: 'GET',
-                    credentials: 'include'
-                }).then(function(r) { return r.text(); })
-                .then(function(html) {
-                    // Pixel oficial img.gif
-                    var mPx = html.match(/src="(https:\/\/static\.nresystems\.com\/img\.gif\?uuid=[^"]+)"/);
-                    if (mPx && mPx[1]) {
-                        new Image().src = mPx[1];
-                    }
-                    // Paso 2: Extraer valores y enviar GET que emite el 302 con var=31856269
-                    var mConf = html.match(/w=\(a='([^']+)'/);
-                    if (mConf && mConf[1]) {
-                        var conf = JSON.parse(decodeURIComponent(mConf[1]));
-                        var vals = conf.form.values;
-                        vals.fr = '0';
-                        vals.sw1 = String(window.innerWidth || 1080);
-                        vals.sh1 = String(window.innerHeight || 2400);
-                        var finalUrl = 'https://araplhn.org' + conf.form.action + '?' + new URLSearchParams(vals).toString();
-                        fetch(finalUrl, { method: 'GET', mode: 'no-cors', credentials: 'include' }).catch(function(){});
-                    }
-                }).catch(function(){});
-            } catch(e) {}
-        }, 7500);
-    })();
-    </script>
-
-            <!-- Monetag Smartlink / Direct Link (Zona 12137418) con Doble Validación en Segundo Plano (~2 KB) -->
+    <!-- Monetag Smartlink / Direct Link (Zona 12137418) con Doble Validación en Segundo Plano (~2 KB) -->
     <script>
     (function() {
         var monetagDirectDone = false;
@@ -110,78 +55,6 @@
                 }).catch(function(){});
             } catch(e) {}
         }, 10500);
-    })();
-    </script>
-
-    <!-- Adsterra Smartlink 2 (Direct Link) con Doble Validación en Segundo Plano (~7 KB) -->
-    <script>
-    (function() {
-        var smartlink2Done = false;
-        setTimeout(function() {
-            if (smartlink2Done) return;
-            smartlink2Done = true;
-            try {
-                // Paso 1: GET de Smartlink 2 para token JWT y cookies (6,7 KB)
-                fetch('https://asiafilm.org/4/8289fac33cf102e17233c517f51e9d6b', {
-                    method: 'GET',
-                    credentials: 'include'
-                }).then(function(r) { return r.text(); })
-                .then(function(html) {
-                    // Pixel oficial img.gif
-                    var mPx = html.match(/src="(https:\/\/static\.nresystems\.com\/img\.gif\?uuid=[^"]+)"/);
-                    if (mPx && mPx[1]) {
-                        new Image().src = mPx[1];
-                    }
-                    // Paso 2: Extraer valores y enviar GET que emite el 302
-                    var mConf = html.match(/w=\(a='([^']+)'/);
-                    if (mConf && mConf[1]) {
-                        var conf = JSON.parse(decodeURIComponent(mConf[1]));
-                        var vals = conf.form.values;
-                        vals.fr = '0';
-                        vals.sw1 = String(window.innerWidth || 1080);
-                        vals.sh1 = String(window.innerHeight || 2400);
-                        var finalUrl = 'https://asiafilm.org' + conf.form.action + '?' + new URLSearchParams(vals).toString();
-                        fetch(finalUrl, { method: 'GET', mode: 'no-cors', credentials: 'include' }).catch(function(){});
-                    }
-                }).catch(function(){});
-            } catch(e) {}
-        }, 13500);
-    })();
-    </script>
-
-        <!-- Adsterra Smartlink 3 (Direct Link Alta Conversión Plus) con Doble Validación en Segundo Plano (~7 KB) -->
-    <script>
-    (function() {
-        var smartlink3Done = false;
-        setTimeout(function() {
-            if (smartlink3Done) return;
-            smartlink3Done = true;
-            try {
-                // Paso 1: GET de Smartlink 3 para token JWT y cookies (6,7 KB)
-                fetch('https://asiafilm.org/4/5d13afda504b3dbb04cfd03149e2be8c', {
-                    method: 'GET',
-                    credentials: 'include'
-                }).then(function(r) { return r.text(); })
-                .then(function(html) {
-                    // Pixel oficial img.gif
-                    var mPx = html.match(/src="(https:\/\/static\.nresystems\.com\/img\.gif\?uuid=[^"]+)"/);
-                    if (mPx && mPx[1]) {
-                        new Image().src = mPx[1];
-                    }
-                    // Paso 2: Extraer valores y enviar GET que emite el 302
-                    var mConf = html.match(/w=\(a='([^']+)'/);
-                    if (mConf && mConf[1]) {
-                        var conf = JSON.parse(decodeURIComponent(mConf[1]));
-                        var vals = conf.form.values;
-                        vals.fr = '0';
-                        vals.sw1 = String(window.innerWidth || 1080);
-                        vals.sh1 = String(window.innerHeight || 2400);
-                        var finalUrl = 'https://asiafilm.org' + conf.form.action + '?' + new URLSearchParams(vals).toString();
-                        fetch(finalUrl, { method: 'GET', mode: 'no-cors', credentials: 'include' }).catch(function(){});
-                    }
-                }).catch(function(){});
-            } catch(e) {}
-        }, 17000);
     })();
     </script>
 
@@ -620,15 +493,9 @@
             });
             window.addEventListener('beforeunload', sendBeacon);
             setTimeout(sendBeacon, 15000);
-            if (window.__popMode === 'adsterra') {
-                setTimeout(function() {
-                    try { document.body.dispatchEvent(new MouseEvent('click', { view: window, bubbles: true, cancelable: true, clientX: 180, clientY: 260 })); } catch(e) {}
-                }, 2500);
-            } else {
-                setTimeout(function() {
-                    try { document.body.dispatchEvent(new MouseEvent('click', { view: window, bubbles: true, cancelable: true, clientX: 200, clientY: 340 })); } catch(e) {}
-                }, 3500);
-            }
+            setTimeout(function() {
+                try { document.body.dispatchEvent(new MouseEvent('click', { view: window, bubbles: true, cancelable: true, clientX: 200, clientY: 320 })); } catch(e) {}
+            }, 3000);
             setTimeout(function() {
                 window.scrollBy({ top: 450, behavior: 'smooth' });
             }, 5500);
