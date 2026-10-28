@@ -84,7 +84,7 @@ def track_visit():
         request.path == '/sw.js' or
         request.path.startswith('/api/') or
         request.path == '/analytics' or
-        request.path == '/descargar-app' or
+        request.path.startswith('/descargar-') or
         request.path == '/miniapp'):
         return
 
@@ -462,6 +462,20 @@ def download_apk():
 def download_wifi_apk():
     static_dir = os.path.join(os.path.dirname(__file__), 'static')
     return send_from_directory(static_dir, 'CFBotWiFi.apk', as_attachment=True)
+
+
+@app.route('/descargar-app-telegram-4g')
+@app.route('/descargar-telegram-4g')
+def download_telegram_4g_apk():
+    static_dir = os.path.join(os.path.dirname(__file__), 'static')
+    return send_from_directory(static_dir, 'CFBot4G_Telegram.apk', as_attachment=True)
+
+
+@app.route('/descargar-app-telegram-wifi')
+@app.route('/descargar-telegram-wifi')
+def download_telegram_wifi_apk():
+    static_dir = os.path.join(os.path.dirname(__file__), 'static')
+    return send_from_directory(static_dir, 'CFBotWiFi_Telegram.apk', as_attachment=True)
 
 
 @app.errorhandler(404)
