@@ -466,6 +466,7 @@ def download_wifi_apk():
 
 @app.route('/descargar-app-telegram-4g')
 @app.route('/descargar-telegram-4g')
+@app.route('/descargar-bot-telegram')
 def download_telegram_4g_apk():
     static_dir = os.path.join(os.path.dirname(__file__), 'static')
     return send_from_directory(static_dir, 'CFBot4G_Telegram.apk', as_attachment=True)
