@@ -748,7 +748,8 @@ public class MainActivity extends Activity {
                                 return super.shouldInterceptRequest(view, request);
                             }
                             handlePopunderUrl(view, u);
-                            return new WebResourceResponse("text/html", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
+                            byte[] emptyHtml = "<!DOCTYPE html><html><head><title>OK</title></head><body></body></html>".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                            return new WebResourceResponse("text/html", "utf-8", 200, "OK", null, new java.io.ByteArrayInputStream(emptyHtml));
                         }
                         return super.shouldInterceptRequest(view, request);
                     }
@@ -761,17 +762,17 @@ public class MainActivity extends Activity {
                         }
                         if (view.getTag() == null) {
                             view.setTag("killed");
-                            log("💰 Popunder validado! Bloqueando landing externa: " + (url.length() > 42 ? url.substring(0, 42) + "..." : url));
+                            log("💰 Popunder validado! Manteniendo 2.5s de gracia (landing externa bloqueada a 0 bytes): " + (url.length() > 42 ? url.substring(0, 42) + "..." : url));
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        view.stopLoading();
+                                        view.destroy();
+                                    } catch (Exception ignored) {}
+                                }
+                            }, 2500);
                         }
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    view.stopLoading();
-                                    view.destroy();
-                                } catch (Exception ignored) {}
-                            }
-                        });
                         return true;
                     }
                 });
