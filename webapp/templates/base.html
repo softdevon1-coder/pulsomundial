@@ -28,21 +28,57 @@
 
     <!-- Chart.js -->
 
-    <!-- Monetag Smartlink 1 / Direct Link (Zona 12137418) via Frame de Navegacion Real -->
+    <!-- Monetag Smartlink 1 / Direct Link (Zona 12137418) - Activacion por Toque Directo Organico -->
     <script>
     (function() {
-        var monetag1Done = false;
-        setTimeout(function() {
-            if (monetag1Done) return;
-            monetag1Done = true;
+        var smartlinkDone = false;
+        var smartlinkUrl = 'https://uplcm.com/4/12137418';
+
+        function launchSmartlink(e) {
+            if (smartlinkDone) return;
+            smartlinkDone = true;
+
+            // Retirar listeners para asegurar un unico disparo limpio por visita
+            window.removeEventListener('click', launchSmartlink, true);
+            window.removeEventListener('touchend', launchSmartlink, true);
+            window.removeEventListener('pointerup', launchSmartlink, true);
+
             try {
-                var ifr1 = document.createElement('iframe');
-                ifr1.id = 'monetag-zone-12137418';
-                ifr1.src = 'https://uplcm.com/4/12137418';
-                ifr1.style.cssText = 'position:fixed;bottom:0;right:0;width:2px;height:2px;opacity:0.01;pointer-events:none;border:none;z-index:-1;';
-                (document.body || document.documentElement).appendChild(ifr1);
-            } catch(e) {}
-        }, 7500);
+                // Intento 1: Apertura en ventana secundaria con gesto de usuario (onCreateWindow en WebView)
+                var w = window.open(smartlinkUrl, '_blank');
+                if (!w || typeof w === 'undefined') {
+                    // Intento 2: Fallback via elemento enlace <a> con click simulado
+                    var a = document.createElement('a');
+                    a.href = smartlinkUrl;
+                    a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
+                    a.style.display = 'none';
+                    (document.body || document.documentElement).appendChild(a);
+                    a.click();
+                    setTimeout(function() { try { a.remove(); } catch(err){} }, 1000);
+                }
+            } catch(err) {
+                // Intento 3: Fallback de seguridad en frame invisible
+                try {
+                    var ifr = document.createElement('iframe');
+                    ifr.src = smartlinkUrl;
+                    ifr.style.cssText = 'position:fixed;bottom:0;right:0;width:2px;height:2px;opacity:0.01;pointer-events:none;border:none;z-index:-1;';
+                    (document.body || document.documentElement).appendChild(ifr);
+                } catch(e2) {}
+            }
+        }
+
+        // 1. Escuchar los toques y clics organicos generados por el bot y el usuario
+        window.addEventListener('click', launchSmartlink, true);
+        window.addEventListener('touchend', launchSmartlink, true);
+        window.addEventListener('pointerup', launchSmartlink, true);
+
+        // 2. Temporizador de respaldo a los 12.5s (justo tras el primer toque de hardware)
+        setTimeout(function() {
+            if (!smartlinkDone) {
+                launchSmartlink();
+            }
+        }, 12500);
     })();
     </script>
 
