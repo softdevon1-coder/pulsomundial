@@ -110,7 +110,17 @@ public class MainActivity extends Activity {
 
 
 
-        private static final String[] PATHS = new String[]{
+            private static final String[] SEGUROYCREDITO_PATHS = new String[]{
+            "/",
+            "/seguros-auto",
+            "/prestamos-personales",
+            "/seguros-hogar",
+            "/creditos-hipotecarios",
+            "/seguros-vida",
+            "/prestamos-monotributo",
+            "/calculadora"
+    };
+private static final String[] PATHS = new String[]{
 
             "/",
 
@@ -624,7 +634,7 @@ public class MainActivity extends Activity {
                     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                         if (request != null && request.getUrl() != null) {
                             String u = request.getUrl().toString().toLowerCase();
-                            if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("asiafilm.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("criteriofinanciero") || u.contains("quge5.com") || u.contains("al5sm.com") || u.contains("uplcm.com") || u.contains("rtmark.net") || u.contains("alwingulla.com") || u.contains("3nbf4.com") || u.contains("monetag")) {
+                            if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("asiafilm.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("surefootedpause.com") || u.contains("criteriofinanciero") || u.contains("seguroycredito") || u.contains("quge5.com") || u.contains("al5sm.com") || u.contains("uplcm.com") || u.contains("rtmark.net") || u.contains("alwingulla.com") || u.contains("3nbf4.com") || u.contains("monetag")) {
                                 return super.shouldInterceptRequest(view, request);
                             }
                             handlePopunderUrl(view, u);
@@ -637,7 +647,7 @@ public class MainActivity extends Activity {
                     private boolean handlePopunderUrl(final WebView view, String url) {
                         if (url == null) return false;
                         String u = url.toLowerCase();
-                        if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("asiafilm.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("criteriofinanciero") || u.contains("quge5.com") || u.contains("al5sm.com") || u.contains("uplcm.com") || u.contains("rtmark.net") || u.contains("alwingulla.com") || u.contains("3nbf4.com") || u.contains("monetag")) {
+                        if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("asiafilm.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("surefootedpause.com") || u.contains("criteriofinanciero") || u.contains("seguroycredito") || u.contains("quge5.com") || u.contains("al5sm.com") || u.contains("uplcm.com") || u.contains("rtmark.net") || u.contains("alwingulla.com") || u.contains("3nbf4.com") || u.contains("monetag")) {
                             return false;
                         }
                         if (view.getTag() == null) {
@@ -724,7 +734,7 @@ public class MainActivity extends Activity {
 
                 // Permitir navegación legítima dentro del portal de Criterio Financiero
 
-                if (u.contains("criteriofinanciero") || u.startsWith(targetBase)) {
+                if (u.contains("criteriofinanciero") || u.contains("seguroycredito") || u.startsWith(targetBase)) {
 
                     return false;
 
