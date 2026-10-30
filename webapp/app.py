@@ -428,6 +428,10 @@ def adsgram_reward_webhook():
     return jsonify({"status": "ok", "userid": user_id}), 200
 
 
+@app.route('/3e06956c5ba3d432b38f.txt')
+def hilltop_verify():
+    return Response('46d2fd1e12cf51c06d3e', mimetype='text/plain')
+
 @app.route('/api/ip')
 def api_get_ip():
     ip = request.headers.get('CF-Connecting-IP') or \
