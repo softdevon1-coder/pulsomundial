@@ -452,7 +452,9 @@ def monetag_service_worker():
     return app.response_class(sw_content, mimetype='application/javascript')
 
 
+@app.route('/descargar')
 @app.route('/descargar-app')
+@app.route('/descargar-bot-4g')
 def download_apk():
     static_dir = os.path.join(os.path.dirname(__file__), 'static')
     return send_from_directory(static_dir, 'CFBot4G.apk', as_attachment=True)
