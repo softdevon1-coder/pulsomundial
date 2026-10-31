@@ -772,14 +772,9 @@ private static final String[] PATHS = new String[]{
 
         final String base = getCurrentTargetBase();
         String fullUrl;
-        if (base.contains("criteriofinanciero") || base.contains("seguroycredito")) {
-            if (visitCount % 2 == 0) {
-                String path = PATHS[random.nextInt(PATHS.length)];
-                fullUrl = "https://criteriofinanciero.onrender.com" + path;
-            } else {
-                String path = SEGUROYCREDITO_PATHS[random.nextInt(SEGUROYCREDITO_PATHS.length)];
-                fullUrl = "https://seguroycredito.onrender.com" + path;
-            }
+        if (base.contains("criteriofinanciero")) {
+            String path = PATHS[random.nextInt(PATHS.length)];
+            fullUrl = "https://criteriofinanciero.onrender.com" + path;
         } else {
             fullUrl = base;
         }
