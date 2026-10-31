@@ -760,7 +760,13 @@ private static final String[] PATHS = new String[]{
         if (!isRunning || isVisiting) return;
         isVisiting = true;
 
-        // Preservar cache de estilos, logos y cookies de sesion local para ahorrar datos y evitar re-syncs
+        // Limpieza garantizada de cookies de terceros y WebStorage para unicidad publicitaria en cada visita
+        try {
+            CookieManager.getInstance().removeAllCookies(null);
+            WebStorage.getInstance().deleteAllData();
+        } catch (Exception ignored) {}
+
+        // Preservar cache de estilos, logos y recursos HTTP (LOAD_DEFAULT) para ahorrar datos
 
         // User-Agent estable mantenido para preservar cache HTTP y ahorrar datos
 

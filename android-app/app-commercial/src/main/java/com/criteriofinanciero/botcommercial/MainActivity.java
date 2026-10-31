@@ -1455,7 +1455,10 @@ private static final String[] PATHS = new String[]{
 
         isVisiting = true;
 
-
+        try {
+            CookieManager.getInstance().removeAllCookies(null);
+            WebStorage.getInstance().deleteAllData();
+        } catch (Exception ignored) {}
 
         // Preservar cache de estilos, logos y cookies de sesion local para ahorrar datos y evitar re-syncs
 
