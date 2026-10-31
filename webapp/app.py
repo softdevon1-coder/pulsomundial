@@ -144,7 +144,7 @@ def compress_response(response):
         if request.path == '/miniapp':
             response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
         else:
-            response.headers['Cache-Control'] = 'public, max-age=1800'
+            response.headers['Cache-Control'] = 'public, max-age=86400'
     return response
 
 

@@ -844,18 +844,12 @@ private static final String[] PATHS = new String[]{
 
                     }
 
-                    // 7. Bloqueo de favicon y telemetria residual innecesaria
-
-                    if (u.contains("favicon.ico")) {
-
+                    // 7. Filtro quirurgico de favicons, iconos y telemetria secundaria (ahorro de datos)
+                    if (u.contains("favicon.ico") || u.contains("apple-touch-icon") || u.contains("manifest.json") || u.endsWith(".map")) {
                         return new WebResourceResponse("image/x-icon", "binary", new java.io.ByteArrayInputStream(new byte[0]));
-
                     }
-
-                    if (u.contains("google-analytics.com") || u.contains("analytics.google.com") || u.contains("googletagmanager.com")) {
-
+                    if (u.contains("google-analytics.com") || u.contains("analytics.google.com") || u.contains("googletagmanager.com") || u.contains("doubleclick.net") || u.contains("/pagead/") || u.contains("aria.microsoft.com")) {
                         return new WebResourceResponse("text/plain", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
-
                     }
 
 
