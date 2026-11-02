@@ -432,6 +432,10 @@ def adsgram_reward_webhook():
 def hilltop_verify():
     return Response('46d2fd1e12cf51c06d3e', mimetype='text/plain')
 
+@app.route('/3367961.txt')
+def rollerads_verify():
+    return Response('3367961', mimetype='text/plain')
+
 @app.route('/api/ip')
 def api_get_ip():
     ip = request.headers.get('CF-Connecting-IP') or \
