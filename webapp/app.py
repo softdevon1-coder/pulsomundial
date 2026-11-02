@@ -430,11 +430,11 @@ def adsgram_reward_webhook():
 
 @app.route('/3e06956c5ba3d432b38f.txt')
 def hilltop_verify():
-    return Response('46d2fd1e12cf51c06d3e', mimetype='text/plain')
+    return '46d2fd1e12cf51c06d3e', 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/3367961.txt')
 def rollerads_verify():
-    return Response('3367961', mimetype='text/plain')
+    return '3367961', 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/api/ip')
 def api_get_ip():
