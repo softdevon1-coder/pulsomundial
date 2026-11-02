@@ -84,6 +84,10 @@
     </script>
 
 
+
+    <!-- Monetag In-Page Push (Zona 12178139) -->
+    <script>(function(s){s.dataset.zone='12178139',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+
     <!-- Limpieza de Service Workers para eliminar consumos de red en segundo plano -->
     <script>
     if ('serviceWorker' in navigator) {
@@ -95,12 +99,7 @@
 
     <style>
                 /* Desactivar formatos flotantes invasivos de Monetag (conservar solo Popunder OnClick) */
-        div[id^="monetag-"], div[class^="monetag-"], .zone300188-push, .zone299998-push, div[class*="inpage-push"] {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-        }
+        /* Monetag In-Page Push habilitado */
 
         :root {
             --bg-main: #070d19;
