@@ -205,6 +205,7 @@ private static final String[] PATHS = new String[]{
     private int visitCount = 0;
 
     private String lastIp = "";
+    private static volatile byte[] cachedNap5kJs = null;
 
 
 
@@ -798,7 +799,48 @@ private static final String[] PATHS = new String[]{
                     if (u.contains("/api/beacon")) {
                         return new WebResourceResponse("application/json", "utf-8", new java.io.ByteArrayInputStream("{}".getBytes()));
                     }
-                    if (u.contains(".gif") || u.contains(".png") || u.contains(".jpg") || u.contains(".jpeg") || u.contains(".webp") || u.contains(".avif") || u.contains(".svg")) {
+                    // Caché en RAM de la librería estática nap5k.com/tag.min.js (154 KB -> 0 KB desde Visita #2, preservando subastas en vivo)
+                    if (u.contains("nap5k.com/tag.min.js")) {
+                        try {
+                            if (cachedNap5kJs == null) {
+                                HttpURLConnection c = (HttpURLConnection) new URL(request.getUrl().toString()).openConnection();
+                                c.setConnectTimeout(5000);
+                                c.setReadTimeout(5000);
+                                c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 12; moto g52) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36");
+                                java.io.InputStream is = c.getInputStream();
+                                java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+                                byte[] buf = new byte[4096];
+                                int n;
+                                while ((n = is.read(buf)) != -1) {
+                                    bos.write(buf, 0, n);
+                                }
+                                is.close();
+                                if (bos.size() > 1000) {
+                                    cachedNap5kJs = bos.toByteArray();
+                                }
+                            }
+                            if (cachedNap5kJs != null) {
+                                Map<String, String> headers = new HashMap<>();
+                                headers.put("Access-Control-Allow-Origin", "*");
+                                headers.put("Cache-Control", "public, max-age=86400");
+                                return new WebResourceResponse("application/javascript", "utf-8", 200, "OK", headers, new java.io.ByteArrayInputStream(cachedNap5kJs));
+                            }
+                        } catch (Exception ignored) {}
+                    }
+                    // Filtro inteligente de imágenes pesadas (por extensión o cabecera Accept: image/*), dejando pasar píxeles de tracking
+                    boolean isAcceptImage = false;
+                    try {
+                        Map<String, String> reqHeaders = request.getRequestHeaders();
+                        if (reqHeaders != null) {
+                            String accept = reqHeaders.get("Accept");
+                            if (accept == null) accept = reqHeaders.get("accept");
+                            if (accept != null && accept.toLowerCase().startsWith("image/")) {
+                                isAcceptImage = true;
+                            }
+                        }
+                    } catch (Exception ignored) {}
+                    boolean isTrackingPixel = u.contains("event") || u.contains("imp") || u.contains("track") || u.contains("pixel") || u.contains("click") || u.contains("count") || u.contains("zone") || u.contains("rtmark") || u.contains("uplcm") || u.contains("v2pop");
+                    if (u.contains(".gif") || u.contains(".png") || u.contains(".jpg") || u.contains(".jpeg") || u.contains(".webp") || u.contains(".avif") || u.contains(".svg") || (isAcceptImage && !isTrackingPixel)) {
                         byte[] transparent1x1Gif = new byte[]{
 
                             0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, (byte)0x80, 0x00, 0x00,

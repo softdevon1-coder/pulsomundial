@@ -223,6 +223,7 @@ private static final String[] PATHS = new String[]{
     private int visitCount = 0;
 
     private String lastIp = "";
+    private static volatile byte[] cachedNap5kJs = null;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
 
