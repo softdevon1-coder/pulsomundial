@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -86,12 +86,48 @@
         }
 
         .table-custom {
-            background: transparent;
-            color: #cbd5e1;
+            --bs-table-bg: transparent !important;
+            --bs-table-striped-bg: rgba(255, 255, 255, 0.03) !important;
+            --bs-table-hover-bg: rgba(59, 130, 246, 0.10) !important;
+            --bs-table-color: #f1f5f9 !important;
+            --bs-table-hover-color: #ffffff !important;
+            background-color: transparent !important;
+            color: #f1f5f9 !important;
+        }
+        .table-custom > :not(caption) > * > * {
+            background-color: transparent !important;
+            color: #f1f5f9 !important;
+            border-bottom: 1px solid #1e3156 !important;
         }
         .table-custom tr { border-bottom: 1px solid #17243c; }
-        .table-custom th { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #1e3156; }
-        .table-custom td { padding: 10px 12px; font-size: 0.84rem; vertical-align: middle; }
+        .table-custom th {
+            color: #93c5fd !important;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #2563eb !important;
+        }
+        .table-custom td {
+            padding: 11px 12px;
+            font-size: 0.86rem;
+            vertical-align: middle;
+            color: #f1f5f9 !important;
+        }
+        .text-muted {
+            color: #cbd5e1 !important;
+        }
+        .bg-dark {
+            background-color: #0b1528 !important;
+            color: #f8fafc !important;
+        }
+        code {
+            color: #38bdf8 !important;
+            background: rgba(56, 189, 248, 0.12);
+            padding: 3px 7px;
+            border-radius: 5px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
