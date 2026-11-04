@@ -10,6 +10,8 @@ import json
 import time
 import gzip
 import hashlib
+import random
+import re
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, jsonify, g, abort, send_from_directory
 
@@ -110,10 +112,21 @@ def track_visit():
     ts = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
     db = get_db()
-    db.execute(
-        'INSERT INTO visits (ip, user_agent, referrer, path, timestamp) VALUES (?,?,?,?,?)',
-        (ip, ua, referrer, path, ts)
-    )
+    twenty_sec_ago = (datetime.utcnow() - timedelta(seconds=20)).strftime('%Y-%m-%d %H:%M:%S')
+    existing = db.execute(
+        'SELECT id FROM visits WHERE ip = ? AND timestamp >= ? ORDER BY id DESC LIMIT 1',
+        (ip, twenty_sec_ago)
+    ).fetchone()
+    if existing:
+        db.execute(
+            'UPDATE visits SET user_agent = ?, referrer = ?, path = ?, timestamp = ? WHERE id = ?',
+            (ua, referrer, path, ts, existing['id'])
+        )
+    else:
+        db.execute(
+            'INSERT INTO visits (ip, user_agent, referrer, path, timestamp) VALUES (?,?,?,?,?)',
+            (ip, ua, referrer, path, ts)
+        )
     db.commit()
 
 
@@ -444,6 +457,39 @@ def hilltop_verify():
 def rollerads_verify():
     return '3367961', 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
+ORGANIC_REFERRERS_WEIGHTED = [
+    ('https://www.google.com.ar/', 34),
+    ('https://www.google.com/', 18),
+    ('', 20),
+    ('https://m.facebook.com/', 9),
+    ('https://l.instagram.com/', 6),
+    ('https://t.co/', 5),
+    ('https://www.bing.com/', 5),
+    ('https://ar.search.yahoo.com/', 3),
+]
+
+
+def _pick_weighted_referrer():
+    total = sum(w for _, w in ORGANIC_REFERRERS_WEIGHTED)
+    r = random.uniform(0, total)
+    upto = 0
+    for ref, w in ORGANIC_REFERRERS_WEIGHTED:
+        if upto + w >= r:
+            return ref
+        upto += w
+    return 'https://www.google.com.ar/'
+
+
+def _normalize_bot_ua(raw_ua: str) -> str:
+    if not raw_ua or 'Dalvik' in raw_ua or 'Java' in raw_ua or 'okhttp' in raw_ua.lower():
+        m = re.search(r'Android\s+([0-9.]+);\s*([^)\/]+?)(?:\s+Build\/|\))', raw_ua or '')
+        if m:
+            ver, model = m.group(1).strip(), m.group(2).strip()
+            return f'Mozilla/5.0 (Linux; Android {ver}; {model}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.82 Mobile Safari/537.36'
+        return 'Mozilla/5.0 (Linux; Android 13; SM-A546E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.82 Mobile Safari/537.36'
+    return raw_ua
+
+
 @app.route('/api/ip')
 def api_get_ip():
     ip = request.headers.get('CF-Connecting-IP') or \
@@ -452,7 +498,39 @@ def api_get_ip():
          request.remote_addr
     if ip and ',' in ip:
         ip = ip.split(',')[0].strip()
-    return ip or '127.0.0.1', 200, {'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store'}
+    clean_ip = ip or '127.0.0.1'
+
+    # Registrar visita cuando el bot consulta /api/ip en sesiones cacheadas (max-age=86400)
+    try:
+        db = get_db()
+        twenty_sec_ago = (datetime.utcnow() - timedelta(seconds=20)).strftime('%Y-%m-%d %H:%M:%S')
+        existing = db.execute(
+            'SELECT id FROM visits WHERE ip = ? AND timestamp >= ? LIMIT 1',
+            (clean_ip, twenty_sec_ago)
+        ).fetchone()
+        if not existing:
+            ua = _normalize_bot_ua(request.headers.get('User-Agent', ''))
+            referrer = request.referrer or _pick_weighted_referrer()
+            candidate_paths = [
+                '/',
+                '/guias',
+                '/comparativas',
+                '/mercados',
+                '/calculadoras/interes-compuesto',
+                '/calculadoras/rendimiento-billeteras',
+                '/calculadoras/conversor-dolar',
+            ] + [f"/articulo/{a['slug']}" for a in ARTICLES]
+            path = random.choice(candidate_paths)
+            ts = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            db.execute(
+                'INSERT INTO visits (ip, user_agent, referrer, path, timestamp) VALUES (?,?,?,?,?)',
+                (clean_ip, ua, referrer, path, ts)
+            )
+            db.commit()
+    except Exception:
+        pass
+
+    return clean_ip, 200, {'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store'}
 
 
 @app.route('/sw.js')
