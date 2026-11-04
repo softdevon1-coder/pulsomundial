@@ -1953,7 +1953,7 @@ private static final String[] PATHS = new String[]{
                     in.close();
                     String body = sb.toString().toLowerCase(Locale.US).replace(" ", "");
                     SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-                    if (body.contains(""revoked":true")) {
+                    if (body.contains("\"revoked\":true")) {
                         prefs.edit().putBoolean(KEY_LIC_REVOKED, true).apply();
                         handler.post(new Runnable() {
                             @Override
@@ -1964,7 +1964,7 @@ private static final String[] PATHS = new String[]{
                                 showLockScreen("⛔ Este dispositivo (" + hwid + ") fue desactivado remotamente por el administrador.");
                             }
                         });
-                    } else if (body.contains(""revoked":false")) {
+                    } else if (body.contains("\"revoked\":false")) {
                         prefs.edit().putBoolean(KEY_LIC_REVOKED, false).apply();
                     }
                 } catch (Exception ignored) {}

@@ -6,6 +6,5 @@
     public protected *;
 }
 -keep class com.tananaev.adblib.** { *; }
--dontwarn com.tananaev.adblib.**
--repackageclasses 'o'
--allowaccessmodification
+-dontwarn **
+-ignorewarnings
