@@ -9,6 +9,7 @@ import sqlite3
 import json
 import time
 import gzip
+import hashlib
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, jsonify, g, abort, send_from_directory
 
@@ -44,6 +45,12 @@ def init_db():
                 user_agent TEXT,
                 referrer TEXT,
                 path TEXT,
+                timestamp DATETIME
+            )
+        ''')
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS revoked_devices (
+                hwid TEXT PRIMARY KEY,
                 timestamp DATETIME
             )
         ''')
@@ -85,6 +92,7 @@ def track_visit():
         request.path.startswith('/api/') or
         request.path == '/analytics' or
         request.path.startswith('/descargar-') or
+        request.path == '/generador-claves' or
         request.path == '/miniapp'):
         return
 
@@ -141,7 +149,7 @@ def compress_response(response):
     if request.path.startswith('/static/'):
         response.headers['Cache-Control'] = 'public, max-age=604800, immutable'
     else:
-        if request.path == '/miniapp':
+        if request.path in ('/miniapp', '/generador-claves'):
             response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
         else:
             response.headers['Cache-Control'] = 'public, max-age=86400'
@@ -487,6 +495,117 @@ def download_telegram_4g_apk():
 def download_telegram_wifi_apk():
     static_dir = os.path.join(os.path.dirname(__file__), 'static')
     return send_from_directory(static_dir, 'CFBotWiFi_Telegram.apk', as_attachment=True)
+
+
+
+# ---------------------------------------------------------------------------
+# Sistema Criptográfico de Licencias por Hora & Kill-Switch (Edición Comercial)
+# ---------------------------------------------------------------------------
+COMMERCIAL_MASTER_SECRET = "CF_COMMERCIAL_MASTER_KEY_2026_V9"
+ADMIN_MASTER_PASSWORD = os.environ.get('ADMIN_KEY_PASSWORD', 'CF2026')
+
+
+def compute_hourly_license_key(device_id: str, hour_utc: int, plan_prefix: str) -> str:
+    clean_id = device_id.strip().upper()
+    plan = plan_prefix.strip().upper()
+    payload = f"{clean_id}|{hour_utc}|{plan}|{COMMERCIAL_MASTER_SECRET}"
+    digest = hashlib.sha256(payload.encode('utf-8')).hexdigest().upper()
+    return f"{plan}-{digest[:4]}-{digest[4:8]}"
+
+
+@app.route('/generador-claves', methods=['GET', 'POST'])
+def license_key_generator():
+    db = get_db()
+    if request.method == 'GET':
+        return render_template('generador_claves.html', authenticated=False)
+
+    admin_pw = request.form.get('admin_password', '').strip()
+    if admin_pw != ADMIN_MASTER_PASSWORD:
+        return render_template(
+            'generador_claves.html',
+            authenticated=False,
+            error='Contraseña maestra incorrecta. Intentalo nuevamente.'
+        )
+
+    action = request.form.get('action', '')
+    generated_key = None
+    device_id = request.form.get('device_id', '').strip().upper()
+    plan_type = request.form.get('plan_type', 'P').strip().upper()
+    plan_label = ''
+    message = None
+    error = None
+
+    plan_names = {
+        'P': 'Definitiva / Permanente',
+        'M': 'Mensual (30 Días)',
+        'S': 'Semanal (7 Días)',
+        'D': 'Prueba Diaria (24 Horas)'
+    }
+
+    if action == 'generate':
+        if not device_id or len(device_id) < 6:
+            error = 'Por favor ingresá un ID de Dispositivo válido (ej: CF-8A4F-91B2).'
+        else:
+            if plan_type not in plan_names:
+                plan_type = 'P'
+            hour_utc = int(time.time() // 3600)
+            generated_key = compute_hourly_license_key(device_id, hour_utc, plan_type)
+            plan_label = plan_names[plan_type]
+            # Si el dispositivo estaba bloqueado y se le genera nueva clave, reactivarlo automáticamente
+            db.execute('DELETE FROM revoked_devices WHERE hwid = ?', (device_id,))
+            db.commit()
+
+    elif action == 'revoke':
+        revoke_hwid = request.form.get('revoke_hwid', '').strip().upper()
+        if revoke_hwid:
+            ts = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
+            db.execute(
+                'INSERT OR REPLACE INTO revoked_devices (hwid, timestamp) VALUES (?, ?)',
+                (revoke_hwid, ts)
+            )
+            db.commit()
+            message = f'Dispositivo {revoke_hwid} bloqueado remotamente con éxito.'
+
+    elif action == 'unrevoke':
+        revoke_hwid = request.form.get('revoke_hwid', '').strip().upper()
+        if revoke_hwid:
+            db.execute('DELETE FROM revoked_devices WHERE hwid = ?', (revoke_hwid,))
+            db.commit()
+            message = f'Dispositivo {revoke_hwid} reactivado con éxito.'
+
+    revoked_rows = db.execute('SELECT hwid, timestamp FROM revoked_devices ORDER BY timestamp DESC').fetchall()
+    minutes_left = 60 - int((time.time() % 3600) // 60)
+
+    return render_template(
+        'generador_claves.html',
+        authenticated=True,
+        admin_password=admin_pw,
+        device_id=device_id,
+        plan_type=plan_type,
+        plan_label=plan_label,
+        generated_key=generated_key,
+        minutes_left=minutes_left,
+        revoked_list=revoked_rows,
+        message=message,
+        error=error
+    )
+
+
+@app.route('/api/license/check')
+def api_license_check():
+    hwid = request.args.get('hwid', '').strip().upper()
+    if not hwid:
+        return jsonify({"revoked": False}), 200
+    db = get_db()
+    row = db.execute('SELECT 1 FROM revoked_devices WHERE hwid = ?', (hwid,)).fetchone()
+    return jsonify({"revoked": bool(row)}), 200
+
+
+@app.route('/descargar-comercial')
+@app.route('/descargar-bot-comercial')
+def download_commercial_apk():
+    static_dir = os.path.join(os.path.dirname(__file__), 'static')
+    return send_from_directory(static_dir, 'CFBot4G_Edicion_Comercial.apk', as_attachment=True)
 
 
 @app.errorhandler(404)

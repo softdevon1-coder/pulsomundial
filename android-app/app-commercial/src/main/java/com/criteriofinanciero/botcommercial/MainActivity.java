@@ -3,10 +3,14 @@ package com.criteriofinanciero.botcommercial;
 
 
 import android.app.Activity;
-
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
-
 import android.content.SharedPreferences;
+import android.view.Gravity;
+import android.widget.Toast;
+import java.security.MessageDigest;
 
 import android.graphics.Color;
 
@@ -107,6 +111,12 @@ public class MainActivity extends Activity {
     private static final String PREFS_NAME = "CFBotPrefs";
 
     private static final String KEY_CUSTOM_URL = "custom_target_url";
+    private static final String COMMERCIAL_MASTER_SECRET = "CF_COMMERCIAL_MASTER_KEY_2026_V9";
+    private static final String HW_SALT = "CF_HW_SALT_2026";
+    private static final String KEY_LIC_EXPIRY = "lic_expiry";
+    private static final String KEY_LIC_PLAN = "lic_plan";
+    private static final String KEY_LIC_SIG = "lic_sig";
+    private static final String KEY_LIC_REVOKED = "lic_revoked";
 
 
 
@@ -205,8 +215,17 @@ private static final String[] PATHS = new String[]{
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+        if (!isLicenseValid()) {
+            showLockScreen(null);
+            checkRemoteRevocation();
+            return;
+        }
 
+        buildMainBotUi();
+        checkRemoteRevocation();
+    }
 
+    private void buildMainBotUi() {
         LinearLayout root = new LinearLayout(this);
 
         root.setOrientation(LinearLayout.VERTICAL);
@@ -230,6 +249,14 @@ private static final String[] PATHS = new String[]{
         title.setTypeface(null, Typeface.BOLD);
 
         root.addView(title);
+
+        TextView tvLicBadge = new TextView(this);
+        tvLicBadge.setText("🔐 Dispositivo Autorizado: " + getHardwareDeviceId() + " (" + getLicenseStatusSummary() + ")");
+        tvLicBadge.setTextColor(Color.parseColor("#fde047"));
+        tvLicBadge.setTextSize(11f);
+        tvLicBadge.setTypeface(null, Typeface.BOLD);
+        tvLicBadge.setPadding(0, 4, 0, 2);
+        root.addView(tvLicBadge);
 
 
 
@@ -1287,11 +1314,19 @@ private static final String[] PATHS = new String[]{
     protected void onResume() {
 
         super.onResume();
-
-        updatePermisoButtonState();
-
-        checkPublicIp(false);
-
+        if (!isLicenseValid()) {
+            if (isRunning) {
+                isRunning = false;
+                handler.removeCallbacksAndMessages(null);
+            }
+            showLockScreen("Tu licencia ha expirado. Ingresá una nueva clave horaria para continuar.");
+            return;
+        }
+        if (tvIp != null) {
+            updatePermisoButtonState();
+            checkPublicIp(false);
+        }
+        checkRemoteRevocation();
     }
 
 
@@ -1436,6 +1471,16 @@ private static final String[] PATHS = new String[]{
     private void runNextCycle() {
 
         if (!isRunning) return;
+        if (!isLicenseValid()) {
+            isRunning = false;
+            isVisiting = false;
+            handler.removeCallbacksAndMessages(null);
+            showLockScreen("Licencia expirada o revocada. Solicitala al administrador.");
+            return;
+        }
+        if (visitCount % 5 == 0) {
+            checkRemoteRevocation();
+        }
 
         checkPublicIp(true);
 
@@ -1779,5 +1824,311 @@ private static final String[] PATHS = new String[]{
 
     }
 
-}
 
+    // =========================================================================
+    // SISTEMA CRIPTOGRÁFICO DE LICENCIAS POR HORA & BLOQUEO ANTI-REVENTA (SHA-256)
+    // =========================================================================
+
+    private String sha256Hex(String input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(input.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) {
+                sb.append(String.format(Locale.US, "%02X", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            return "0000000000000000";
+        }
+    }
+
+    private String getHardwareDeviceId() {
+        String rawId = "";
+        try {
+            rawId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        } catch (Exception ignored) {}
+        if (rawId == null || rawId.isEmpty()) {
+            rawId = "UNKNOWN_ANDROID_HW";
+        }
+        String digest = sha256Hex(rawId.toLowerCase(Locale.US) + "|" + HW_SALT);
+        return "CF-" + digest.substring(0, 4) + "-" + digest.substring(4, 8);
+    }
+
+    private String computeExpectedKey(String hwid, long hourUtc, String planPrefix) {
+        String payload = hwid.trim().toUpperCase(Locale.US) + "|" + hourUtc + "|" + planPrefix + "|" + COMMERCIAL_MASTER_SECRET;
+        String digest = sha256Hex(payload);
+        return planPrefix + "-" + digest.substring(0, 4) + "-" + digest.substring(4, 8);
+    }
+
+    private boolean verifyAndActivateKey(String inputKey) {
+        if (inputKey == null) return false;
+        String cleanKey = inputKey.trim().toUpperCase(Locale.US);
+        String hwid = getHardwareDeviceId();
+        long currentHourUtc = System.currentTimeMillis() / 3600000L;
+        String[] plans = new String[]{"P", "M", "S", "D"};
+
+        for (String plan : plans) {
+            for (long dh = -1; dh <= 1; dh++) {
+                String expected = computeExpectedKey(hwid, currentHourUtc + dh, plan);
+                if (cleanKey.equals(expected)) {
+                    long now = System.currentTimeMillis();
+                    long expiry;
+                    if ("P".equals(plan)) {
+                        expiry = Long.MAX_VALUE / 2;
+                    } else if ("M".equals(plan)) {
+                        expiry = now + (30L * 24L * 3600L * 1000L);
+                    } else if ("S".equals(plan)) {
+                        expiry = now + (7L * 24L * 3600L * 1000L);
+                    } else {
+                        expiry = now + (24L * 3600L * 1000L);
+                    }
+                    String sig = sha256Hex(hwid + "|" + expiry + "|" + plan + "|" + COMMERCIAL_MASTER_SECRET);
+                    SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+                    prefs.edit()
+                            .putLong(KEY_LIC_EXPIRY, expiry)
+                            .putString(KEY_LIC_PLAN, plan)
+                            .putString(KEY_LIC_SIG, sig)
+                            .putBoolean(KEY_LIC_REVOKED, false)
+                            .apply();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isLicenseValid() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        if (prefs.getBoolean(KEY_LIC_REVOKED, false)) {
+            return false;
+        }
+        long expiry = prefs.getLong(KEY_LIC_EXPIRY, 0L);
+        String plan = prefs.getString(KEY_LIC_PLAN, "");
+        String sig = prefs.getString(KEY_LIC_SIG, "");
+        if (expiry <= 0L || plan == null || plan.isEmpty() || sig == null || sig.isEmpty()) {
+            return false;
+        }
+        String hwid = getHardwareDeviceId();
+        String expectedSig = sha256Hex(hwid + "|" + expiry + "|" + plan + "|" + COMMERCIAL_MASTER_SECRET);
+        if (!expectedSig.equals(sig)) {
+            return false;
+        }
+        return System.currentTimeMillis() < expiry;
+    }
+
+    private String getLicenseStatusSummary() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String plan = prefs.getString(KEY_LIC_PLAN, "P");
+        long expiry = prefs.getLong(KEY_LIC_EXPIRY, 0L);
+        if ("P".equals(plan)) {
+            return "Licencia Permanente Activa";
+        }
+        long remainingMs = expiry - System.currentTimeMillis();
+        if (remainingMs <= 0) return "Expirada";
+        long days = remainingMs / (24L * 3600L * 1000L);
+        long hours = (remainingMs % (24L * 3600L * 1000L)) / (3600L * 1000L);
+        if (days > 0) {
+            return "Restan " + days + "d " + hours + "h";
+        }
+        return "Restan " + Math.max(1L, hours) + " horas";
+    }
+
+    private void checkRemoteRevocation() {
+        final String hwid = getHardwareDeviceId();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL url = new URL(DEV_MAINTENANCE_BASE + "/api/license/check?hwid=" + hwid);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setConnectTimeout(4000);
+                    conn.setReadTimeout(4000);
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = in.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    in.close();
+                    String body = sb.toString().toLowerCase(Locale.US).replace(" ", "");
+                    SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+                    if (body.contains(""revoked":true")) {
+                        prefs.edit().putBoolean(KEY_LIC_REVOKED, true).apply();
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                isRunning = false;
+                                isVisiting = false;
+                                handler.removeCallbacksAndMessages(null);
+                                showLockScreen("⛔ Este dispositivo (" + hwid + ") fue desactivado remotamente por el administrador.");
+                            }
+                        });
+                    } else if (body.contains(""revoked":false")) {
+                        prefs.edit().putBoolean(KEY_LIC_REVOKED, false).apply();
+                    }
+                } catch (Exception ignored) {}
+            }
+        }).start();
+    }
+
+    private void showLockScreen(String customError) {
+        final String hwid = getHardwareDeviceId();
+
+        ScrollView scrollRoot = new ScrollView(this);
+        scrollRoot.setFillViewport(true);
+        scrollRoot.setBackgroundColor(Color.parseColor("#070d19"));
+
+        LinearLayout lockLayout = new LinearLayout(this);
+        lockLayout.setOrientation(LinearLayout.VERTICAL);
+        lockLayout.setGravity(Gravity.CENTER_HORIZONTAL);
+        lockLayout.setPadding(44, 72, 44, 48);
+
+        TextView tvLockIcon = new TextView(this);
+        tvLockIcon.setText("🔐");
+        tvLockIcon.setTextSize(42f);
+        tvLockIcon.setGravity(Gravity.CENTER);
+        lockLayout.addView(tvLockIcon);
+
+        TextView tvTitle = new TextView(this);
+        tvTitle.setText("Activación de Licencia Comercial");
+        tvTitle.setTextColor(Color.WHITE);
+        tvTitle.setTextSize(20f);
+        tvTitle.setTypeface(null, Typeface.BOLD);
+        tvTitle.setGravity(Gravity.CENTER);
+        tvTitle.setPadding(0, 12, 0, 8);
+        lockLayout.addView(tvTitle);
+
+        TextView tvSub = new TextView(this);
+        tvSub.setText("Esta copia de CF Bot 4G está protegida con encriptación SHA-256 por hardware. Para desbloquearla, enviá tu ID de Dispositivo al vendedor e ingresá tu Clave Horaria de Activación.");
+        tvSub.setTextColor(Color.parseColor("#94a3b8"));
+        tvSub.setTextSize(13f);
+        tvSub.setGravity(Gravity.CENTER);
+        tvSub.setPadding(0, 0, 0, 24);
+        lockLayout.addView(tvSub);
+
+        // Card con el Hardware Device ID
+        LinearLayout idCard = new LinearLayout(this);
+        idCard.setOrientation(LinearLayout.VERTICAL);
+        idCard.setGravity(Gravity.CENTER);
+        GradientDrawable idBg = new GradientDrawable();
+        idBg.setColor(Color.parseColor("#0f1a2e"));
+        idBg.setCornerRadius(20f);
+        idBg.setStroke(2, Color.parseColor("#3b82f6"));
+        idCard.setBackground(idBg);
+        idCard.setPadding(32, 28, 32, 28);
+        LinearLayout.LayoutParams idCardParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        idCardParams.bottomMargin = 24;
+        idCard.setLayoutParams(idCardParams);
+
+        TextView tvIdLabel = new TextView(this);
+        tvIdLabel.setText("TU ID ÚNICO DE DISPOSITIVO:");
+        tvIdLabel.setTextColor(Color.parseColor("#60a5fa"));
+        tvIdLabel.setTextSize(11.5f);
+        tvIdLabel.setTypeface(null, Typeface.BOLD);
+        tvIdLabel.setGravity(Gravity.CENTER);
+        idCard.addView(tvIdLabel);
+
+        TextView tvHwid = new TextView(this);
+        tvHwid.setText(hwid);
+        tvHwid.setTextColor(Color.parseColor("#fde047"));
+        tvHwid.setTextSize(25f);
+        tvHwid.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
+        tvHwid.setGravity(Gravity.CENTER);
+        tvHwid.setPadding(0, 10, 0, 16);
+        idCard.addView(tvHwid);
+
+        final Button btnCopyId = new Button(this);
+        btnCopyId.setText("📋 COPIAR ID DE DISPOSITIVO");
+        btnCopyId.setBackgroundColor(Color.parseColor("#2563eb"));
+        btnCopyId.setTextColor(Color.WHITE);
+        btnCopyId.setTypeface(null, Typeface.BOLD);
+        btnCopyId.setPadding(20, 16, 20, 16);
+        btnCopyId.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                    if (cm != null) {
+                        cm.setPrimaryClip(ClipData.newPlainText("CF_Device_ID", hwid));
+                    }
+                    btnCopyId.setText("✔ ¡ID COPIADO AL PORTAPAPELES!");
+                    Toast.makeText(MainActivity.this, "ID copiado: " + hwid, Toast.LENGTH_SHORT).show();
+                } catch (Exception ignored) {}
+            }
+        });
+        idCard.addView(btnCopyId);
+        lockLayout.addView(idCard);
+
+        final TextView tvError = new TextView(this);
+        tvError.setTextColor(Color.parseColor("#f87171"));
+        tvError.setTextSize(13f);
+        tvError.setTypeface(null, Typeface.BOLD);
+        tvError.setGravity(Gravity.CENTER);
+        tvError.setPadding(0, 0, 0, 14);
+        if (customError != null && !customError.isEmpty()) {
+            tvError.setText(customError);
+            tvError.setVisibility(View.VISIBLE);
+        } else {
+            tvError.setVisibility(View.GONE);
+        }
+        lockLayout.addView(tvError);
+
+        TextView tvKeyLabel = new TextView(this);
+        tvKeyLabel.setText("Ingresá tu Clave de Activación (caduca cada 1 hora):");
+        tvKeyLabel.setTextColor(Color.parseColor("#34d399"));
+        tvKeyLabel.setTextSize(12.5f);
+        tvKeyLabel.setTypeface(null, Typeface.BOLD);
+        tvKeyLabel.setPadding(0, 4, 0, 8);
+        lockLayout.addView(tvKeyLabel);
+
+        final EditText etKey = new EditText(this);
+        etKey.setHint("Ej: P-4F9A-82C1");
+        etKey.setHintTextColor(Color.parseColor("#64748b"));
+        etKey.setTextColor(Color.WHITE);
+        etKey.setTextSize(18f);
+        etKey.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
+        etKey.setGravity(Gravity.CENTER);
+        etKey.setSingleLine(true);
+        GradientDrawable keyInputBg = new GradientDrawable();
+        keyInputBg.setColor(Color.parseColor("#0f1a2e"));
+        keyInputBg.setCornerRadius(14f);
+        keyInputBg.setStroke(2, Color.parseColor("#10b981"));
+        etKey.setBackground(keyInputBg);
+        etKey.setPadding(24, 22, 24, 22);
+        lockLayout.addView(etKey);
+
+        Button btnActivate = new Button(this);
+        btnActivate.setText("🔓 VERIFICAR Y ACTIVAR BOT");
+        btnActivate.setBackgroundColor(Color.parseColor("#10b981"));
+        btnActivate.setTextColor(Color.WHITE);
+        btnActivate.setTextSize(15f);
+        btnActivate.setTypeface(null, Typeface.BOLD);
+        btnActivate.setPadding(20, 22, 20, 22);
+        LinearLayout.LayoutParams actParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        actParams.topMargin = 20;
+        btnActivate.setLayoutParams(actParams);
+        btnActivate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String entered = etKey.getText().toString().trim();
+                if (verifyAndActivateKey(entered)) {
+                    Toast.makeText(MainActivity.this, "✔ ¡Licencia activada con éxito!", Toast.LENGTH_LONG).show();
+                    buildMainBotUi();
+                    checkRemoteRevocation();
+                } else {
+                    tvError.setText("❌ Clave inválida, expirada (pasó la hora) o perteneciente a otro teléfono.");
+                    tvError.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+        lockLayout.addView(btnActivate);
+
+        scrollRoot.addView(lockLayout);
+        setContentView(scrollRoot);
+    }
+}
