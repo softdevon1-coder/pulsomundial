@@ -36,6 +36,7 @@
         var smartlinkUrl = 'https://uplcm.com/4/12163311';
 
         function launchSmartlink(e) {
+            if (e && e.isTrusted === false) return;
             if (smartlinkDone) return;
             smartlinkDone = true;
 
@@ -79,7 +80,7 @@
             if (!smartlinkDone) {
                 launchSmartlink();
             }
-        }, 12500);
+        }, 27500);
     })();
     </script>
 
@@ -518,9 +519,7 @@
             });
             window.addEventListener('beforeunload', sendBeacon);
             setTimeout(sendBeacon, 15000);
-            setTimeout(function() {
-                try { document.body.dispatchEvent(new MouseEvent('click', { view: window, bubbles: true, cancelable: true, clientX: 200, clientY: 320 })); } catch(e) {}
-            }, 3000);
+
             setTimeout(function() {
                 window.scrollBy({ top: 450, behavior: 'smooth' });
             }, 5500);

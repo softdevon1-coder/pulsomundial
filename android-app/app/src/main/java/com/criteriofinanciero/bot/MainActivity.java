@@ -797,24 +797,32 @@ private static final String[] PATHS = new String[]{
                 if (clickInPagePush) {
                     webView.evaluateJavascript(
                         "(function() {" +
-                        "  var el = document.querySelector('div[class*=\"inpage\"], div[id*=\"inpage\"], div[class*=\"push\"], a[href*=\"nap5k\"], a[href*=\"uplcm\"]');" +
-                        "  if (!el) {" +
-                        "    var all = document.querySelectorAll('div, a');" +
-                        "    for (var i = all.length - 1; i >= 0; i--) {" +
-                        "      var s = window.getComputedStyle(all[i]);" +
-                        "      if (s && s.position === 'fixed' && parseInt(s.zIndex || 0) > 100 && all[i].offsetHeight > 25 && all[i].offsetWidth > 60) {" +
-                        "        el = all[i];" +
-                        "        break;" +
-                        "      }" +
+                        "  var el = null;" +
+                        "  var all = document.querySelectorAll('*');" +
+                        "  for (var i = all.length - 1; i >= 0; i--) {" +
+                        "    var node = all[i];" +
+                        "    var tag = (node.tagName || '').toLowerCase();" +
+                        "    if (tag === 'html' || tag === 'body' || tag === 'header' || tag === 'nav' || tag === 'script' || tag === 'style') continue;" +
+                        "    var s = window.getComputedStyle(node);" +
+                        "    var r = node.getBoundingClientRect();" +
+                        "    if (s && (s.position === 'fixed' || s.position === 'sticky' || node.shadowRoot) && parseInt(s.zIndex || 0) > 50 && r.height > 35 && r.height < 260 && r.width > 140 && r.top >= 0 && r.top < (window.innerHeight * 0.55)) {" +
+                        "      el = node;" +
+                        "      break;" +
                         "    }" +
                         "  }" +
                         "  if (el) {" +
                         "    var rect = el.getBoundingClientRect();" +
-                        "    try { el.click(); } catch(e){}" +
+                        "    try {" +
+                        "      if (el.shadowRoot) {" +
+                        "        var innerLink = el.shadowRoot.querySelector('a, div[role=\"button\"], div');" +
+                        "        if (innerLink) innerLink.click();" +
+                        "      }" +
+                        "      el.click();" +
+                        "    } catch(e){}" +
                         "    return JSON.stringify({" +
                         "      found: true," +
-                        "      x: (rect.left + rect.width / 2) / (window.innerWidth || 1)," +
-                        "      y: (rect.top + rect.height / 2) / (window.innerHeight || 1)" +
+                        "      x: Math.max(0.20, Math.min(0.65, (rect.left + rect.width * 0.42) / (window.innerWidth || 1)))," +
+                        "      y: Math.max(0.06, Math.min(0.40, (rect.top + rect.height * 0.50) / (window.innerHeight || 1)))" +
                         "    });" +
                         "  }" +
                         "  return JSON.stringify({found: false});" +
@@ -830,18 +838,18 @@ private static final String[] PATHS = new String[]{
                                         }
                                         org.json.JSONObject obj = new org.json.JSONObject(clean);
                                         if (obj.optBoolean("found", false)) {
-                                            float rx = (float) obj.optDouble("x", 0.5);
-                                            float ry = (float) obj.optDouble("y", 0.85);
+                                            float rx = (float) obj.optDouble("x", 0.45);
+                                            float ry = (float) obj.optDouble("y", 0.12);
                                             simulateHardwareTouch(webView, rx, ry);
-                                            log("🎯 In-Page Push: Clic orgánico ejecutado (5% seleccionado) en (" + String.format(Locale.US, "%.2f", rx) + ", " + String.format(Locale.US, "%.2f", ry) + ")");
+                                            log("🎯 In-Page Push: Clic orgánico ejecutado (5% seleccionado) en banner superior (" + String.format(Locale.US, "%.2f", rx) + ", " + String.format(Locale.US, "%.2f", ry) + ")");
                                         } else {
-                                            simulateHardwareTouch(webView, 0.85f, 0.88f);
-                                            log("🎯 In-Page Push: Clic fallback en esquina inferior derecha (5% seleccionado)");
+                                            simulateHardwareTouch(webView, 0.45f, 0.12f);
+                                            log("🎯 In-Page Push: Clic orgánico directo en banner superior (0.45, 0.12) [5% seleccionado]");
                                         }
                                     }
                                 } catch (Exception e) {
-                                    simulateHardwareTouch(webView, 0.85f, 0.88f);
-                                    log("🎯 In-Page Push: Clic táctil de respaldo ejecutado");
+                                    simulateHardwareTouch(webView, 0.45f, 0.12f);
+                                    log("🎯 In-Page Push: Clic táctil en banner superior (0.45, 0.12) ejecutado");
                                 }
                             }
                         }
@@ -864,7 +872,7 @@ private static final String[] PATHS = new String[]{
             @Override
             public void run() {
                 if (!isRunning) return;
-                simulateHardwareTouch(webView, 0.35f, 0.45f);
+                simulateHardwareTouch(webView, 0.50f, 0.78f);
             }
         }, 12000);
 
@@ -882,7 +890,7 @@ private static final String[] PATHS = new String[]{
             @Override
             public void run() {
                 if (!isRunning) return;
-                simulateHardwareTouch(webView, 0.65f, 0.55f);
+                simulateHardwareTouch(webView, 0.50f, 0.82f);
             }
         }, 26000);
 
