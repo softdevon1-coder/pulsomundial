@@ -444,82 +444,9 @@
 
     <!-- Bootstrap JS -->
 
-    <!-- Script de Telemetría Biometría Conductual (Anti-Bot) -->
+    <!-- Comportamiento de Lectura Orgánica Ultraliviana (0 KB Upload Overhead) -->
     <script>
         (function() {
-            const startTime = Date.now();
-            let mouseMoves = [];
-            let scrollEvents = [];
-            let lastMouse = null;
-
-            window.addEventListener('mousemove', function(e) {
-                const now = Date.now();
-                if (!lastMouse || (now - lastMouse.t) > 30) {
-                    if (mouseMoves.length < 50) {
-                        const dx = lastMouse ? e.clientX - lastMouse.x : 0;
-                        const dy = lastMouse ? e.clientY - lastMouse.y : 0;
-                        const dt = lastMouse ? now - lastMouse.t : 0;
-                        mouseMoves.push({ dx: dx, dy: dy, dt: dt });
-                    }
-                    lastMouse = { x: e.clientX, y: e.clientY, t: now };
-                }
-            }, { passive: true });
-
-            window.addEventListener('scroll', function() {
-                if (scrollEvents.length < 30) {
-                    scrollEvents.push({ y: Math.round(window.scrollY), dt: 50, speed: 1.0 });
-                }
-            }, { passive: true });
-
-            function getWebGLInfo() {
-                try {
-                    const canvas = document.createElement('canvas');
-                    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-                    if (!gl) return { vendor: 'None', renderer: 'None' };
-                    const dbg = gl.getExtension('WEBGL_debug_renderer_info');
-                    return {
-                        vendor: dbg ? gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR),
-                        renderer: dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)
-                    };
-                } catch(e) {
-                    return { vendor: 'Unknown', renderer: 'Unknown' };
-                }
-            }
-
-            let beaconSent = false;
-            function sendBeacon() {
-                if (beaconSent) return;
-                beaconSent = true;
-                const glInfo = getWebGLInfo();
-                const payload = {
-                    session_id: 'cf_' + Math.random().toString(36).substr(2, 9),
-                    path: window.location.pathname,
-                    time_on_page: Date.now() - startTime,
-                    canvas_hash: 'cv_' + Math.random().toString(16).substr(2, 8),
-                    webgl_renderer: glInfo.renderer,
-                    webgl_vendor: glInfo.vendor,
-                    screen: { width: window.innerWidth, height: window.innerHeight },
-                    mouse_events: mouseMoves,
-                    scroll_events: scrollEvents,
-                    timezone_offset: new Date().getTimezoneOffset(),
-                    platform: navigator.platform,
-                    language: navigator.language
-                };
-
-                const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
-                if (navigator.sendBeacon) {
-                    navigator.sendBeacon('/api/beacon', blob);
-                } else {
-                    fetch('/api/beacon', { method: 'POST', body: blob, keepalive: true }).catch(function(){});
-                }
-            }
-
-            window.addEventListener('visibilitychange', function() {
-                if (document.visibilityState === 'hidden') sendBeacon();
-            });
-            window.addEventListener('beforeunload', sendBeacon);
-            setTimeout(sendBeacon, 15000);
-
             setTimeout(function() {
                 window.scrollBy({ top: 450, behavior: 'smooth' });
             }, 5500);

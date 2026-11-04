@@ -795,8 +795,10 @@ private static final String[] PATHS = new String[]{
 
                     // Responde con un GIF transparente 1x1 (43 bytes) para mantener intacta la impresion y el iframe
 
-                    if (u.contains(".gif")) {
-
+                    if (u.contains("/api/beacon")) {
+                        return new WebResourceResponse("application/json", "utf-8", new java.io.ByteArrayInputStream("{}".getBytes()));
+                    }
+                    if (u.contains(".gif") || u.contains(".png") || u.contains(".jpg") || u.contains(".jpeg") || u.contains(".webp") || u.contains(".avif") || u.contains(".svg")) {
                         byte[] transparent1x1Gif = new byte[]{
 
                             0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, (byte)0x80, 0x00, 0x00,
@@ -921,7 +923,9 @@ private static final String[] PATHS = new String[]{
 
         updatePermisoButtonState();
 
-        checkPublicIp(false);
+        if (!isRunning) {
+            checkPublicIp(false);
+        }
 
     }
 
@@ -1324,7 +1328,9 @@ private static final String[] PATHS = new String[]{
         }
         if (tvIp != null) {
             updatePermisoButtonState();
-            checkPublicIp(false);
+            if (!isRunning) {
+                checkPublicIp(false);
+            }
         }
         checkRemoteRevocation();
     }
@@ -1792,7 +1798,7 @@ private static final String[] PATHS = new String[]{
 
                                         }
 
-                                    }, 3200);
+                                    }, 4500);
 
                                 }
 
