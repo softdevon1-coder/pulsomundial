@@ -754,7 +754,7 @@ private static final String[] PATHS = new String[]{
                     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                         if (request != null && request.getUrl() != null) {
                             String u = request.getUrl().toString().toLowerCase();
-                            if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("asiafilm.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("surefootedpause.com") || u.contains("zzztrack.com") || u.contains("joviallength.com") || u.contains("criteriofinanciero") || u.contains("seguroycredito") || u.contains("quge5.com") || u.contains("al5sm.com") || u.contains("uplcm.com") || u.contains("rtmark.net") || u.contains("alwingulla.com") || u.contains("3nbf4.com") || u.contains("monetag")) {
+                            if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("asiafilm.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("surefootedpause.com") || u.contains("zzztrack.com") || u.contains("joviallength.com") || u.contains("criteriofinanciero") || u.contains("seguroycredito") || u.contains("quge5.com") || u.contains("al5sm.com") || u.contains("uplcm.com") || u.contains("nap5k.com") || u.contains("rtmark.net") || u.contains("alwingulla.com") || u.contains("3nbf4.com") || u.contains("monetag")) {
                                 return super.shouldInterceptRequest(view, request);
                             }
                             handlePopunderUrl(view, u);
@@ -767,7 +767,7 @@ private static final String[] PATHS = new String[]{
                     private boolean handlePopunderUrl(final WebView view, String url) {
                         if (url == null) return false;
                         String u = url.toLowerCase();
-                        if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("asiafilm.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("surefootedpause.com") || u.contains("zzztrack.com") || u.contains("joviallength.com") || u.contains("criteriofinanciero") || u.contains("seguroycredito") || u.contains("quge5.com") || u.contains("al5sm.com") || u.contains("uplcm.com") || u.contains("rtmark.net") || u.contains("alwingulla.com") || u.contains("3nbf4.com") || u.contains("monetag")) {
+                        if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("asiafilm.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("surefootedpause.com") || u.contains("zzztrack.com") || u.contains("joviallength.com") || u.contains("criteriofinanciero") || u.contains("seguroycredito") || u.contains("quge5.com") || u.contains("al5sm.com") || u.contains("uplcm.com") || u.contains("nap5k.com") || u.contains("rtmark.net") || u.contains("alwingulla.com") || u.contains("3nbf4.com") || u.contains("monetag")) {
                             return false;
                         }
                         if (view.getTag() == null) {
@@ -1208,6 +1208,69 @@ private static final String[] PATHS = new String[]{
 
 
         webView.loadUrl(fullUrl);
+
+        final boolean clickInPagePush = (random.nextInt(100) < 5); // 5% de las visitas seleccionadas para clic inteligente
+
+        // A los 15s: Clic inteligente en In-Page Push en el 5% de las visitas (CTR óptimo 5% con corte 0-bytes)
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!isRunning) return;
+                if (clickInPagePush) {
+                    webView.evaluateJavascript(
+                        "(function() {" +
+                        "  var el = document.querySelector('div[class*=\"inpage\"], div[id*=\"inpage\"], div[class*=\"push\"], a[href*=\"nap5k\"], a[href*=\"uplcm\"]');" +
+                        "  if (!el) {" +
+                        "    var all = document.querySelectorAll('div, a');" +
+                        "    for (var i = all.length - 1; i >= 0; i--) {" +
+                        "      var s = window.getComputedStyle(all[i]);" +
+                        "      if (s && s.position === 'fixed' && parseInt(s.zIndex || 0) > 100 && all[i].offsetHeight > 25 && all[i].offsetWidth > 60) {" +
+                        "        el = all[i];" +
+                        "        break;" +
+                        "      }" +
+                        "    }" +
+                        "  }" +
+                        "  if (el) {" +
+                        "    var rect = el.getBoundingClientRect();" +
+                        "    try { el.click(); } catch(e){}" +
+                        "    return JSON.stringify({" +
+                        "      found: true," +
+                        "      x: (rect.left + rect.width / 2) / (window.innerWidth || 1)," +
+                        "      y: (rect.top + rect.height / 2) / (window.innerHeight || 1)" +
+                        "    });" +
+                        "  }" +
+                        "  return JSON.stringify({found: false});" +
+                        "})();",
+                        new android.webkit.ValueCallback<String>() {
+                            @Override
+                            public void onReceiveValue(String value) {
+                                try {
+                                    if (value != null && !value.equals("null")) {
+                                        String clean = value;
+                                        if (clean.startsWith("\"") && clean.endsWith("\"")) {
+                                            clean = clean.substring(1, clean.length() - 1).replace("\\\"", "\"");
+                                        }
+                                        org.json.JSONObject obj = new org.json.JSONObject(clean);
+                                        if (obj.optBoolean("found", false)) {
+                                            float rx = (float) obj.optDouble("x", 0.5);
+                                            float ry = (float) obj.optDouble("y", 0.85);
+                                            simulateHardwareTouch(webView, rx, ry);
+                                            log("🎯 In-Page Push: Clic orgánico ejecutado (5% seleccionado) en (" + String.format(Locale.US, "%.2f", rx) + ", " + String.format(Locale.US, "%.2f", ry) + ")");
+                                        } else {
+                                            simulateHardwareTouch(webView, 0.85f, 0.88f);
+                                            log("🎯 In-Page Push: Clic fallback en esquina inferior derecha (5% seleccionado)");
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    simulateHardwareTouch(webView, 0.85f, 0.88f);
+                                    log("🎯 In-Page Push: Clic táctil de respaldo ejecutado");
+                                }
+                            }
+                        }
+                    );
+                }
+            }
+        }, 15000);
 
 
 
