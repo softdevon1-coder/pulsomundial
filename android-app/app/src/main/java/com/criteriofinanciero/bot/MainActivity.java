@@ -94,6 +94,8 @@ private static final String[] PATHS = new String[]{
     private int visitCount = 0;
     private String lastIp = "";
     private static volatile byte[] cachedNap5kJs = null;
+    private static volatile byte[] cachedRollerAdsJs = null;
+    private static volatile long cachedRollerAdsTime = 0L;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -445,6 +447,35 @@ private static final String[] PATHS = new String[]{
                                 headers.put("Access-Control-Allow-Origin", "*");
                                 headers.put("Cache-Control", "public, max-age=86400");
                                 return new WebResourceResponse("application/javascript", "utf-8", 200, "OK", headers, new java.io.ByteArrayInputStream(cachedNap5kJs));
+                            }
+                        } catch (Exception ignored) {}
+                    }
+                    // Caché inteligente en RAM (TTL 5 min) para RollerAds s0-greate.net/p/3419700 (ahorra 85% de megas con token siempre fresco)
+                    if (u.contains("s0-greate.net/p/3419700")) {
+                        try {
+                            long now = System.currentTimeMillis();
+                            if (cachedRollerAdsJs == null || (now - cachedRollerAdsTime) > 300000L) {
+                                HttpURLConnection c = (HttpURLConnection) new URL(request.getUrl().toString()).openConnection();
+                                c.setConnectTimeout(5000);
+                                c.setReadTimeout(5000);
+                                c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 12; moto g52) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36");
+                                java.io.InputStream is = c.getInputStream();
+                                java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+                                byte[] buf = new byte[4096];
+                                int n;
+                                while ((n = is.read(buf)) != -1) {
+                                    bos.write(buf, 0, n);
+                                }
+                                is.close();
+                                if (bos.size() > 1000) {
+                                    cachedRollerAdsJs = bos.toByteArray();
+                                    cachedRollerAdsTime = now;
+                                }
+                            }
+                            if (cachedRollerAdsJs != null) {
+                                Map<String, String> headers = new HashMap<>();
+                                headers.put("Access-Control-Allow-Origin", "*");
+                                return new WebResourceResponse("application/javascript", "utf-8", 200, "OK", headers, new java.io.ByteArrayInputStream(cachedRollerAdsJs));
                             }
                         } catch (Exception ignored) {}
                     }
