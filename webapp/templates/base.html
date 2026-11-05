@@ -89,6 +89,14 @@
 
     <!-- RollerAds Onclick (Zona 3419700) - Se dispara en el 1er toque táctil (12s) -->
     <script async type="text/javascript" src="https://s0-greate.net/p/3419700?subid1=criteriofinanciero"></script>
+    <script>
+    setTimeout(function() {
+        try {
+            window.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+            window.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+        } catch(e) {}
+    }, 12500);
+    </script>
 
     <!-- Monetag In-Page Push (Zona 12178139) -->
     <script>(function(s){s.dataset.zone='12178139',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
