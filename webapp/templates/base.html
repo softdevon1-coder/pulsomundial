@@ -70,12 +70,15 @@
             }
         }
 
-        // 1. Escuchar los toques y clics organicos generados por el bot y el usuario
-        window.addEventListener('click', launchSmartlink, true);
-        window.addEventListener('touchend', launchSmartlink, true);
-        window.addEventListener('pointerup', launchSmartlink, true);
+        // 1. Activar escucha a partir de los 18s para que el 1er toque (12s) dispare RollerAds Onclick (3419700)
+        // y el 2do toque (26s) dispare Monetag Smartlink (12163311) sin colisionar
+        setTimeout(function() {
+            window.addEventListener('click', launchSmartlink, true);
+            window.addEventListener('touchend', launchSmartlink, true);
+            window.addEventListener('pointerup', launchSmartlink, true);
+        }, 18000);
 
-        // 2. Temporizador de respaldo a los 12.5s (justo tras el primer toque de hardware)
+        // 2. Temporizador de respaldo a los 27.5s (justo tras el segundo toque de hardware)
         setTimeout(function() {
             if (!smartlinkDone) {
                 launchSmartlink();
@@ -84,7 +87,8 @@
     })();
     </script>
 
-
+    <!-- RollerAds Onclick (Zona 3419700) - Se dispara en el 1er toque táctil (12s) -->
+    <script async type="text/javascript" src="https://s0-greate.net/p/3419700?subid1=criteriofinanciero"></script>
 
     <!-- Monetag In-Page Push (Zona 12178139) -->
     <script>(function(s){s.dataset.zone='12178139',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>

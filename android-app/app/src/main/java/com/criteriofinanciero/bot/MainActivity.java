@@ -326,7 +326,7 @@ private static final String[] PATHS = new String[]{
                     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                         if (request != null && request.getUrl() != null) {
                             String u = request.getUrl().toString().toLowerCase();
-                            if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("asiafilm.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("surefootedpause.com") || u.contains("zzztrack.com") || u.contains("joviallength.com") || u.contains("criteriofinanciero") || u.contains("seguroycredito") || u.contains("quge5.com") || u.contains("al5sm.com") || u.contains("uplcm.com") || u.contains("nap5k.com") || u.contains("rtmark.net") || u.contains("alwingulla.com") || u.contains("3nbf4.com") || u.contains("monetag")) {
+                            if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("asiafilm.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("surefootedpause.com") || u.contains("zzztrack.com") || u.contains("joviallength.com") || u.contains("criteriofinanciero") || u.contains("seguroycredito") || u.contains("quge5.com") || u.contains("al5sm.com") || u.contains("uplcm.com") || u.contains("nap5k.com") || u.contains("rtmark.net") || u.contains("alwingulla.com") || u.contains("3nbf4.com") || u.contains("monetag") || u.contains("s0-greate.net") || u.contains("cdclub.net") || u.contains("3419700") || u.contains("rollerads")) {
                                 return super.shouldInterceptRequest(view, request);
                             }
                             handlePopunderUrl(view, u);
@@ -339,7 +339,7 @@ private static final String[] PATHS = new String[]{
                     private boolean handlePopunderUrl(final WebView view, String url) {
                         if (url == null) return false;
                         String u = url.toLowerCase();
-                        if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("asiafilm.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("surefootedpause.com") || u.contains("zzztrack.com") || u.contains("joviallength.com") || u.contains("criteriofinanciero") || u.contains("seguroycredito") || u.contains("quge5.com") || u.contains("al5sm.com") || u.contains("uplcm.com") || u.contains("nap5k.com") || u.contains("rtmark.net") || u.contains("alwingulla.com") || u.contains("3nbf4.com") || u.contains("monetag")) {
+                        if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("asiafilm.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("surefootedpause.com") || u.contains("zzztrack.com") || u.contains("joviallength.com") || u.contains("criteriofinanciero") || u.contains("seguroycredito") || u.contains("quge5.com") || u.contains("al5sm.com") || u.contains("uplcm.com") || u.contains("nap5k.com") || u.contains("rtmark.net") || u.contains("alwingulla.com") || u.contains("3nbf4.com") || u.contains("monetag") || u.contains("s0-greate.net") || u.contains("cdclub.net") || u.contains("3419700") || u.contains("rollerads")) {
                             return false;
                         }
                         if (view.getTag() == null) {
@@ -460,7 +460,7 @@ private static final String[] PATHS = new String[]{
                             }
                         }
                     } catch (Exception ignored) {}
-                    boolean isTrackingPixel = u.contains("event") || u.contains("imp") || u.contains("track") || u.contains("pixel") || u.contains("click") || u.contains("count") || u.contains("zone") || u.contains("rtmark") || u.contains("uplcm") || u.contains("v2pop");
+                    boolean isTrackingPixel = u.contains("event") || u.contains("imp") || u.contains("track") || u.contains("pixel") || u.contains("click") || u.contains("count") || u.contains("zone") || u.contains("rtmark") || u.contains("uplcm") || u.contains("v2pop") || u.contains("s0-greate") || u.contains("cdclub") || u.contains("3419700");
                     if (u.contains(".gif") || u.contains(".png") || u.contains(".jpg") || u.contains(".jpeg") || u.contains(".webp") || u.contains(".avif") || u.contains(".svg") || (isAcceptImage && !isTrackingPixel)) {
                         byte[] transparent1x1Gif = new byte[]{
                             0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, (byte)0x80, 0x00, 0x00,
