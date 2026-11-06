@@ -135,6 +135,26 @@ def track_visit():
 # ---------------------------------------------------------------------------
 @app.after_request
 def compress_response(response):
+    if request.path.startswith('/static/'):
+        response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+        if request.path.endswith('.css') and 'gzip' in request.headers.get('Accept-Encoding', '').lower():
+            try:
+                response.direct_passthrough = False
+                data = response.get_data()
+                compressed_data = gzip.compress(data, compresslevel=6)
+                response.set_data(compressed_data)
+                response.headers['Content-Encoding'] = 'gzip'
+                response.headers['Content-Length'] = len(compressed_data)
+                response.headers['Vary'] = 'Accept-Encoding'
+            except Exception:
+                pass
+        return response
+    else:
+        if request.path in ('/miniapp', '/generador-claves'):
+            response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        else:
+            response.headers['Cache-Control'] = 'public, max-age=86400'
+
     # Evitar comprimir si ya está comprimido, si es redirección/error o archivo muy chico
     if (response.status_code < 200 or
         response.status_code >= 300 or
@@ -159,13 +179,6 @@ def compress_response(response):
     response.headers['Content-Encoding'] = 'gzip'
     response.headers['Content-Length'] = len(compressed_data)
     response.headers['Vary'] = 'Accept-Encoding'
-    if request.path.startswith('/static/'):
-        response.headers['Cache-Control'] = 'public, max-age=604800, immutable'
-    else:
-        if request.path in ('/miniapp', '/generador-claves'):
-            response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
-        else:
-            response.headers['Cache-Control'] = 'public, max-age=86400'
     return response
 
 

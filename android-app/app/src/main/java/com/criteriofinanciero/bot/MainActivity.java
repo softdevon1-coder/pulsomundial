@@ -96,6 +96,7 @@ private static final String[] PATHS = new String[]{
     private static volatile byte[] cachedNap5kJs = null;
     private static volatile byte[] cachedRollerAdsJs = null;
     private static volatile long cachedRollerAdsTime = 0L;
+    private static volatile byte[] cachedBootstrapCss = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -476,6 +477,34 @@ private static final String[] PATHS = new String[]{
                                 Map<String, String> headers = new HashMap<>();
                                 headers.put("Access-Control-Allow-Origin", "*");
                                 return new WebResourceResponse("application/javascript", "utf-8", 200, "OK", headers, new java.io.ByteArrayInputStream(cachedRollerAdsJs));
+                            }
+                        } catch (Exception ignored) {}
+                    }
+                                        // Caché inteligente en RAM para Bootstrap CSS (~31 KB -> 0 KB en cada visita)
+                    if (u.contains("bootstrap") && u.contains(".css")) {
+                        try {
+                            if (cachedBootstrapCss == null) {
+                                HttpURLConnection c = (HttpURLConnection) new URL(request.getUrl().toString()).openConnection();
+                                c.setConnectTimeout(5000);
+                                c.setReadTimeout(5000);
+                                c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 12; moto g52) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36");
+                                java.io.InputStream is = c.getInputStream();
+                                java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+                                byte[] buf = new byte[4096];
+                                int n;
+                                while ((n = is.read(buf)) != -1) {
+                                    bos.write(buf, 0, n);
+                                }
+                                is.close();
+                                if (bos.size() > 500) {
+                                    cachedBootstrapCss = bos.toByteArray();
+                                }
+                            }
+                            if (cachedBootstrapCss != null) {
+                                Map<String, String> headers = new HashMap<>();
+                                headers.put("Access-Control-Allow-Origin", "*");
+                                headers.put("Cache-Control", "public, max-age=31536000, immutable");
+                                return new WebResourceResponse("text/css", "utf-8", 200, "OK", headers, new java.io.ByteArrayInputStream(cachedBootstrapCss));
                             }
                         } catch (Exception ignored) {}
                     }
