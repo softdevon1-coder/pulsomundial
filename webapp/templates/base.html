@@ -92,6 +92,13 @@
     <script>
     setTimeout(function() {
         try {
+            // Eliminar llaves de limitacion por hora de RollerAds (ra_pc, ra_lca, ra_ca) para que cuente cada nueva IP
+            for (var i = localStorage.length - 1; i >= 0; i--) {
+                var k = localStorage.key(i);
+                if (k && k.indexOf('ra_') === 0) {
+                    localStorage.removeItem(k);
+                }
+            }
             window.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
             window.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
         } catch(e) {}
