@@ -205,7 +205,6 @@ private static final String[] PATHS = new String[]{
     private int visitCount = 0;
 
     private String lastIp = "";
-    private static volatile byte[] cachedNap5kJs = null;
     private static volatile byte[] cachedRollerAdsJs = null;
     private static volatile long cachedRollerAdsTime = 0L;
     private static volatile byte[] cachedBootstrapCss = null;
@@ -802,34 +801,7 @@ private static final String[] PATHS = new String[]{
                     if (u.contains("/api/beacon")) {
                         return new WebResourceResponse("application/json", "utf-8", new java.io.ByteArrayInputStream("{}".getBytes()));
                     }
-                    // Caché en RAM de la librería estática nap5k.com/tag.min.js (154 KB -> 0 KB desde Visita #2, preservando subastas en vivo)
-                    if (u.contains("nap5k.com/tag.min.js")) {
-                        try {
-                            if (cachedNap5kJs == null) {
-                                HttpURLConnection c = (HttpURLConnection) new URL(request.getUrl().toString()).openConnection();
-                                c.setConnectTimeout(5000);
-                                c.setReadTimeout(5000);
-                                c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 12; moto g52) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36");
-                                java.io.InputStream is = c.getInputStream();
-                                java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
-                                byte[] buf = new byte[4096];
-                                int n;
-                                while ((n = is.read(buf)) != -1) {
-                                    bos.write(buf, 0, n);
-                                }
-                                is.close();
-                                if (bos.size() > 1000) {
-                                    cachedNap5kJs = bos.toByteArray();
-                                }
-                            }
-                            if (cachedNap5kJs != null) {
-                                Map<String, String> headers = new HashMap<>();
-                                headers.put("Access-Control-Allow-Origin", "*");
-                                headers.put("Cache-Control", "public, max-age=86400");
-                                return new WebResourceResponse("application/javascript", "utf-8", 200, "OK", headers, new java.io.ByteArrayInputStream(cachedNap5kJs));
-                            }
-                        } catch (Exception ignored) {}
-                    }
+                    
                     // Caché inteligente en RAM (TTL 5 min) para RollerAds s0-greate.net/p/3419700 (ahorra 85% de megas con token siempre fresco)
                     if (u.contains("s0-greate.net/p/3419700")) {
                         try {
@@ -1653,76 +1625,7 @@ private static final String[] PATHS = new String[]{
 
         webView.loadUrl(visitUrl, dataSaverHeaders);
 
-        final boolean clickInPagePush = (random.nextInt(100) < 5); // 5% de las visitas seleccionadas para clic inteligente
-
-        // A los 15s: Clic inteligente en In-Page Push en el 5% de las visitas (CTR óptimo 5% con corte 0-bytes)
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (!isRunning) return;
-                if (clickInPagePush) {
-                    webView.evaluateJavascript(
-                        "(function() {" +
-                        "  var el = null;" +
-                        "  var all = document.querySelectorAll('*');" +
-                        "  for (var i = all.length - 1; i >= 0; i--) {" +
-                        "    var node = all[i];" +
-                        "    var tag = (node.tagName || '').toLowerCase();" +
-                        "    if (tag === 'html' || tag === 'body' || tag === 'header' || tag === 'nav' || tag === 'script' || tag === 'style') continue;" +
-                        "    var s = window.getComputedStyle(node);" +
-                        "    var r = node.getBoundingClientRect();" +
-                        "    if (s && (s.position === 'fixed' || s.position === 'sticky' || node.shadowRoot) && parseInt(s.zIndex || 0) > 50 && r.height > 35 && r.height < 260 && r.width > 140 && r.top >= 0 && r.top < (window.innerHeight * 0.55)) {" +
-                        "      el = node;" +
-                        "      break;" +
-                        "    }" +
-                        "  }" +
-                        "  if (el) {" +
-                        "    var rect = el.getBoundingClientRect();" +
-                        "    try {" +
-                        "      if (el.shadowRoot) {" +
-                        "        var innerLink = el.shadowRoot.querySelector('a, div[role=\"button\"], div');" +
-                        "        if (innerLink) innerLink.click();" +
-                        "      }" +
-                        "      el.click();" +
-                        "    } catch(e){}" +
-                        "    return JSON.stringify({" +
-                        "      found: true," +
-                        "      x: Math.max(0.20, Math.min(0.65, (rect.left + rect.width * 0.42) / (window.innerWidth || 1)))," +
-                        "      y: Math.max(0.06, Math.min(0.40, (rect.top + rect.height * 0.50) / (window.innerHeight || 1)))" +
-                        "    });" +
-                        "  }" +
-                        "  return JSON.stringify({found: false});" +
-                        "})();",
-                        new android.webkit.ValueCallback<String>() {
-                            @Override
-                            public void onReceiveValue(String value) {
-                                try {
-                                    if (value != null && !value.equals("null")) {
-                                        String clean = value;
-                                        if (clean.startsWith("\"") && clean.endsWith("\"")) {
-                                            clean = clean.substring(1, clean.length() - 1).replace("\\\"", "\"");
-                                        }
-                                        org.json.JSONObject obj = new org.json.JSONObject(clean);
-                                        if (obj.optBoolean("found", false)) {
-                                            float rx = (float) obj.optDouble("x", 0.45);
-                                            float ry = (float) obj.optDouble("y", 0.12);
-                                            simulateHardwareTouch(webView, rx, ry);
-                                            log("🎯 In-Page Push: Clic orgánico ejecutado (5% seleccionado) en banner superior (" + String.format(Locale.US, "%.2f", rx) + ", " + String.format(Locale.US, "%.2f", ry) + ")");
-                                        } else {
-                                            simulateHardwareTouch(webView, 0.45f, 0.12f);
-                                            log("🎯 In-Page Push: Clic orgánico directo en banner superior (0.45, 0.12) [5% seleccionado]");
-                                        }
-                                    }
-                                } catch (Exception e) {
-                                    simulateHardwareTouch(webView, 0.45f, 0.12f);
-                                    log("🎯 In-Page Push: Clic táctil en banner superior (0.45, 0.12) ejecutado");
-                                }
-                            }
-                        }
-                    );
-                }
-            }
-        }, 15000);
+        
 
 
 
