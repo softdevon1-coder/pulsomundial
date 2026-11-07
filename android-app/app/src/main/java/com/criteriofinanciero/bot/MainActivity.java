@@ -346,7 +346,7 @@ private static final String[] PATHS = new String[]{
                         }
                         if (view.getTag() == null) {
                             view.setTag("killed");
-                            log("💰 Popunder validado! Manteniendo 2.5s de gracia (landing externa bloqueada a 0 bytes): " + (url.length() > 42 ? url.substring(0, 42) + "..." : url));
+                            log("💰 Popunder validado! Manteniendo 3.5s de gracia (landing externa bloqueada a 0 bytes): " + (url.length() > 42 ? url.substring(0, 42) + "..." : url));
                             handler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
@@ -355,7 +355,7 @@ private static final String[] PATHS = new String[]{
                                         view.destroy();
                                     } catch (Exception ignored) {}
                                 }
-                            }, 2500);
+                            }, 3500);
                         }
                         return true;
                     }
