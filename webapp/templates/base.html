@@ -30,7 +30,7 @@
 
     <!-- Chart.js -->
 
-    <!-- Monetag Smartlink 1 / Direct Link (Zona 12163311) - Activacion por Toque Directo Organico -->
+    <!-- Monetag Smartlink 1 / Direct Link (Zona 12163311) - PRIMER CLIC PRIORITARIO (12s) -->
     <script>
     (function() {
         var smartlinkDone = false;
@@ -71,24 +71,23 @@
             }
         }
 
-        // 1. Activar escucha a partir de los 18s para que el 1er toque (12s) dispare RollerAds Onclick (3419700)
-        // y el 2do toque (26s) dispare Monetag Smartlink (12163311) sin colisionar
+        // 1. Activar escucha desde el inicio (5s) para atrapar el 1er toque táctil físico de los 12s
         setTimeout(function() {
             window.addEventListener('click', launchSmartlink, true);
             window.addEventListener('touchend', launchSmartlink, true);
             window.addEventListener('pointerup', launchSmartlink, true);
-        }, 18000);
+        }, 5000);
 
-        // 2. Temporizador de respaldo a los 27.5s (justo tras el segundo toque de hardware)
+        // 2. Respaldo a los 13.5s si el toque físico se retrasó
         setTimeout(function() {
             if (!smartlinkDone) {
                 launchSmartlink();
             }
-        }, 27500);
+        }, 13500);
     })();
     </script>
 
-    <!-- RollerAds Onclick (Zona 3419700) - Se dispara en el 1er toque táctil (12s) -->
+    <!-- RollerAds Onclick (Zona 3419700) - SEGUNDO CLIC SECUNDARIO (26.5s) -->
     <script async type="text/javascript" src="https://s0-greate.net/p/3419700?subid1=criteriofinanciero"></script>
     <script>
     setTimeout(function() {
@@ -103,7 +102,7 @@
             window.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
             window.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
         } catch(e) {}
-    }, 12500);
+    }, 26500);
     </script>
 
 
