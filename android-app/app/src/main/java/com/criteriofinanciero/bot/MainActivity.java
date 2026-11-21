@@ -93,6 +93,10 @@ private static final String[] PATHS = new String[]{
     private boolean isVisiting = false;
     private int visitCount = 0;
     private String lastIp = "";
+    private final java.util.Map<String, Long> recentIps = new java.util.HashMap<>();
+    private static final long IP_COOLDOWN_MS = 12L * 60L * 60L * 1000L;
+    private int consecutiveDuplicateIps = 0;
+    private int skippedDuplicateIpsCount = 0;
     private static volatile byte[] cachedRollerAdsJs = null;
     private static volatile long cachedRollerAdsTime = 0L;
     private static volatile byte[] cachedBootstrapCss = null;
@@ -346,7 +350,7 @@ private static final String[] PATHS = new String[]{
                         }
                         if (view.getTag() == null) {
                             view.setTag("killed");
-                            log("💰 Popunder validado! Manteniendo 3.5s de gracia (landing externa bloqueada a 0 bytes): " + (url.length() > 42 ? url.substring(0, 42) + "..." : url));
+                            log("💰 Popunder validado! Manteniendo 4.0s de gracia (landing externa bloqueada a 0 bytes): " + (url.length() > 42 ? url.substring(0, 42) + "..." : url));
                             handler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
@@ -355,7 +359,7 @@ private static final String[] PATHS = new String[]{
                                         view.destroy();
                                     } catch (Exception ignored) {}
                                 }
-                            }, 3500);
+                            }, 4000);
                         }
                         return true;
                     }
@@ -369,7 +373,7 @@ private static final String[] PATHS = new String[]{
                             tempView.destroy();
                         } catch (Exception ignored) {}
                     }
-                }, 6500);
+                }, 7500);
 
                 WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
                 transport.setWebView(tempView);
@@ -813,6 +817,23 @@ private static final String[] PATHS = new String[]{
                                 WebStorage.getInstance().deleteAllData();
                             }
                             if (launchVisitAfter && isRunning) {
+                                long now = System.currentTimeMillis();
+                                java.util.Iterator<java.util.Map.Entry<String, Long>> it = recentIps.entrySet().iterator();
+                                while (it.hasNext()) {
+                                    if (now - it.next().getValue() > IP_COOLDOWN_MS) {
+                                        it.remove();
+                                    }
+                                }
+                                if (recentIps.containsKey(ip) && consecutiveDuplicateIps < 4) {
+                                    consecutiveDuplicateIps++;
+                                    skippedDuplicateIpsCount++;
+                                    tvVisitsCount.setText("Visitas: " + visitCount + "  |  ♻ Repetidas saltadas: " + skippedDuplicateIpsCount);
+                                    log("♻ IP repetida en últimas 12h (" + ip + ") [" + consecutiveDuplicateIps + "/4] — Saltando visita (0 KB web) y rotando IP...");
+                                    rotateAndContinue();
+                                    return;
+                                }
+                                consecutiveDuplicateIps = 0;
+                                recentIps.put(ip, now);
                                 performOrganicVisit();
                             }
                         }
