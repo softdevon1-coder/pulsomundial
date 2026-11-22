@@ -308,12 +308,27 @@ private static final String[] PATHS = new String[]{
                 ts.setJavaScriptEnabled(true);
                 ts.setDomStorageEnabled(true);
                 ts.setDatabaseEnabled(true);
+                ts.setBlockNetworkImage(true);
+                ts.setLoadsImagesAutomatically(false);
+                ts.setMediaPlaybackRequiresUserGesture(true);
                 ts.setUserAgentString(ws.getUserAgentString());
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                     CookieManager.getInstance().setAcceptThirdPartyCookies(tempView, true);
                 }
 
                 tempView.setWebViewClient(new WebViewClient() {
+                    private boolean isAdNetworkDomain(String u) {
+                        return u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("asiafilm.org") ||
+                               u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") ||
+                               u.contains("surefootedpause.com") || u.contains("zzztrack.com") || u.contains("joviallength.com") ||
+                               u.contains("criteriofinanciero") || u.contains("seguroycredito") || u.contains("quge5.com") ||
+                               u.contains("al5sm.com") || u.contains("uplcm.com") || u.contains("v2pop.com") ||
+                               u.contains("8rar.com") || u.contains("ill3.com") || u.contains("nap5k.com") ||
+                               u.contains("rtmark.net") || u.contains("alwingulla.com") || u.contains("3nbf4.com") ||
+                               u.contains("monetag") || u.contains("s0-greate.net") || u.contains("cdclub.net") ||
+                               u.contains("3419700") || u.contains("12163311") || u.contains("rollerads");
+                    }
+
                     @Override
                     public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                         if (request != null && request.getUrl() != null) {
@@ -332,12 +347,16 @@ private static final String[] PATHS = new String[]{
                     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                         if (request != null && request.getUrl() != null) {
                             String u = request.getUrl().toString().toLowerCase();
-                            if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("asiafilm.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("surefootedpause.com") || u.contains("zzztrack.com") || u.contains("joviallength.com") || u.contains("criteriofinanciero") || u.contains("seguroycredito") || u.contains("quge5.com") || u.contains("al5sm.com") || u.contains("uplcm.com") || u.contains("nap5k.com") || u.contains("rtmark.net") || u.contains("alwingulla.com") || u.contains("3nbf4.com") || u.contains("monetag") || u.contains("s0-greate.net") || u.contains("cdclub.net") || u.contains("3419700") || u.contains("rollerads")) {
+                            // 1. Permitir SIEMPRE la cadena de redirección principal (isForMainFrame) y beacons/scripts de Monetag
+                            // para que Monetag (uplcm.com -> v2pop.com -> tracker -> anunciante) reciba el 100% de las visitas
+                            if (request.isForMainFrame() || isAdNetworkDomain(u)) {
+                                if (!request.isForMainFrame() && (u.contains(".png") || u.contains(".jpg") || u.contains(".jpeg") || u.contains(".webp") || u.contains(".mp4") || u.contains(".webm") || u.contains(".woff") || u.contains(".ttf"))) {
+                                    return new WebResourceResponse("text/plain", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
+                                }
                                 return super.shouldInterceptRequest(view, request);
                             }
-                            handlePopunderUrl(view, u);
-                            byte[] emptyHtml = "<!DOCTYPE html><html><head><title>OK</title></head><body></body></html>".getBytes(java.nio.charset.StandardCharsets.UTF_8);
-                            return new WebResourceResponse("text/html", "utf-8", 200, "OK", null, new java.io.ByteArrayInputStream(emptyHtml));
+                            // 2. Bloquear TODOS los sub-recursos pesados de la landing externa (imágenes, videos, CSS, JS, fuentes) a 0 bytes
+                            return new WebResourceResponse("text/plain", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
                         }
                         return super.shouldInterceptRequest(view, request);
                     }
@@ -345,12 +364,16 @@ private static final String[] PATHS = new String[]{
                     private boolean handlePopunderUrl(final WebView view, String url) {
                         if (url == null) return false;
                         String u = url.toLowerCase();
-                        if (u.contains("abscloud.org") || u.contains("araplhn.org") || u.contains("asiafilm.org") || u.contains("nresystems.com") || u.contains("unfolded-uncle.com") || u.contains("hilltop") || u.contains("surefootedpause.com") || u.contains("zzztrack.com") || u.contains("joviallength.com") || u.contains("criteriofinanciero") || u.contains("seguroycredito") || u.contains("quge5.com") || u.contains("al5sm.com") || u.contains("uplcm.com") || u.contains("nap5k.com") || u.contains("rtmark.net") || u.contains("alwingulla.com") || u.contains("3nbf4.com") || u.contains("monetag") || u.contains("s0-greate.net") || u.contains("cdclub.net") || u.contains("3419700") || u.contains("rollerads")) {
+                        // Bloquear esquemas externos que sacarían el bot de primer plano (Play Store, Telegram, intents)
+                        if (u.startsWith("intent://") || u.startsWith("market://") || u.startsWith("tg:") || u.startsWith("tg://")) {
+                            return true;
+                        }
+                        if (isAdNetworkDomain(u)) {
                             return false;
                         }
                         if (view.getTag() == null) {
-                            view.setTag("killed");
-                            log("💰 Popunder validado! Manteniendo 4.0s de gracia (landing externa bloqueada a 0 bytes): " + (url.length() > 42 ? url.substring(0, 42) + "..." : url));
+                            view.setTag("validated");
+                            log("💰 Popunder acreditado! Manteniendo 4.0s de gracia (sub-recursos bloqueados a 0 bytes): " + (url.length() > 44 ? url.substring(0, 44) + "..." : url));
                             handler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
@@ -361,7 +384,8 @@ private static final String[] PATHS = new String[]{
                                 }
                             }, 4000);
                         }
-                        return true;
+                        // IMPORTANTE: retornar false permite que la petición HTTP del redirect se complete y acredite en Monetag
+                        return false;
                     }
                 });
 
@@ -373,7 +397,7 @@ private static final String[] PATHS = new String[]{
                             tempView.destroy();
                         } catch (Exception ignored) {}
                     }
-                }, 7500);
+                }, 9000);
 
                 WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
                 transport.setWebView(tempView);
